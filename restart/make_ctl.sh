@@ -1,9 +1,10 @@
 #!/bin/bash
 
 rundir="/data/C.shaoyu/rrce/vvm/RRCE_3km_f00"
-rindir=${1}
+rundir=${1}
 ncdir="${rundir}/archive"
 outdir="${rundir}/gs_ctl_files"
+echo ${outdir}
 mkdir -p ${outdir}
 
 declare -A vtab
