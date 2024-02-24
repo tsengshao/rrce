@@ -3,8 +3,12 @@ import numpy as np
 from scipy.signal import correlate2d, correlate, gaussian
 from scipy.ndimage import laplace
 from multiprocessing import Pool
-sys.path.insert(0, "../")
-from parameter import *
+
+# ========== Constant
+Lv = 2.5e6
+Cp = 1004
+g = 9.81
+Rd = 287
 
 def getiLoniLat(lon, lat, lonb, latb):
     ilon0 = np.argmin(np.abs(lon-lonb[0]))
