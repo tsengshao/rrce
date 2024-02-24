@@ -29,7 +29,6 @@ for exp in ${expList};do
   if [ ${n} -le 0 ]; then
     ln -sf ${dir}/archive     ${out}/
     echo "no restart folder ..."
-    bash make_ctl.sh ${out}
     continue
   fi
 
@@ -94,6 +93,4 @@ for exp in ${expList};do
 
   done # restart folder (i)
 
-  bash make_ctl.sh ${out}
-  
 done #exp
