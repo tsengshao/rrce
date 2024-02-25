@@ -10,4 +10,4 @@ def getExpDeltaT(exp):
   if expheader == 'RRCE':
     return 60 #mins
   elif expheader == 'RCE':
-    return 10 #mins
+    return 20 #mins
