@@ -1,5 +1,5 @@
 import numpy as np
-import os
+import os, sys
 import xarray as xr
 
 class DataWriter:
@@ -10,7 +10,7 @@ class DataWriter:
     def checkExistOrCreate(self, outputPath):
         if not os.path.exists(outputPath): 
             print("Path is not exist, created")
-            os.makedirs(outputPath)
+            os.system('mkdir -p '+outputPath)
         else:
             print("Path exists")
 
