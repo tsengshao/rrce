@@ -19,7 +19,7 @@ nt = config.totalT[iexp]
 exp = config.expList[iexp]
 if (cpuid==0): print(exp, nt)
 
-outdir="../../data/cwv/"+exp+'/'
+outdir=config.dataPath+"/cwv/"+exp+'/'
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 thData = vvmLoader.loadThermoDynamic(0)
