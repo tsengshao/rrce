@@ -1,3 +1,6 @@
 *.nc
 *.dat
+*.png
+*.mp4
+*.out
 __pycache__
