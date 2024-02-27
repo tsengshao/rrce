@@ -1,6 +1,6 @@
 #!/bin/bash
 
-expList="RRCE_3km_f00 RRCE_3km_f05 RRCE_3km_f10 RRCE_3km_f15 RCE_300K_3km_f0 RCE_300K_3km_f05"
+expList="RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15 RCE_300K_3km_f0 RCE_300K_3km_f05"
 for exp in ${expList};do
 
   rundir="/data/C.shaoyu/rrce/vvm/${exp}"
@@ -32,8 +32,10 @@ for exp in ${expList};do
   nz=$(grep "vert_dimension" ${rundir}/vvm.setup|cut -d"'" -f2|cut -d"/" -f3)
 
   # get lon/lat
-  lon0=$(grep "RLON=" ${rundir}/vvm.setup|cut -d',' -f1|cut -d'=' -f2)
-  lat0=$(grep "RLAT=" ${rundir}/vvm.setup|cut -d',' -f2|cut -d'=' -f2|cut -d' ' -f1)
+  lat0=$(grep "RLAT=" ${rundir}/vvm.setup|cut -d',' -f1|cut -d'=' -f2)
+  lon0=$(grep "RLON=" ${rundir}/vvm.setup|cut -d',' -f2|cut -d'=' -f2|cut -d' ' -f1)
+  lat0=0
+  lon0=0
   dx=$(grep "DX=" ${rundir}/vvm.setup|cut -d',' -f1|cut -d'=' -f2)
   dy=$(grep "DY" ${rundir}/vvm.setup|cut -d',' -f2|cut -d'=' -f2)
   dlon=$(echo "scale=6;${dx}/111000"|bc)
