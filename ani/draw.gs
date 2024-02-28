@@ -20,7 +20,8 @@ outPath="./fig/"exp
 *'set background 1'
 'c'
 'open 'vvmPath'/'exp'/gs_ctl_files/Dynamic.ctl'
-'open 'datPath'/cwv/'exp'.ctl'
+*'open 'datPath'/cwv/'exp'.ctl'
+'open 'datPath'/wp/'exp'.ctl'
 
 it = 1
 while(it<=tlast)
@@ -71,7 +72,6 @@ dy=math_format( '%.3f', day)
 'set string 1 br 10 0'
 'set strsiz 0.2'
 'draw string 8.3125 7.65 'dy'days'
-
 itt=math_format( '%06.0f', it)
 'gxprint 'outPath'/cwvws_'itt'.png x2400 y1800 white'
 
