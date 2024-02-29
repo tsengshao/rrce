@@ -3,9 +3,9 @@ iexp = subwrd(args,1)
 
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
-expList='RCE_300K_3km_f05 RCE_300K_3km_f0 RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15'
+expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15'
 dtList='60 60 20 20 20'
-tlastList='2030 2137 3654 2286 2161'
+tlastList='2137 2030 3654 2286 2161'
 
 
 exp = subwrd(expList, iexp)
@@ -13,7 +13,7 @@ dt  = subwrd(dtList, iexp)
 tlast = subwrd(tlastList, iexp)
 say exp', 'dt', 'tlast
 
-outPath="./fig/"exp
+outPath="./fig_black/"exp
 '! mkdir -p 'outPath
 
 'reinit'
@@ -73,9 +73,17 @@ dy=math_format( '%.3f', day)
 'set strsiz 0.2'
 'draw string 8.3125 7.65 'dy'days'
 itt=math_format( '%06.0f', it)
-'gxprint 'outPath'/cwvws_'itt'.png x2400 y1800 white'
+*'gxprint 'outPath'/cwvws_'itt'.png x2400 y1800 white'
+*'gxprint 'outPath'/cwvws_'itt'.png x2400 y1800'
 
-it = it+1
+pull step
+if(step='q'|step='quit'|step='exit');exit;endif
+if(step='');it=it+1;continue;else
+  rc=valnum(step)
+  if(rc=0);step;pull step;endif
+  if(rc=1&step>0);it=step;endif
+endif
+*it = it+1
 endwhile
 
 
