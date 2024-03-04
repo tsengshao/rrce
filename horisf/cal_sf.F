@@ -4,11 +4,11 @@ use netcdf
 IMPLICIT NONE
 
 INTEGER, PARAMETER :: nx=384, ny=384, nz=75
-REAL, PARAMETER :: dx=3000., dy=3000.
+REAL, PARAMETER :: dx=3000., dy=3000., height=3.0
 INTEGER :: nt
 INTEGER :: err, ncid1, varid1
 INTEGER :: i,j,k,m,n,o,t, iter
-INTEGER :: idxt, irun
+INTEGER :: idxt, irun, ihei
 REAL    :: rerr
 REAL, DIMENSION(nx,ny)  :: zeta
 REAL, DIMENSION(nx,ny,2)   :: sf
@@ -70,6 +70,8 @@ DO i=2,nz+1
 ENDDO
 CLOSE(10)
 
+ihei = MINLOC(ABS(zz-height*1e3), 1)
+if(cpu==nproc-1) print*, ihei, zz(ihei)
 sf(:,:,:) = 0.
 idxt=1
 
@@ -80,11 +82,11 @@ if(cpu+1==nproc) te=te+mod(nt,nproc)-1
 print*, 'cpu=',cpu,'ts=',ts,'te=',te
 
 INQUIRE(IOLENGTH=idum2) sfr4
-WRITE(filename,'(A)') trim(datapath)//".dat"
+WRITE(filename,'(A,F0.2,A)') trim(datapath)//"_", zz(ihei)*1e-3, "km.dat"
 OPEN(10,FILE=trim(filename),ACCESS="direct",RECL=idum2)
 
 !DO t=0,1200
-DO t=ts,te
+DO t=te,ts,-1
 if(cpu==nproc-1) print*, '======','cpuid=',cpu,'t=',t,'======'
 
 ! read 3-D data field
@@ -95,7 +97,7 @@ err = nf90_open(trim(filename),NF90_NOWRITE,ncid1)
 IF (err/=nf90_noerr) WRITE(*,*) "open fail"
 err = nf90_inq_varid(ncid1,"zeta",varid1)
 IF (err/=nf90_noerr) WRITE(*,*) "var_inq fail"
-err = nf90_get_var(ncid1,varid1,zeta,start=(/ 1,1,1,1 /),count=(/ nx,ny,1,1 /))
+err = nf90_get_var(ncid1,varid1,zeta,start=(/ 1,1,ihei,1 /),count=(/ nx,ny,1,1 /))
 IF (err/=nf90_noerr) WRITE(*,*) "read fail"
 o=0
 IF (err/=nf90_noerr) STOP '!! STOP !! READ ERROR'
@@ -132,25 +134,28 @@ implicit none
 integer, intent(in) :: nx, ny
 REAL, intent(in) :: dx, dy
 integer :: i,j,k, im,ip, jm, jp
-real :: dum1,dum2,dum3,dum4, dn, en
+real :: dum1,dum2,dum3,dum4, dn, en, pre_dum1, errmean
 real, dimension(nx,ny), intent(in)    :: psi_ini
 real, dimension(nx,ny), intent(in) :: zeta
 real, dimension(nx,ny), intent(out)   :: psi
+real, dimension(nx,ny)   :: pre_field
 INTEGER, intent(out) :: iter
 
 dn=-1./(dx**2)
 en=-(dn+dn)
 psi=psi_ini
 
+
+pre_field = psi_ini
 dum1=1000
 k=0
 !do while(dum1>1e-9)
-do while(dum1>1e-5 .and. k<=10000)
+do while(dum1>1e-5 .and. k<100000)
 k=k+1
 iter=k
 
 dum1=-1
-dum4=0.95
+dum4=0.9
 
 do j=1, ny
 do i=1, nx
@@ -174,13 +179,15 @@ if(j==ny) jp = 1
 dum2 = zeta(i,j) - (dn*psi(ip,j) + dn*psi(im,j) + dn*psi(i,jm) + dn*psi(i,jp))
 dum3 = psi(i,j)
 psi(i,j) = (1-dum4)*psi(i,j) + dum4/(en+en)*dum2
-dum1 = max(dum1, abs((dum3-psi(i,j))/psi(i,j)))
+!dum1 = max(dum1, abs((dum3-psi(i,j))/psi(i,j)))
+!dum1 = max(dum1, abs((dum3-psi(i,j))/psi(i,j)) )
+dum1 = max(dum1, abs(dum3-psi(i,j)) )
 
 enddo
 enddo
 
+print*, 'counter=',k,', ',dum1
 enddo
-!print '(A,I,F10.3, 2F20.3)', 'counter=',k,dum1,MINVAL(psi),MAXVAL(psi)
 
 end subroutine elliptic
 
