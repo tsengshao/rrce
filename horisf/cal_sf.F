@@ -150,11 +150,11 @@ pre_field = psi_ini
 dum1=1000
 k=0
 !do while(dum1>1e-9)
-do while(dum1>1e-5 .and. k<100000)
+do while(dum1>1e-2 .and. k<100000)
 k=k+1
 iter=k
 
-dum1=-1
+dum1=0
 dum4=0.9
 
 do j=1, ny
@@ -181,13 +181,15 @@ dum3 = psi(i,j)
 psi(i,j) = (1-dum4)*psi(i,j) + dum4/(en+en)*dum2
 !dum1 = max(dum1, abs((dum3-psi(i,j))/psi(i,j)))
 !dum1 = max(dum1, abs((dum3-psi(i,j))/psi(i,j)) )
-dum1 = max(dum1, abs(dum3-psi(i,j)) )
+!dum1 = max(dum1, abs(dum3-psi(i,j)) )
+dum1 = dum1+(dum3-psi(i,j))**2
 
 enddo
 enddo
+dum1 = (dum1/size(psi))**0.5
 
+enddo
 print*, 'counter=',k,', ',dum1
-enddo
 
 end subroutine elliptic
 
