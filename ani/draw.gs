@@ -3,9 +3,9 @@ iexp = subwrd(args,1)
 
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
-expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15'
-dtList='60 60 20 20 20'
-tlastList='2137 2030 3654 2286 2161'
+expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
+dtList='60 60 20 20 20 20'
+tlastList='2137 2030 3654 2286 2161 2138'
 
 
 exp = subwrd(expList, iexp)
@@ -13,8 +13,10 @@ dt  = subwrd(dtList, iexp)
 tlast = subwrd(tlastList, iexp)
 say exp', 'dt', 'tlast
 
-outPath="./fig_black/"exp
+outPath="./fig/"exp
 '! mkdir -p 'outPath
+outPathBlack="./fig_black/"exp
+'! mkdir -p 'outPathBlack
 
 'reinit'
 *'set background 1'
@@ -45,13 +47,13 @@ while(it<=tlast)
 'set clevs 5 10'
 'set ccols 15 12'
 'set clab off'
-'set cthick 5'
+'set cthick 3'
 'd mag(u,v)'
 
 'set clevs 18 33'
 'set ccols 8 2'
 'set clab off'
-'set cthick 7'
+'set cthick 5'
 'd mag(u,v)'
 
 'set string 1 c 10'
@@ -73,17 +75,17 @@ dy=math_format( '%.3f', day)
 'set strsiz 0.2'
 'draw string 8.3125 7.65 'dy'days'
 itt=math_format( '%06.0f', it)
-*'gxprint 'outPath'/cwvws_'itt'.png x2400 y1800 white'
-*'gxprint 'outPath'/cwvws_'itt'.png x2400 y1800'
+'gxprint 'outPath'/cwvws_'itt'.png x2400 y1800 white'
+'gxprint 'outPathBlack'/cwvws_'itt'.png x2400 y1800'
+it = it+1
 
-pull step
-if(step='q'|step='quit'|step='exit');exit;endif
-if(step='');it=it+1;continue;else
-  rc=valnum(step)
-  if(rc=0);step;pull step;endif
-  if(rc=1&step>0);it=step;endif
-endif
-*it = it+1
+** pull step
+** if(step='q'|step='quit'|step='exit');exit;endif
+** if(step='');it=it+1;continue;else
+**   rc=valnum(step)
+**   if(rc=0);step;pull step;endif
+**   if(rc=1&step>0);it=step;endif
+** endif
 endwhile
 
 
