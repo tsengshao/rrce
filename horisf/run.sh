@@ -17,19 +17,13 @@ export I_MPI_FABRICS=shm
 ulimit -s unlimited
 
 ./compile.sh
+
 #mpirun -np 1 ./sf.out ${1}
 #for i in $(seq 2 5);do
-# for i in 5 4 3 2 1;do
-#   echo ${i}
-#   mpirun -np 64 ./sf ${i}
-# done
-
-mpirun -np 2 ./sf 5 &
-mpirun -np 2 ./sf 4 &
-mpirun -np 2 ./sf 3 &
-mpirun -np 2 ./sf 2 &
-mpirun -np 2 ./sf 1 &
-wait
+for i in 5 4 3 2 1;do
+  echo ${i}
+  mpirun -np 10 ./sf ${i}
+done
 
 
 
