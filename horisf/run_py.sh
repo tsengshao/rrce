@@ -3,7 +3,7 @@
 #SBATCH -p all     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 30       # Run a single task
+#SBATCH -n 40       # Run a single task
 #SBATCH -w mogamd  # nodelist
 #SBATCH -o sfpy.%j.out  # output file
 
@@ -11,5 +11,5 @@ source ~/.bashrc
 conda activate py311
 
 for i in $(seq 5 -1 0);do
-  mpirun -np 30 python -u cal_sf_fft.py ${i}
+  mpirun -np 40 python -u cal_sf_fft.py ${i}
 done

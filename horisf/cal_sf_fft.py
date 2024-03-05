@@ -54,7 +54,7 @@ cpuid = comm.Get_rank()
 
 nexp = len(config.expList)
 iexp = int(sys.argv[1])
-height=0 #m
+height=3000 #m
 
 exp = config.expList[iexp]
 nt = config.totalT[iexp]
@@ -66,22 +66,25 @@ nz, ny, nx = thData['zeta'][0].shape
 xc, yc, zc = thData['xc'], thData['yc'], thData['zc']
 dx, dy = np.diff(xc)[0], np.diff(yc)[0]
 rho = vvmLoader.loadRHO()[:-1]
+rhoz = vvmLoader.loadRHOZ()[:-1]
 zz = vvmLoader.loadZZ()[:-1]
-ihei = np.argmin(np.abs(zz-height))
 
-idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
-print(cpuid, idxTS, idxTE, idxTE-idxTS)
-
-outdir=config.dataPath+"/horisf/"+exp+'/'
-os.system('mkdir -p '+outdir)
-
-for it in range(idxTS, idxTE):
-  dyData = vvmLoader.loadDynamic(it)
-  zeta = dyData['zeta'][0,ihei,:,:]
-  sf = calculate_stream_function(zeta, dx, dy)
-  fname = f'{outdir}/hrisf_{zz[ihei]/1e3:0.2f}km_{it:06d}.dat'
-  if cpuid==0: print(it, sf.min(), sf.max(), fname)
-  sf.astype(np.float32).tofile(fname)
+for height in [0, 3000]: # meter
+  ihei = np.argmin(np.abs(zz-height))
+  
+  idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
+  print(cpuid, idxTS, idxTE, idxTE-idxTS)
+  
+  outdir=config.dataPath+"/horisf/"+exp+'/'
+  os.system('mkdir -p '+outdir)
+  
+  for it in range(idxTS, idxTE):
+    dyData = vvmLoader.loadDynamic(it)
+    zeta = dyData['zeta'][0,ihei,:,:]*rhoz[ihei]
+    sf = calculate_stream_function(zeta, dx, dy)
+    fname = f'{outdir}/hrisf_{zz[ihei]/1e3:0.2f}km_{it:06d}.dat'
+    if cpuid==0: print(it, sf.min(), sf.max(), fname)
+    sf.astype(np.float32).tofile(fname)
 
 
 
