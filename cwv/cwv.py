@@ -23,7 +23,7 @@ outdir=config.dataPath+"/cwv/"+exp+'/'
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 thData = vvmLoader.loadThermoDynamic(0)
-nz, ny, nc = thData['qv'][0].shape
+nz, ny, nx = thData['qv'][0].shape
 xc, yc, zc = thData['xc'], thData['yc'], thData['zc']
 rho = vvmLoader.loadRHO()[:-1]
 
