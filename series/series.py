@@ -21,7 +21,8 @@ nt = config.totalT[iexp]
 exp = config.expList[iexp]
 dtime = config.getExpDeltaT(exp)    #minutes
 
-outdir=config.dataPath+"/series/"
+outdir=config.dataPath+f"/series/{exp}/"
+print(outdir)
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 thData = vvmLoader.loadThermoDynamic(0)
@@ -29,20 +30,11 @@ nz, ny, nx = thData['qv'][0].shape
 xc, yc, zc = thData['xc'], thData['yc'], thData['zc']
 rho = vvmLoader.loadRHO()[:-1]
 
+idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
+print(cpuid, idxTS, idxTE, idxTE-idxTS)
+  
 dataWriter = DataWriter(outdir)
-
-cwv_std = np.zeros(nt)
-cwv_mea = np.zeros(nt)
-iwp_std = np.zeros(nt)
-iwp_mea = np.zeros(nt)
-lwp_std = np.zeros(nt)
-lwp_mea = np.zeros(nt)
-dryfrac = np.zeros(nt)
-maxwind = np.zeros(nt)
-maxsf0km = np.zeros(nt)
-maxsf275km = np.zeros(nt)
-
-for it in range(nt):
+for it in range(idxTS, idxTE):
   print(exp, it)
   time = it*dtime #minutes
   dyData = vvmLoader.loadDynamic(it)
@@ -61,29 +53,20 @@ for it in range(nt):
              f'{config.dataPath}/horisf/{exp}/hrisf_2.75km_{it:06d}.dat',\
              np.float32).reshape(ny,nx)
 
-
-  cwv_std[it], cwv_mea[it] = np.std(cwv), np.mean(cwv)
-  lwp_std[it], lwp_mea[it] = np.std(lwp), np.mean(lwp)
-  iwp_std[it], iwp_mea[it] = np.std(iwp), np.mean(iwp)
-  dryfrac[it] = np.sum(cwv<30)/cwv.size
-  maxwind[it] = np.max((u**2+v**2)**0.5)
-  maxsf0km[it] = np.nanmax(hsf0km)
-  maxsf275km[it] = np.nanmax(hsf275km)
-
-dataWriter.toNC(f"series_{exp}.nc", \
-  data=dict(
-    cwv_mean=(["time"], cwv_mea[:]),
-    lwp_mean=(["time"], lwp_mea[:]),
-    iwp_mean=(["time"], iwp_mea[:]),
-    cwv_std=(["time"], cwv_std[:]),
-    lwp_std=(["time"], lwp_std[:]),
-    iwp_std=(["time"], iwp_std[:]),
-    maxwind=(["time"], maxwind[:]),
-    dryfrac=(["time"], dryfrac[:]),
-    sf000_max=(["time"], maxsf0km[:]),
-    sf275_max=(["time"], maxsf275km[:]),
-  ),
-  coords=dict(
-    time=np.arange(nt),
+  dataWriter.toNC(f"series_{it:06d}.nc", \
+    data=dict(
+      cwv_mean  = (["time"], [np.mean(cwv)]),
+      lwp_mean  = (["time"], [np.mean(lwp)]),
+      iwp_mean  = (["time"], [np.mean(iwp)]),
+      cwv_std   = (["time"], [np.std(cwv)]),
+      lwp_std   = (["time"], [np.std(lwp)]),
+      iwp_std   = (["time"], [np.std(iwp)]),
+      maxwind   = (["time"], [np.max((u**2+v**2)**0.5)]),
+      dryfrac   = (["time"], [np.sum(cwv<30)/cwv.size]),
+      sf000_max = (["time"], [np.nanmax(hsf0km)]),
+      sf275_max = (["time"], [np.nanmax(hsf275km)]),
+    ),
+    coords=dict(
+      time=[it*dtime],
+    )
   )
-)

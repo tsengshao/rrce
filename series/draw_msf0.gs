@@ -33,7 +33,9 @@ idxTE=math_format('%.0f', TE*24*60/dt+1)
 'set ylopts 1 10 0.2'
 'set grads off'
 'set timelab off'
-'set vrange -1 80'
+'set vrange 0 40'
+'set ylabs 0|10|20|30|40'
+*'set ylint 5'
 i=1
 while(i<=nexp)
   if ( i>1 )
@@ -42,7 +44,7 @@ while(i<=nexp)
   'set cmark 0'
   'set ccolor 'subwrd(lcList,i)
   'set cthick 55'
-  'd 100*dryf.'i''
+  'd msf0.'i'*1e-5'
   i=i+1
 endwhile
 'on.gs'
@@ -59,14 +61,14 @@ endwhile
 
 'set string 1 c 10 90'
 'set strsiz 0.17'
-'draw string 0.4 4.25 [%]'
+'draw string 0.4 4.25 x10`a5`n [kg s`a-1`nm`a-1`n]'
 
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 *'draw string 1.2 8 'exp
-'draw string 1.2 7.65 dry frac. [cwv<30mm]'
+'draw string 1.2 7.65 maximum stream function @surface'
 
-'gxprint 'outPath'/dryfrac.png x1600 y1200'
-'gxprint 'outPath'/white/dryfrac.png x1600 y1200 white'
+'gxprint 'outPath'/sf0_max.png x1600 y1200'
+'gxprint 'outPath'/white/sf0_max.png x1600 y1200 white'
 
 exit

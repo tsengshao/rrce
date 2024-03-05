@@ -1,12 +1,12 @@
 function main(args)
 
-nexp=5
+nexp=6
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
-expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15'
-dtList='60 60 20 20 20'
-tlastList='2137 2030 3654 2286 2161'
-lcList='11 4 7 8 30'
+expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
+dtList='60 60 20 20 20 20'
+tlastList='2137 2030 3654 2286 2161 2138'
+lcList='11 4 7 8 30 14'
 'set rgb 30 255 85 33'
 'set lwid 55 5'
 
@@ -49,7 +49,7 @@ endwhile
 'on.gs'
 
 'set cthick 55'
-'legend tr 'nexp' 'expList' 'lcList''
+'legend bl 'nexp' 'expList' 'lcList''
 
 *X Limits = 1.2 to 10.5
 *Y Limits = 1 to 7.5
