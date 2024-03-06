@@ -1,13 +1,37 @@
 function main(args)
 iexp = subwrd(args,1)
 
+**default 
+te='none'
+ts='none'
+mode='SAVEFIG'
+*mode='PAUSE'
+**default
+
+i = 2
+while( 1 )
+  arg = subwrd( args, i )
+  i=i+1
+  if( arg = '' )
+    break
+  endif
+
+  while( 1 )
+    if( arg = '-te' ) ; te=subwrd(args,i) ; i=i+1 ; break ; endif
+    if( arg = '-ts' ) ; ts=subwrd(args,i) ; i=i+1 ; break ; endif
+    if( arg = '-mode' ) ; mode=subwrd(args,i) ; i=i+1 ; break ; endif
+    say 'syntax error: 'arg
+    return
+  endwhile
+endwhile
+
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
 expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
-dtList='60 60 20 20 20 20'
+dtList='60 60 20 20 20 20 20'
 tlastList='2137 2030 3654 2286 2161 2138'
 
-sfCtlList='RCE_300K_3km RCE_300K_3km RRCE_3km RRCE_3km RRCE_3km'
+sfCtlList='RCE_300K_3km RCE_300K_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km'
 enList='1 2 1 2 3 4'
 
 exp = subwrd(expList, iexp)
@@ -17,6 +41,10 @@ sfctl = subwrd(sfCtlList, iexp)
 sfen  = subwrd(enList, iexp)
 say exp', 'dt', 'tlast
 
+if (ts='none'); ts=1; endif
+if (te='none'); te=tlast; endif
+if (te>tlast);  te=tlast; endif
+
 drawsf="TRUE"
 drawws="FALSE"
 
@@ -24,6 +52,21 @@ outPath="./fig/"exp
 '! mkdir -p 'outPath
 outPathBlack="./fig_black/"exp
 '! mkdir -p 'outPathBlack
+
+******** write the status *******
+say ''
+say '**********'
+say 'drawing mode ... 'mode
+say 'iexp='iexp', exp='exp', dt='dt
+say 'ts='ts', te='te
+say 'SFunc: 'drawsf', 'sfctl', en='sfen
+say 'WS   : 'drawws
+
+say 'outpath='outPath
+say 'outPathBlack='outPathBlack
+say '**********'
+say ''
+********************************
 
 'reinit'
 *'set background 1'
@@ -33,8 +76,10 @@ outPathBlack="./fig_black/"exp
 'open 'datPath'/wp/'exp'.ctl'
 'open 'datPath'/horisf/'sfctl'_000.ctl'
 
-it = 1
-while(it<=tlast)
+it = ts
+*while(it<=tlast)
+while(it<=te)
+say 't='it''
 'c'
 
 'set parea 2.58333 8.41667 0.8 7.55'
@@ -111,19 +156,24 @@ if ( drawsf="TRUE" ); title=title' / SF@Suf.[kg s`a-1`nm`a-1`n]';endif
 'set string 1 br 10 0'
 'set strsiz 0.2'
 'draw string 8.3125 8 'dy'days'
-itt=math_format( '%06.0f', it)
-'gxprint 'outPath'/cwvsf_'itt'.png x2400 y1800 white'
-'gxprint 'outPathBlack'/cwvsf_'itt'.png x2400 y1800'
-it = it+1
 
-** pull step
-** if(step='q'|step='quit'|step='exit');exit;endif
-** if(step='');it=it+1;continue;else
-**   rc=valnum(step)
-**   if(rc=0);step;pull step;endif
-**   if(rc=1&step>0);it=step;endif
-** endif
+if ( mode="SAVEFIG" )
+  itt=math_format( '%06.0f', it)
+  'gxprint 'outPath'/cwvsf_'itt'.png x2400 y1800 white'
+  'gxprint 'outPathBlack'/cwvsf_'itt'.png x2400 y1800'
+  it = it+1
+endif
+
+if ( mode="PAUSE")
+  te=tlast
+  pull step
+  if(step='q'|step='quit'|step='exit');exit;endif
+  if(step='');it=it+1;continue;else
+    rc=valnum(step)
+    if(rc=0);step;pull step;endif
+    if(rc=1&step>0);it=step;endif
+  endif
+endif
 
 endwhile
-
 

@@ -2,7 +2,7 @@
 #SBATCH -J draw     # Job name
 #SBATCH -p all     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
-#SBATCH -c 6        # cores per MPI rank
+#SBATCH -c 1        # cores per MPI rank
 #SBATCH -n 1       # Run a single task
 #SBATCH -w mogamd  # nodelist
 #SBATCH -o draw.%j.out  # output file
@@ -11,10 +11,12 @@
 source ~/.bashrc
 
 grads -blcx "run draw.gs 6" &
-grads -blcx "run draw.gs 1" &
-grads -blcx "run draw.gs 2" &
-grads -blcx "run draw.gs 3" &
-grads -blcx "run draw.gs 4" &
-grads -blcx "run draw.gs 5" &
+#grads -blcx "run draw.gs 1" &
+#grads -blcx "run draw.gs 2" &
+#grads -blcx "run draw.gs 3" &
+#grads -blcx "run draw.gs 4" &
+#grads -blcx "run draw.gs 5" &
+grads -blcx "run draw.gs 5 -ts 1 -te 2100"
 
 wait
+
