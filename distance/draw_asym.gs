@@ -127,7 +127,7 @@ endif
 
 'set rgb 50 240 145 255'
 'set ccolor 50'
-'d tang(z=1)'
+'d maskout(tang(z=1), sample>0)'
 'set string 50 l 10 0'
 'draw string 9.6 1   -10'
 'draw string 9.6 1.5 0'
