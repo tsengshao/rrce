@@ -36,6 +36,8 @@ sfCtlList='RCE_300K_3km RCE_300K_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km'
 enList='1 2 1 2 3 4'
 
 drawradi="TRUE"
+drawqc="FALSE"
+drawqv="TRUE"
 exp = subwrd(expList, iexp)
 dt  = subwrd(dtList, iexp)
 tlast = subwrd(tlastList, iexp)
@@ -57,6 +59,8 @@ say 'drawing mode ... 'mode
 say 'iexp='iexp', exp='exp', dt='dt
 say 'ts='ts', te='te
 say 'radial   : 'drawradi
+say 'qc   : 'drawqc
+say 'qv   : 'drawqv
 
 say 'outpath='outPath
 say 'outPathBlack='outPathBlack
@@ -82,34 +86,60 @@ say 't='it''
 'set timelab off'
 'set mpdraw off'
 
-'set x 1 60'
+'set x 1 100'
 'set lev 0 16'
-'set xlabs ||||||'
+'set xlabs ||||||||||'
 'set ylabs 0|4|8|12|16'
 
 'set t 'it
-if ( drawradi="TRUE" )
-  'color -15 15 1 -kind crimson->orange->white->blueviolet->darkviolet -gxout shaded'
-  'set clab off'
-  'd radi'
-  'xcbar 9.8 10 3.5 7.5 -ft 10 -fs 5' 
+if (drawqv="TRUE")
+  'color -5 5 1 -kind darkviolet->blueviolet->white->orange->crimson -gxout shaded'
+  'd (qv-ave(qv,x=1,x=160))*1e3)'
+  'xcbar 9.8 10 3.5 7.5 -ft 10' 
 endif
-*'color -levs 0 0.02 0.04 0.06 0.08 0.1 0.2 0.3 -kind (0,0,0,0)-(0)->(150,150,150)->white'
-'set gxout contour'
-'set clevs 0 0.02 0.04 0.06 0.08 0.1 0.15 0.2 0.3 1'
-'set cthick 8'
-'set rgb 40 0 0 0'
-'set ccolor 40'
-' d qc*1e3'
+
+if ( drawradi="TRUE" )
+*   'color -15 15 1 -kind crimson->orange->white->blueviolet->darkviolet -gxout shaded'
+*   'set clab off'
+*   'd radi'
+*   'xcbar 9.8 10 3.5 7.5 -ft 10 -fs 5' 
+
+  'set gxout contour'
+  'set cthick 5'
+
+  'set cint 1'
+  'set cmin 0'
+  'set cmax 80'
+  'set clab off'
+  'set rgb 40 128 128 128'
+  'set ccolor 40'
+  'd radi'
+
+  'set cint 1'
+  'set cmin -80'
+  'set cmax 0'
+  'set rgb 40 0 0 0'
+  'set ccolor 40'
+  'd radi'
+endif
+
+if (drawqc="TRUE")
+  'set gxout contour'
+  'set clevs 0 0.02 0.04 0.06 0.08 0.1 0.15 0.2 0.3 1'
+  'set cthick 8'
+  'set rgb 40 0 0 0'
+  'set ccolor 40'
+  ' d qc*1e3'
+endif
 
 
-'set string 1 tr 10 90'
+'set string 1 tc 10 90'
 'set strsiz 0.17'
-'draw string 0.25 4.5 [km]'
+'draw string 0.25 5.25 [km]'
 
 *------ draw lower pannel
 'set parea 1 9.5 1 3'
-'set xlabs 0|50|100|150|200|250|300'
+'set xlabs 0|50|100|150|200|250|300|350|400|450|500'
 'set vrange 10 90'
 'set ylabs 10|30|50|70|90'
 'set cmark 0'
@@ -148,13 +178,19 @@ endif
 'set strsiz 0.17'
 'draw string 5.5 0.5 [km]'
 
+
+'set parea 1 9.5 3 7.5'
+'set lev 0 16'
+
 day=(it-1)*dt/60/24
 dy=math_format( '%.3f', day)
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 'draw string 1 8 'exp
-title='qc [g/kg]'
+title='anomaly_qv [g/kg]'
 if ( drawradi="TRUE" ); title=title' / radial wind [m/s]';endif
+if ( drawqc="TRUE"); title=title' / qc [g/kg]'; endif
+*if ( drawqv="TRUE"); title=title' / anomaly_qv [g/kg]'; endif
 
 'draw string 1 7.65 'title
 
@@ -164,8 +200,8 @@ if ( drawradi="TRUE" ); title=title' / radial wind [m/s]';endif
 
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
-  'gxprint 'outPath'/whi_axsym_radi_'itt'.png x2400 y1800 white'
-  'gxprint 'outPath'/bla_axsym_radi_'itt'.png x2400 y1800'
+  'gxprint 'outPath'/whi_axsym_qv_'itt'.png x2400 y1800 white'
+  'gxprint 'outPath'/bla_axsym_qv_'itt'.png x2400 y1800'
   it = it+1
 endif
 
