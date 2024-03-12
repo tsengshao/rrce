@@ -1,11 +1,12 @@
 function main(args)
 iexp = subwrd(args,1)
+if (iexp = ''); iexp=4; endif
 
 **default 
 te='none'
 ts='none'
-mode='SAVEFIG'
-*mode='PAUSE'
+*mode='SAVEFIG'
+mode='PAUSE'
 **default
 
 i = 2
@@ -46,12 +47,11 @@ if (te='none'); te=tlast; endif
 if (te>tlast);  te=tlast; endif
 
 drawsf="TRUE"
+drawdis="TRUE"
 drawws="FALSE"
 
 outPath="./fig/"exp
 '! mkdir -p 'outPath
-outPathBlack="./fig_black/"exp
-'! mkdir -p 'outPathBlack
 
 ******** write the status *******
 say ''
@@ -61,9 +61,9 @@ say 'iexp='iexp', exp='exp', dt='dt
 say 'ts='ts', te='te
 say 'SFunc: 'drawsf', 'sfctl', en='sfen
 say 'WS   : 'drawws
+say 'Dist : 'drawdis
 
 say 'outpath='outPath
-say 'outPathBlack='outPathBlack
 say '**********'
 say ''
 ********************************
@@ -72,9 +72,9 @@ say ''
 *'set background 1'
 'c'
 'open 'vvmPath'/'exp'/gs_ctl_files/Dynamic.ctl'
-*'open 'datPath'/cwv/'exp'.ctl'
 'open 'datPath'/wp/'exp'.ctl'
 'open 'datPath'/horisf/'sfctl'_000.ctl'
+'open 'datPath'/distance/'exp'.ctl'
 
 it = ts
 *while(it<=tlast)
@@ -96,26 +96,52 @@ say 't='it''
 'd cwv.2(z=1)'
 'xcbar 8.6 8.8 0.8 7.55 -ft 10 -fs 5'
 
-if ( drawsf="TRUE" )
+if ( drawdis="TRUE" )
   'set gxout contour'
-  'set clevs 1e5 1e6'
-  'set ccols 12 2'
-  'set cthick 5'
+  'set clevs 100 200 300 400 500 600'
+  'set rgb 40 0 0 0'
+  'set ccolor 40'
   'set clab off'
-  'd hsf.3(e='sfen')'
-  
-  'set rgb 70 100 100 100'
-  'set clevs 0 1e4'
-  'set ccols 15 70'
-  'set cthick 5'
-  'set clab off'
-  'd hsf.3(e='sfen')'
-  
-  'set clevs 2.5e5'
-  'set ccols 0'
   'set cthick 10'
+  'd dis.4'
+  
+  'set clevs 3'
+  'set rgb 40 120 120 120'
+  'set ccolor 40'
   'set clab off'
-  'd hsf.3(e='sfen')'
+  'set lwid 50 20'
+  'set cthick 50'
+  'd dis.4'
+endif
+
+if ( drawsf="TRUE" )
+**   'set gxout contour'
+**   'set clevs 1e5 1e6'
+**   'set ccols 12 2'
+**   'set cthick 5'
+**   'set clab off'
+**   'd hsf.3(e='sfen')'
+**   
+**   'set rgb 70 100 100 100'
+**   'set clevs 0 1e4'
+**   'set ccols 15 70'
+**   'set cthick 5'
+**   'set clab off'
+**   'd hsf.3(e='sfen')'
+**   
+**   'set clevs 2.5e5'
+**   'set ccols 0'
+**   'set cthick 10'
+**   'set clab off'
+**   'd hsf.3(e='sfen')'
+  'set gxout contour'
+  'set clevs 0 1 5 10 15 20 25 30 35 40 45 50'
+  'set rgb 50 120 120 120'
+  'set ccolor 50'
+  'set lwid 50 5'
+  'set cthick 50'
+  'set clab off'
+  'd hsf.3(e='sfen')*1e-5'
 endif
 
 
@@ -159,8 +185,8 @@ if ( drawsf="TRUE" ); title=title' / SF@Suf.[kg s`a-1`nm`a-1`n]';endif
 
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
-  'gxprint 'outPath'/cwvsf_'itt'.png x2400 y1800 white'
-  'gxprint 'outPathBlack'/cwvsf_'itt'.png x2400 y1800'
+  'gxprint 'outPath'/whi_cwvsf_'itt'.png x2400 y1800 white'
+  'gxprint 'outPath'/bla_cwvsf_'itt'.png x2400 y1800'
   it = it+1
 endif
 
