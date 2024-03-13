@@ -28,12 +28,12 @@ endwhile
 
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
-expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
-dtList='60 60 20 20 20 20 20'
-tlastList='2137 2030 3654 2286 2161 2138'
+expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f05 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
+dtList='60 60 20 20 20 20 20 20'
+tlastList='2137 2030 3654 2765 2286 2161 2138'
 
-sfCtlList='RCE_300K_3km RCE_300K_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km'
-enList='1 2 1 2 3 4'
+sfCtlList='RCE_300K_3km RCE_300K_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km'
+enList='1 2 1 2 3 4 5'
 
 drawradi="TRUE"
 drawqc="FALSE"

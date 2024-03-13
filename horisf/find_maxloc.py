@@ -15,7 +15,8 @@ cpuid = comm.Get_rank()
 nexp = len(config.expList)
 #iexp = int(sys.argv[1])
 
-for iexp in range(nexp):
+# for iexp in range(nexp):
+for iexp in [3]:
   nt = config.totalT[iexp]
   exp = config.expList[iexp]
   dtime = config.getExpDeltaT(exp)    #minutes

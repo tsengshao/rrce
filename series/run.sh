@@ -10,7 +10,8 @@
 
 source ~/.bashrc
 
-for i in $(seq 0 5);do
+#for i in $(seq 0 5);do
+for i in 3;do
 mpirun -np 20 python -u series.py ${i}
 done
 

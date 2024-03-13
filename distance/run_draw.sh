@@ -3,14 +3,15 @@
 #SBATCH -p all     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 60      # Run a single task
+#SBATCH -n 10      # Run a single task
 #SBATCH -w mogamd  # nodelist
 #SBATCH -o draw.%j.out  # output file
 
 
 source ~/.bashrc
 
-for i in $(seq 1 6);do
+#for i in $(seq 1 6);do
+for i in 4;do
 args="${i} -mode SAVEFIG"
 grads -blcx "run draw_asym.gs ${args} -ts 1    -te 200" &
 grads -blcx "run draw_asym.gs ${args} -ts 201  -te 400" &

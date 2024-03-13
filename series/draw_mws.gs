@@ -1,12 +1,12 @@
 function main(args)
 
-nexp=6
+nexp=7
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
-expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
-dtList='60 60 20 20 20 20'
-tlastList='2137 2030 3654 2286 2161 2138'
-lcList='11 4 7 8 30 14'
+expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f05 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
+dtList='60 60 20 20 20 20 20'
+tlastList='2137 2030 3654 2765 2286 2161 2138'
+lcList='11 4 1 7 8 30 14'
 'set rgb 30 255 85 33'
 'set lwid 55 5'
 'set lwid 56 0.25'

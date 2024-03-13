@@ -10,7 +10,8 @@
 
 source ~/.bashrc
 
-for i in $(seq 1 6);do
+#for i in $(seq 1 6);do
+for i in 4;do
 args="${i} -mode SAVEFIG"
 grads -blcx "run draw.gs ${args} -ts 1    -te 200" &
 grads -blcx "run draw.gs ${args} -ts 201  -te 400" &
