@@ -1,7 +1,7 @@
 #!/bin/bash
 
 expList="RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15 RCE_300K_3km_f0 RCE_300K_3km_f05"
-expList="RRCE_3km_f05"
+expList="RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_30"
 for exp in ${expList};do
 
   rundir="/data/C.shaoyu/rrce/vvm/${exp}"
