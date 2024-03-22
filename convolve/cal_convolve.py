@@ -75,7 +75,6 @@ dataWriter = DataWriter(outdir)
 
 kernel=getGaussianWeight(nx, std=klength/6/3)
 
-idxTS, idxTE = 960, 961
 for it in range(idxTS, idxTE):
   print(it)
   dyData = vvmLoader.loadDynamic(it)
