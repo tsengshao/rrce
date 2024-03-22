@@ -60,6 +60,9 @@ dx, dy = np.diff(xc)[0], np.diff(yc)[0]
 rho = vvmLoader.loadRHO()[:-1]
 rhoz = vvmLoader.loadRHOZ()[:-1]
 zz = vvmLoader.loadZZ()[:-1]
+iuhei=np.argmin(np.abs(zz-15000))+1
+zz = zz[:iuhei]
+zc = zc[:iuhei]
 
 klength=100 #km
 
@@ -72,14 +75,15 @@ dataWriter = DataWriter(outdir)
 
 kernel=getGaussianWeight(nx, std=klength/6/3)
 
+idxTS, idxTE = 960, 961
 for it in range(idxTS, idxTE):
   print(it)
   dyData = vvmLoader.loadDynamic(it)
-  zeta = getGaussianConvolve(dyData['zeta'][0,:,:], kernel)
-  u = getGaussianConvolve(dyData['u'][0,:,:], kernel)
-  v = getGaussianConvolve(dyData['v'][0,:,:], kernel)
+  zeta = getGaussianConvolve(dyData['zeta'][0,:iuhei,:,:], kernel)
+  u = getGaussianConvolve(dyData['u'][0,:iuhei,:,:], kernel)
+  v = getGaussianConvolve(dyData['v'][0,:iuhei,:,:], kernel)
   
-  dim4d=['time', 'zc', 'yc', 'xc']
+  dim4d=['time', 'zz', 'yc', 'xc']
   dataWriter.toNC(f"conv-{it:06d}.nc", \
     data=dict(
       zeta  =(dim4d, zeta[np.newaxis,:,:,:], {'units':'s-1'}),\
@@ -88,7 +92,7 @@ for it in range(idxTS, idxTE):
     ),
     coords=dict(
       time=np.ones(1),
-      zc=(['zc'], zc),
+      zz=(['zz'], zz),
       yc=(['yc'], yc),
       xc=(['xc'], xc),
     )
