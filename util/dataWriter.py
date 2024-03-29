@@ -14,7 +14,7 @@ class DataWriter:
         else:
             print("Path exists")
 
-    def toNC(self, fname, data, coords, varName=None, dims=None):
+    def toNC(self, fname, data, coords, attrs=None, varName=None, dims=None):
         if dims != None and varName != None:
             xrData = xr.DataArray(data, 
                                   coords = coords,
@@ -22,7 +22,8 @@ class DataWriter:
                                   name = varName)
         else:
             xrData = xr.Dataset(data, 
-                                coords = coords)
+                                coords = coords,
+                                attrs = attrs)
         xrData.to_netcdf(self.outputPath + fname)
         
     def toNPY(self, fname, data):
