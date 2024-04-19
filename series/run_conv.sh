@@ -1,16 +1,19 @@
 #!/usr/bin/bash
-#SBATCH -J sfpy     # Job name
+#SBATCH -J series     # Job name
 #SBATCH -p all     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 10       # Run a single task
+#SBATCH -n 20       # Run a single task
 #SBATCH -w mogamd  # nodelist
-#SBATCH -o sfpy.%j.out  # output file
+#SBATCH -o series.%j.out  # output file
+
 
 source ~/.bashrc
 conda activate py311
 
-#for i in $(seq 5 -1 0);do
-for i in 0 2; do
-  mpirun -np 10 python -u cal_sf_fft.py ${i}
+#for i in $(seq 0 5);do
+for i in 0 1 2 3;do
+mpirun -np 20 python -u series_conv.py ${i}
 done
+
+wait

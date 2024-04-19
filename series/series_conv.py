@@ -35,7 +35,6 @@ idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
 print(cpuid, idxTS, idxTE, idxTE-idxTS)
   
 dataWriter = DataWriter(outdir)
-idxTS, idxTE = 960, 961
 for it in range(idxTS, idxTE):
   print(exp, it)
   time = it*dtime #minutes
