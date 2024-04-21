@@ -7,6 +7,9 @@ te='none'
 ts='none'
 *mode='SAVEFIG'
 mode='PAUSE'
+type='cwv'
+type='czeta'
+*type=cwv, sf, ws, czeta
 **default
 
 i = 2
@@ -21,6 +24,7 @@ while( 1 )
     if( arg = '-te' ) ; te=subwrd(args,i) ; i=i+1 ; break ; endif
     if( arg = '-ts' ) ; ts=subwrd(args,i) ; i=i+1 ; break ; endif
     if( arg = '-mode' ) ; mode=subwrd(args,i) ; i=i+1 ; break ; endif
+    if( arg = '-type' ) ; type=subwrd(args,i) ; i=i+1 ; break ; endif
     say 'syntax error: 'arg
     return
   endwhile
@@ -28,29 +32,45 @@ endwhile
 
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
-expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f05 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
-dtList='60 60 20 20 20 20 20'
-tlastList='2137 2030 3654 2765 2286 2161 2138'
 
-sfCtlList='RCE_300K_3km RCE_300K_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km'
-enList='1 2 1 2 3 4 5'
+** expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f05 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
+** dtList='60 60 20 20 20 20 20'
+** tlastList='2137 2030 3654 2765 2286 2161 2138'
+** sfCtlList='RCE_300K_3km RCE_300K_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km'
+** enList='1 2 1 2 3 4 5'
+
+expList='RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_25 RRCE_3km_f00_30'
+dtList='20 20 20 20'
+tlastList='1441 1441 1441 1441'
+
 
 exp = subwrd(expList, iexp)
 dt  = subwrd(dtList, iexp)
 tlast = subwrd(tlastList, iexp)
 sfctl = subwrd(sfCtlList, iexp)
 sfen  = subwrd(enList, iexp)
-say exp', 'dt', 'tlast
+say exp', 'dt', 'tlast', 'type
 
 if (ts='none'); ts=1; endif
 if (te='none'); te=tlast; endif
 if (te>tlast);  te=tlast; endif
 
-drawsf="TRUE"
-drawdis="TRUE"
+drawsf="FALSE"
+drawdis="FALSE"
 drawws="FALSE"
+drawczeta="FALSE"
+if ( type = 'ws' )
+  drawws="TRUE"
+endif
+if ( type = 'sf' )
+  drawsf="TRUE"
+  drawdis="TRUE"
+endif
+if ( type = 'czeta' )
+  drawczeta="TRUE"
+endif
 
-outPath="./fig/"exp
+outPath="./fig_"type"/"exp
 '! mkdir -p 'outPath
 
 ******** write the status *******
@@ -62,6 +82,7 @@ say 'ts='ts', te='te
 say 'SFunc: 'drawsf', 'sfctl', en='sfen
 say 'WS   : 'drawws
 say 'Dist : 'drawdis
+say 'Czeta: 'drawczeta
 
 say 'outpath='outPath
 say '**********'
@@ -73,8 +94,13 @@ say ''
 'c'
 'open 'vvmPath'/'exp'/gs_ctl_files/Dynamic.ctl'
 'open 'datPath'/wp/'exp'.ctl'
-'open 'datPath'/horisf/'sfctl'_000.ctl'
-'open 'datPath'/distance/'exp'.ctl'
+if ( type='sf')
+  'open 'datPath'/horisf/'sfctl'_000.ctl'
+  'open 'datPath'/distance/'exp'.ctl'
+endif
+if ( type='czeta' )
+  'open 'datPath'/convolve/'exp'/convolve.ctl'
+endif
 
 it = ts
 *while(it<=tlast)
@@ -160,6 +186,31 @@ if ( drawws = "TRUE" )
   'd mag(u,v)'
 endif
 
+if ( drawczeta = "TRUE" )
+  'set gxout contour'
+  'set clevs 5e-5'
+  'set ccolor 8'
+  'set cthick 5'
+  'set clab off'
+  'd zeta.3(z=12)'
+
+  'set cmin 1e-4'
+  'set cmax 1e-3'
+  'set cint 1e-4'
+  'set ccolor 2'
+  'set cthick 8'
+  'set clab off'
+  'd zeta.3(z=12)'
+
+  'set cmin 1e-3'
+  'set cmax 1e2'
+  'set cint 1e-4'
+  'set ccolor 9'
+  'set cthick 8'
+  'set clab off'
+  'd zeta.3(z=12)'
+endif
+
 'set string 1 c 10'
 'set strsiz 0.17'
 'draw string 5.5 0.2 [km]'
@@ -176,6 +227,7 @@ dy=math_format( '%.3f', day)
 title='CWV[mm]'
 if ( drawws="TRUE" ); title=title' / WS[ms`a-1`n]';endif
 if ( drawsf="TRUE" ); title=title' / SF@Suf.[kg s`a-1`nm`a-1`n]';endif
+if ( drawczeta="TRUE" ); title=title' / convZeta@1.5km [s`a-2`n]';endif
 
 'draw string 2.6875 7.65 'title
 
@@ -185,8 +237,8 @@ if ( drawsf="TRUE" ); title=title' / SF@Suf.[kg s`a-1`nm`a-1`n]';endif
 
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
-  'gxprint 'outPath'/whi_cwvsf_'itt'.png x2400 y1800 white'
-  'gxprint 'outPath'/bla_cwvsf_'itt'.png x2400 y1800'
+  'gxprint 'outPath'/whi_cwv'type'_'itt'.png x2400 y1800 white'
+  'gxprint 'outPath'/bla_cwv'type'_'itt'.png x2400 y1800'
   it = it+1
 endif
 
