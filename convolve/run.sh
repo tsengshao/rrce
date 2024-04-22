@@ -12,7 +12,7 @@ source ~/.bashrc
 conda activate py311
 
 #for i in $(seq 7 9);do
-for i in 2;do
+for i in 4;do
 echo ${i}
 mpirun -np 50 python -u cal_convolve.py ${i}
 done
