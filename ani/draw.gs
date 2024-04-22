@@ -59,6 +59,7 @@ drawsf="FALSE"
 drawdis="FALSE"
 drawws="FALSE"
 drawczeta="FALSE"
+drawarr="FALSE"
 if ( type = 'ws' )
   drawws="TRUE"
 endif
@@ -68,6 +69,7 @@ if ( type = 'sf' )
 endif
 if ( type = 'czeta' )
   drawczeta="TRUE"
+  drawarr="TRUE"
 endif
 
 outPath="./fig_"type"/"exp
@@ -121,6 +123,11 @@ say 't='it''
 'color 10 60 2 -kind white->wheat->darkcyan->darkblue->aqua -gxout grfill'
 'd cwv.2(z=1)'
 'xcbar 8.6 8.8 0.8 7.55 -ft 10 -fs 5'
+
+'set string 1 bl 10 0'
+'set strsiz 0.2'
+'draw string 8.55 8.0 CWV'
+'draw string 8.55 7.65 [mm]'
 
 if ( drawdis="TRUE" )
   'set gxout contour'
@@ -186,11 +193,25 @@ if ( drawws = "TRUE" )
   'd mag(u,v)'
 endif
 
+if ( drawarr = "TRUE" )
+  'set gxout vector'
+  'set arrscl 0.5 20'
+  'set arrowhead 0.1'
+  'set cthick 8'
+  'set rgb 80 200 200 200'
+  'set ccolor 80'
+  iz=12
+  magv=3
+  'define vv=maskout(v(z='iz'), mag(u(z='iz'),v(z='iz'))>='magv')'
+  'd skip(u(z='iz'),10);vv'
+endif
+
 if ( drawczeta = "TRUE" )
+  'set lwid 50 3'
   'set gxout contour'
-  'set clevs 5e-5'
+  'set clevs 2.5e-5 5e-5'
   'set ccolor 8'
-  'set cthick 5'
+  'set cthick 50'
   'set clab off'
   'd zeta.3(z=12)'
 
@@ -198,7 +219,7 @@ if ( drawczeta = "TRUE" )
   'set cmax 1e-3'
   'set cint 1e-4'
   'set ccolor 2'
-  'set cthick 8'
+  'set cthick 50'
   'set clab off'
   'd zeta.3(z=12)'
 
@@ -206,7 +227,7 @@ if ( drawczeta = "TRUE" )
   'set cmax 1e2'
   'set cint 1e-4'
   'set ccolor 9'
-  'set cthick 8'
+  'set cthick 50'
   'set clab off'
   'd zeta.3(z=12)'
 endif
@@ -224,10 +245,23 @@ dy=math_format( '%.3f', day)
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 'draw string 2.6875 8 'exp
-title='CWV[mm]'
-if ( drawws="TRUE" ); title=title' / WS[ms`a-1`n]';endif
-if ( drawsf="TRUE" ); title=title' / SF@Suf.[kg s`a-1`nm`a-1`n]';endif
-if ( drawczeta="TRUE" ); title=title' / convZeta@1.5km [s`a-2`n]';endif
+itit=1
+if ( drawws="TRUE" ); title.itit='WS[ms`a-1`n]'; itit=itit+1;endif
+if ( drawsf="TRUE" ); title.itit='SF@Suf.[kg s`a-1`nm`a-1`n]'; itit=itit+1;endif
+if ( drawczeta="TRUE" ); title.itit='cZeta@1.5km [s`a-1`n]'; itit=itit+1;endif
+if ( drawarr="TRUE" ); title.itit='Wind@1.5km [ms`a-1`n]'; itit=itit+1;endif
+itit = itit - 1
+
+title=title.itit
+itit = itit - 1
+while(itit>=1)
+title = title' / 'title.itit
+itit = itit - 1
+endwhile
+
+if ( type = "czeta" )
+title = 'conZeta[s`a-1`n]/Wind[ms`a-1`n] @1.5km'
+endif
 
 'draw string 2.6875 7.65 'title
 
