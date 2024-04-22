@@ -23,3 +23,5 @@ grads -blcx "run draw.gs ${args} -ts 1201 -te 1400" &
 grads -blcx "run draw.gs ${args} -ts 1401 -te 1441" &
 done
 wait
+
+bash make.sh

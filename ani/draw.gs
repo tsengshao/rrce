@@ -120,7 +120,10 @@ say 't='it''
 'set ylabs 0|288|576|864|1152'
 
 'set t 'it
-'color 10 60 2 -kind white->wheat->darkcyan->darkblue->aqua -gxout grfill'
+*'color 10 60 2 -kind white->wheat->darkcyan->darkblue->aqua -gxout grfill'
+'color 10 60 2 -kind white->wheat->darkcyan->darkblue->(4,130,191) -gxout grfill'
+lnum=(60-10)/2+2+15
+'set rgb 'lnum' 0 250 250'
 'd cwv.2(z=1)'
 'xcbar 8.6 8.8 0.8 7.55 -ft 10 -fs 5'
 
@@ -198,7 +201,7 @@ if ( drawarr = "TRUE" )
   'set arrscl 0.5 20'
   'set arrowhead 0.1'
   'set cthick 8'
-  'set rgb 80 200 200 200'
+  'set rgb 80 180 180 180'
   'set ccolor 80'
   iz=12
   magv=3
@@ -207,15 +210,24 @@ if ( drawarr = "TRUE" )
 endif
 
 if ( drawczeta = "TRUE" )
+*  'set lwid 50 2'
+*  'set gxout contour'
+*  'set clevs 5e-5'
+*  'set rgb 20 200 200 200'
+*  'set ccolor 20'
+*  'set cthick 10'
+*  'set clab off'
+*  'd zeta.3(z=12)'
+
   'set lwid 50 3'
   'set gxout contour'
-  'set clevs 2.5e-5 5e-5'
+  'set clevs 1e-4 2e-4 3e-4'
   'set ccolor 8'
   'set cthick 50'
   'set clab off'
   'd zeta.3(z=12)'
 
-  'set cmin 1e-4'
+  'set cmin 4e-4'
   'set cmax 1e-3'
   'set cint 1e-4'
   'set ccolor 2'
