@@ -31,14 +31,14 @@ def conditional_CWV3d(cwvbins, cwv2d, data, data2d):
   return output, output2d, nsample
 
 
-@numba.njit(parallel=True)
+@numba.njit()
 def conditional_CWV_idx(cwvbins, cwv2d):
   nb = cwvbins.size-1
   ny, nx = cwv2d.shape
   nsample   = np.zeros((nb), dtype=np.int64)
   idxmap = np.zeros((ny,nx), dtype=np.int64)
-  for iy in numba.prange(ny):
-    for ix in numba.prange(nx):
+  for iy in range(ny):
+    for ix in range(nx):
       for ib in range(nb):
         if ( (cwvbins[ib] <= cwv2d[iy,ix]) and \
              (cwvbins[ib+1] > cwv2d[iy,ix]) ):
