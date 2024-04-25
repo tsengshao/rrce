@@ -25,7 +25,7 @@ totalT   = [1441, 1441, 1441, 1441, 2881]
 
 def getExpDeltaT(exp):
   expheader=exp.split('_')[0]
-  if expheader == 'RRCE':
+  if expheader == 'RCE':
     return 60 #mins
-  elif expheader == 'RCE':
+  elif expheader == 'RRCE':
     return 20 #mins
