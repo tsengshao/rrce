@@ -41,7 +41,7 @@ datPath="/data/C.shaoyu/rrce/data/"
 
 expList='RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_25 RRCE_3km_f00_30 RRCE_3km_f00'
 dtList='20 20 20 20 20'
-tlastList='1441 1441 1441 1441 2881'
+tlastList='1441 2880 1441 1441 2881'
 
 
 exp = subwrd(expList, iexp)

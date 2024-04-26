@@ -73,6 +73,7 @@ zz  = vvmLoader.loadZZ()[:-1]
 ptile   = np.arange(0,101,1)
 
 idayTS, idayTE = tools.get_mpi_time_span(0, nday, cpuid, nproc)
+idayTS, idayTE = 20, 40
 print(cpuid, idayTS, idayTE, idayTE-idayTS)
 
 dataWriter = DataWriter(outdir)

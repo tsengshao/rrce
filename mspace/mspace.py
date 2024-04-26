@@ -72,6 +72,7 @@ zz  = vvmLoader.loadZZ()[:-1]
 cwvbins = np.arange(0,101,1)
 
 idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
+idxTS, idxTE = tools.get_mpi_time_span(1440, nt, cpuid, nproc)
 print(cpuid, idxTS, idxTE, idxTE-idxTS)
 
 dataWriter = DataWriter(outdir)
