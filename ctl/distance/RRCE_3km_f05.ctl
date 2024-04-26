@@ -1,0 +1,14 @@
+DSET ^./RRCE_3km_f05/dis-%tm6.nc
+ DTYPE netcdf
+ OPTIONS template
+ TITLE C.Surface variables
+ UNDEF 99999.
+ CACHESIZE 10000000
+ XDEF 384 LINEAR 0. .027027
+ YDEF 384 LINEAR 0. .027027
+ ZDEF 1 LEVELS 1000
+ TDEF 2765 LINEAR 01JAN1998 20mn
+ VARS 2
+ dis=>dis 0 t,y,x dis
+ angle=>angle 0 t,y,x angle
+ ENDVARS
