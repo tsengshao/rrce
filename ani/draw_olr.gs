@@ -39,7 +39,7 @@ datPath="/data/C.shaoyu/rrce/data/"
 
 expList='RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_25 RRCE_3km_f00_30 RRCE_3km_f00'
 dtList='20 20 20 20 20'
-tlastList='1441 1441 1441 1441 2881'
+tlastList='1441 2880 1441 1441 2881'
 
 
 exp = subwrd(expList, iexp)
@@ -57,7 +57,7 @@ drawrain="FALSE"
 drawcwv="FALSE"
 if ( type = 'rain' )
   drawrain="TRUE"
-  drawcwv="TRUE"
+  drawcwv="FALSE"
 endif
 
 outPath="./fig_olr_"type"/"exp
@@ -101,14 +101,23 @@ say 't='it''
 'set ylabs 0|288|576|864|1152'
 
 'set t 'it
-'color 100 300 20 -kind white->black -gxout grfill'
+'color 100 280 10 -kind white->black -gxout grfill'
 'd olr.3(z=1)'
-'xcbar 8.6 8.8 4 7.5 -ft 10 -fs 1'
+'xcbar 8.6 8.8 4 7.5 -ft 10 -fs 2'
 
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 'draw string 8.55 8.0 OLR'
 'draw string 8.55 7.65 [Wm`a2`n]'
+if (drawcwv="TRUE" )
+  'set gxout contour'
+  'set clevs 40'
+  'set rgb 50 150 0 0'
+  'set ccolor 50'
+  'set cthick 5'
+  'set clab off'
+  'd cwv.4'
+endif
 
 if ( drawrain="TRUE" )
   clevs='1 3 5 7 10 15 30 50'
@@ -118,14 +127,6 @@ if ( drawrain="TRUE" )
   'set string 1 bl 10 0'
   'set strsiz 0.15'
   'draw string 8.55 3.4 Rain'
-endif
-if (drawcwv="TRUE" )
-  'set gxout contour'
-  'set clevs 40'
-  'set ccolor 2'
-  'set cthick 5'
-  'set clab off'
-  'd cwv.4'
 endif
 
 'set string 1 c 10'
@@ -162,8 +163,8 @@ endwhile
 
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
-* 'gxprint 'outPath'/whi_cwv'type'_'itt'.png x2400 y1800 white'
-  'gxprint 'outPath'/bla_cwv'type'_'itt'.png x2400 y1800'
+* 'gxprint 'outPath'/whi_olr'type'_'itt'.png x2400 y1800 white'
+  'gxprint 'outPath'/bla_olr'type'_'itt'.png x2400 y1800'
   it = it+1
 endif
 
