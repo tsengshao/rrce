@@ -16,12 +16,14 @@ cpuid = comm.Get_rank()
 
 nexp = len(config.expList)
 iexp = int(sys.argv[1])
+klenstr = sys.argv[2] if len(sys.argv)>2 else '100km'
+tlev    = 1.5 #km
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
 dtime = config.getExpDeltaT(exp)    #minutes
 
-outdir=config.dataPath+f"/series/{exp}/"
+outdir=config.dataPath+f"/series/{exp}/{klenstr}/"
 print(outdir)
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
@@ -39,10 +41,10 @@ for it in range(idxTS, idxTE):
   print(exp, it)
   time = it*dtime #minutes
 
-  nc  = Dataset(f'{config.dataPath}/convolve/{exp}/100km/conv-{it:06d}.nc', 'r')
+  nc  = Dataset(f'{config.dataPath}/convolve/{exp}/{klenstr}/conv-{it:06d}.nc', 'r')
   zz   = nc.variables['zz'][:]
-  izz3km = np.argmin(np.abs(zz-3))
-  zeta = nc.variables['zeta'][0,izz3km,:,:]
+  izz = np.argmin(np.abs(zz-tlev))
+  zeta = nc.variables['zeta'][0,izz,:,:]
 
   dataWriter.toNC(f"series_conv_{it:06d}.nc", \
     data=dict(
@@ -54,6 +56,6 @@ for it in range(idxTS, idxTE):
       time=[it*dtime],
     ),
     attrs=dict(
-      discription='zeta field at 3km under 100km gassiuan convolution'
+      discription=f'zeta field at {tlev:.2f}km under {klenstr} gassiuan convolution'
     ),
   )
