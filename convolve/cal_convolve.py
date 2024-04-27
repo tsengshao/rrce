@@ -65,6 +65,8 @@ zz = zz[:iuhei]
 zc = zc[:iuhei]
 
 klength=100 #km
+klength=int(sys.argv[2]) #km
+print('klength = ',klength, 'km')
 
 idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
 print(cpuid, idxTS, idxTE, idxTE-idxTS)
