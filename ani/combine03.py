@@ -7,9 +7,9 @@ import config
 iexp=0
 iexp = int(sys.argv[1])
 exp=config.expList[iexp]
-klen='25km'
-figlist = [f'fig_czeta_{klen}', 'fig_olr_rain']
-os.system(f'mkdir -p ./combine/conv{klen}')
+figlist = [f'fig_czeta_25km', 'fig_czeta_50km', 'fig_czeta_100km']
+outpath='./combine/'
+os.system(f'mkdir -p {outpath}')
 
 # Read files
 vid = []
@@ -26,6 +26,6 @@ for i in range(len(figlist)):
 final_clip = clips_array([vid])
 
 # Write output to the file
-final_clip.write_videofile(f"./combine/conv{klen}/{exp}.mp4", codec='libx264', \
+final_clip.write_videofile(f"{outpath}/conv_{exp}.mp4", codec='libx264', \
                       threads=10, ffmpeg_params=['-pix_fmt','yuv420p'])
 

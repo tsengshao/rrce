@@ -68,6 +68,7 @@ if ( type = 'sf' )
   drawdis="TRUE"
 endif
 if ( type = 'czeta' )
+  klen='25km'
   drawczeta="TRUE"
   drawarr="TRUE"
 endif
@@ -225,7 +226,7 @@ if ( drawczeta = "TRUE" )
   'set ccolor 8'
   'set cthick 50'
   'set clab off'
-  'd zeta.3(z=12)'
+  'd zeta.3(z=12, ens='klen')'
 
   'set cmin 4e-4'
   'set cmax 1e-3'
@@ -233,7 +234,7 @@ if ( drawczeta = "TRUE" )
   'set ccolor 2'
   'set cthick 50'
   'set clab off'
-  'd zeta.3(z=12)'
+  'd zeta.3(z=12, ens='klen')'
 
   'set cmin 1e-3'
   'set cmax 1e2'
@@ -241,7 +242,14 @@ if ( drawczeta = "TRUE" )
   'set ccolor 9'
   'set cthick 50'
   'set clab off'
-  'd zeta.3(z=12)'
+  'd zeta.3(z=12, ens='klen')'
+
+  'set lwid 80 2'
+  'set rgb 83 0 0 0'
+  'set string 83 tl 80 0'
+  'set strsiz 0.1'
+  'draw string 2.75 7.5 kernel:'klen
+
 endif
 
 'set string 1 c 10'
@@ -283,7 +291,7 @@ endif
 
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
-  'gxprint 'outPath'/whi_cwv'type'_'itt'.png x2400 y1800 white'
+*  'gxprint 'outPath'/whi_cwv'type'_'itt'.png x2400 y1800 white'
   'gxprint 'outPath'/bla_cwv'type'_'itt'.png x2400 y1800'
   it = it+1
 endif

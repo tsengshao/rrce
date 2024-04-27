@@ -144,7 +144,7 @@ dy=math_format( '%.3f', day)
 'draw string 2.6875 8 'exp
 itit=1
 if ( drawrain="TRUE" ); title.itit='CWV [40mm]'; itit=itit+1;endif
-if ( drawrain="TRUE" ); title.itit='rain[mm/hr`a-1`n]'; itit=itit+1;endif
+if ( drawrain="TRUE" ); title.itit='rain[mm/hr]'; itit=itit+1;endif
 itit = itit - 1
 
 title=title.itit
