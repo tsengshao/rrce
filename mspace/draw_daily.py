@@ -29,7 +29,7 @@ nc = Dataset(datpath+f'mspace-{1:03d}days.nc', 'r')
 zc = nc.variables['zc'][:] / 1000 #km
 ptile = nc.variables['ptile'][:]
 xnum = nc.variables['inum'][:] + 0.5
-izTop=np.argmin(np.abs(zc-13))
+izTop=np.argmin(np.abs(zc-13.2))
 zc  = zc[:izTop]
 nx, nz = xnum.size, zc.size
 
@@ -44,8 +44,26 @@ for iday in range(nday):
   qi  = nc.variables['qr'][0,:izTop,:]
   w   = nc.variables['w'][0,:izTop,:]
   rain = nc.variables['rain'][0,:]
+  nsample = nc.variables['nsample'][:]
   ws  = nc.variables['ws'][0,:izTop,:]
   cwvbins = nc.variables['cwvbins'][:]
+
+  nc = Dataset(datpath+f'mspace_cloud-{iday:03d}days.nc', 'r')
+  ## freqc = nc.variables['qc'][0,:izTop,:,:].sum(axis=1)/384/384/72
+  ## freqi = nc.variables['qi'][0,:izTop,:,:].sum(axis=1)/384/384/72
+
+  th=100
+  freqc = nc.variables['qc'][0,:izTop,:,:].sum(axis=1)
+  dum = np.sum(freqc, axis=0, keepdims=True)
+  dum[dum<th] = np.nan
+  freqc /= dum 
+  freqc[np.isnan(freqc)] = 0
+
+  freqi = nc.variables['qi'][0,:izTop,:,:].sum(axis=1)
+  dum = np.sum(freqi, axis=0, keepdims=True)
+  dum[dum<th] = np.nan
+  freqi /= dum 
+  freqi[np.isnan(freqi)] = 0
   
   xleft  = (5-cwvbins[0])/2 + ptile[0]
   xright = (80-cwvbins[-1])/2 + ptile[-1]
@@ -85,10 +103,56 @@ for iday in range(nday):
   plt.sca(ax)
   PC =  plt.pcolormesh(xnum, zc, mse, cmap=cmap, norm=norm)
   CB = plt.colorbar(PC, cax=cax, extend='both')
-  CO2 = plt.contour(xnum, zc, qc, colors=['w'], levels=[0], linewidths=[3])
-  plt.clabel(CO2, fmt='%.0f')
-  CO = plt.contour(xnum, zc, sf, colors=['k'], levels=np.arange(-1,1.1,0.05).round(3))
+
+  ## CO2 = plt.contour(xnum, zc, np.log10(freqi), \
+  ##                   colors=['0.9'], levels=[-5], \
+  ##                   linewidths=[5], linestyles=['-'])
+  ## plt.clabel(CO2, fmt='%.0f')
+  ## CO2 = plt.contour(xnum, zc, np.log10(freqc),\
+  ##                   colors=['w'], levels=[-5,-4,-3,-2,-1,0], \
+  ##                   linewidths=[4], linestyles=['-'])
+  ## plt.clabel(CO2, fmt='%.0f', levels=[-5,-3,-1])
+
+
+  CO2 = plt.contourf(xnum, zc, freqi,\
+                    colors=['0.9'], levels=[0.01, 1.1], \
+                    alpha=0.3,)
+  CO2 = plt.contourf(xnum, zc, freqi,\
+                    colors=['0.9'], levels=[0.1,1.1], \
+                    alpha=0.3)
+  CO2 = plt.contour(xnum, zc, freqi, \
+                    colors=['0.9'], levels=[0.01], \
+                    linewidths=[2], linestyles=['-'],)
+  #plt.clabel(CO2, fmt='%.f')
+
+  CO2 = plt.contourf(xnum, zc, freqc,\
+                    colors=['1'], levels=[0.01,1.1], \
+                    alpha=0.3)
+  CO2 = plt.contourf(xnum, zc, freqc,\
+                    colors=['1'], levels=[0.1,1.1], \
+                    alpha=0.5)
+  CO2 = plt.contour(xnum, zc, freqc,\
+                    colors=['1'], levels=[0.01], \
+                    linewidths=[2], linestyles=['-'])
+  #plt.clabel(CO2, fmt='%.f')
+
+
+  CO = plt.contour(xnum, zc, sf, colors=['k'], \
+                   levels=np.arange(-1,1.1,0.05).round(3), \
+                   linewidths=[3])
   plt.clabel(CO, levels=[0])
+
+  # these are matplotlib.patch.Patch properties
+  props = dict(boxstyle='square,pad=0.2', facecolor=plt.gca().get_fc(), alpha=1)
+  #plt.text(xnum[-1]-0.5, zc.max(), \
+  plt.text(xnum[1]-0.5, zc.max()+0.1, \
+           'Stream Function'+r'[kg m$^{-2}$s$^{-1}$]'+ \
+           '\nfrequency of qc / qi > 0.01g/kg [0.01, 0.1]',\
+           va='top', ha='left', \
+           fontweight='bold', fontsize=10,\
+           color=fontcolor,\
+           #bbox=props,\
+           zorder=10)
   
   plt.ylabel('Height [km]',color=fontcolor)
   plt.xlim(xlim)
@@ -137,11 +201,10 @@ for iday in range(nday):
   plt.xlabel('CWV [mm]',color='w')
   
   # draw title
-  ax.set_title(f'{exp}\nMSE[K] / StreamFunc.'+r'[kg m$^{-2}$s$^{-1}$]'+' / qc', \
+  ax.set_title(f'{exp}\nMSE[K] / StreamFunc.'+' / cloud freq.', \
            fontsize=22, fontweight='bold', loc='left')
   ax.set_title(f'{iday:d} days\n' if iday!=0 else f'initial({dtime:d}mins)\n', \
            fontsize=25, fontweight='bold', loc='right')
-  
   plt.savefig(f'{figpath}/mspace_{iday:03d}days.png', dpi=300)
   plt.close('all')
 
