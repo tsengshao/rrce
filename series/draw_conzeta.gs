@@ -12,7 +12,7 @@ lcList='1 7 8 30 14'
 'set lwid 55 3'
 TE=60
 hashtag='re_'
-klen='50km'
+klen='25km'
 
 outPath="./fig/"
 '! mkdir -p 'outPath
@@ -52,7 +52,7 @@ endwhile
 'on.gs'
 
 'set cthick 55'
-'legend tl 'nexp' 'expList' 'lcList''
+'legend tl 'nexp' 10 55 'expList' 'lcList''
 
 *X Limits = 1.2 to 10.5
 *Y Limits = 1 to 7.5

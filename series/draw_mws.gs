@@ -96,7 +96,7 @@ endwhile
 'on.gs'
 
 'set cthick 55'
-'legend tl 'nexp' 'expList' 'lcList''
+'legend tl 'nexp' 10 55 'expList' 'lcList''
 
 *X Limits = 1.2 to 10.5
 *Y Limits = 1 to 7.5
