@@ -7,6 +7,7 @@ import util.calculator as calc
 import util.tools as tools
 from util.dataWriter import DataWriter
 from mpi4py import MPI
+from datetime import datetime, timedelta
 
 def calculate_stream_function(vorticity, dx, dy):
     """
@@ -58,37 +59,57 @@ height=3000 #m
 
 exp = config.expList[iexp]
 nt = config.totalT[iexp]
+dtime = config.getExpDeltaT(exp)
 print(exp, nt)
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 thData = vvmLoader.loadDynamic(0)
 nz, ny, nx = thData['zeta'][0].shape
-xc, yc, zc = thData['xc'], thData['yc'], thData['zc']
+xc, yc, zc = thData['xc'][:].data, thData['yc'][:].data, thData['zc'][:].data
 dx, dy = np.diff(xc)[0], np.diff(yc)[0]
 rho = vvmLoader.loadRHO()[:-1]
 rhoz = vvmLoader.loadRHOZ()[:-1]
 zz = vvmLoader.loadZZ()[:-1]
 
-for height in [0, 3000]: # meter
-  ihei = np.argmin(np.abs(zz-height))
+iuhei=np.argmin(np.abs(zz-15000))+1
+zz = zz[:iuhei]
+zc = zc[:iuhei]
+rho = rho[:iuhei]
+rhoz = rhoz[:iuhei]
+nz = zc.size
+
+idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
+print(cpuid, idxTS, idxTE, idxTE-idxTS)
+
+outdir=config.dataPath+"/horimsf/"+exp+'/'
+os.system('mkdir -p '+outdir)
+dataWriter = DataWriter(outdir)
+
+for it in range(idxTS, idxTE):
+  print(exp, it)
+  dyData = vvmLoader.loadDynamic(it)
+  zeta = dyData['zeta'][0,:iuhei,:,:]*rhoz[:,np.newaxis,np.newaxis]
+  sf3d = np.zeros((nz,ny,nx))
+  tt0 = datetime.now()
+  for iz in range(nz):
+    sf3d[iz] =  calculate_stream_function(zeta[iz], dx, dy)
+  print(f'done to calculate sf3d @{it} ... {(datetime.now()-tt0).total_seconds()}')
   
-  idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
-  print(cpuid, idxTS, idxTE, idxTE-idxTS)
-  
-  outdir=config.dataPath+"/horisf/"+exp+'/'
-  os.system('mkdir -p '+outdir)
-  
-  for it in range(idxTS, idxTE):
-    dyData = vvmLoader.loadDynamic(it)
-    zeta = dyData['zeta'][0,ihei,:,:]*rhoz[ihei]
-    sf = calculate_stream_function(zeta, dx, dy)
-    fname = f'{outdir}/hrisf_{zz[ihei]/1e3:0.2f}km_{it:06d}.dat'
-    if cpuid==0: print(it, sf.min(), sf.max(), fname)
-    sf.astype(np.float32).tofile(fname)
-
-
-
-
-
-
+  varenc = {'_FillValue': -999.0,
+            'complevel': 1,
+            'zlib': True}
+  dim4d=['time', 'zz', 'yc', 'xc']
+  encoding={'sf':{'chunksizes':(1, 1, ny, nx)} }
+  dataWriter.toNC(f"horimsf-{it:06d}.nc", \
+    data=dict(
+      sf    =(dim4d, sf3d[np.newaxis,:,:,:], {'units':'kg m**-1s**-1'}),\
+    ),
+    coords=dict(
+      time=(['time'], [it*dtime], {'axis':'T'}),
+      zz=(['zz'], zz, {'axis':'Z'}),
+      yc=(['yc'], yc, {'axis':'Y'}),
+      xc=(['xc'], xc, {'axis':'X'}),
+    ),  \
+    encoding=encoding, \
+  )
 
