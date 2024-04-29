@@ -122,7 +122,7 @@ for iday in range(nday):
                     alpha=0.3)
   CO2 = plt.contour(xnum, zc, freqi, \
                     colors=['0.9'], levels=[0.01], \
-                    linewidths=[2], linestyles=['-'],)
+                    linewidths=[6], linestyles=['-'],)
   #plt.clabel(CO2, fmt='%.f')
 
   CO2 = plt.contourf(xnum, zc, freqc,\
@@ -133,13 +133,13 @@ for iday in range(nday):
                     alpha=0.5)
   CO2 = plt.contour(xnum, zc, freqc,\
                     colors=['1'], levels=[0.01], \
-                    linewidths=[2], linestyles=['-'])
+                    linewidths=[6], linestyles=['-'])
   #plt.clabel(CO2, fmt='%.f')
 
 
   CO = plt.contour(xnum, zc, sf, colors=['k'], \
                    levels=np.arange(-1,1.1,0.05).round(3), \
-                   linewidths=[3])
+                   linewidths=[4])
   plt.clabel(CO, levels=[0])
 
   # these are matplotlib.patch.Patch properties
