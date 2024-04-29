@@ -16,12 +16,13 @@ totalT   = [2137, 2030, 3654, 2765, 2286, 2161, 2138, 1441, 1441, 1441]
 
 expList  = [
             'RRCE_3km_f00_10', \
+            'RRCE_3km_f00_15', \
             'RRCE_3km_f00_20', \
             'RRCE_3km_f00_25', \
             'RRCE_3km_f00_30', \
             'RRCE_3km_f00'
            ]
-totalT   = [1441, 2880, 1441, 1441, 2881]
+totalT   = [1441, 493, 2880, 1441, 1441, 2881]
 
 def getExpDeltaT(exp):
   expheader=exp.split('_')[0]
