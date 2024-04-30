@@ -73,7 +73,6 @@ zz  = vvmLoader.loadZZ()[:-1]
 ptile   = np.arange(0,101,1)
 
 idayTS, idayTE = tools.get_mpi_time_span(0, nday, cpuid, nproc)
-idayTS, idayTE = 20, 40
 print(cpuid, idayTS, idayTE, idayTE-idayTS)
 
 dataWriter = DataWriter(outdir)
@@ -147,6 +146,12 @@ for iday in range(idayTS, idayTE):
   tmp = np.where(msample==0,np.nan,msample)
   mspace   /= tmp.reshape((1,1,tmp.size))
   mspace2d /= tmp.reshape((1,tmp.size))
+
+  imf = np.nonzero(np.array(varlist)=='massflux')[0][0]
+  msf = np.cumsum(mspace[imf,:,:], axis=1)
+  varlist.append('msf')
+  unitslist.append('kg/m**2/s**1')
+  mspace = np.vstack((mspace,[msf]))
 
   varenc = {'_FillValue': -999.0,
             'complevel': 1,
