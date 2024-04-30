@@ -4,4 +4,7 @@
 *.mp4
 *.out
 *.gif
+*.x
+*.mod
+*.a
 __pycache__
