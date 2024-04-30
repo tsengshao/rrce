@@ -3,7 +3,7 @@
 #SBATCH -p all     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 15     # Run a single task
+#SBATCH -n 10     # Run a single task
 #SBATCH -w mogamd
 #SBATCH -o acom.%j.out  # output file
 
