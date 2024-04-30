@@ -7,7 +7,7 @@ import config
 iexp=0
 iexp = int(sys.argv[1])
 exp=config.expList[iexp]
-klen='25km'
+klen='100km'
 figlist = [f'fig_czeta_{klen}', 'fig_olr_rain']
 os.system(f'mkdir -p ./combine/conv{klen}')
 

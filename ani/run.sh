@@ -11,7 +11,7 @@ source ~/.bashrc
 
 #for i in $(seq 1 6);do
 #for i in 1 2 3 4 5 ;do
-for i in 1;do
+for i in 2;do
 args="${i} -mode SAVEFIG"
 gs="draw.gs"
 grads -blcx "run ${gs} ${args} -ts 1    -te 200" &
