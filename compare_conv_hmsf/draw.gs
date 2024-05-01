@@ -80,8 +80,9 @@ say 't='it''
 'set xlabs 0|288|576|864|1152'
 'set ylabs 0|288|576|864|1152'
 
-lev=1.5
-'set lev 'lev
+*zz(11) --> 1.49km
+iz=11
+'set z 'iz
 'color -5 5 1 -gxout grfill'
 'd 1e4*zeta.4(ens=25km)'
 'xcbar 8.6 8.8 0.8 7.55 -ft 10 -fs 1'
