@@ -204,7 +204,7 @@ if ( drawarr = "TRUE" )
   'set cthick 8'
   'set rgb 80 180 180 180'
   'set ccolor 80'
-  iz=12
+  iz=11
   magv=3
   'define vv=maskout(v(z='iz'), mag(u(z='iz'),v(z='iz'))>='magv')'
   'd skip(u(z='iz'),10);vv'
@@ -218,7 +218,7 @@ if ( drawczeta = "TRUE" )
 *  'set ccolor 20'
 *  'set cthick 10'
 *  'set clab off'
-*  'd zeta.3(z=12)'
+*  'd zeta.3(z=iz)'
 
   'set lwid 50 3'
   'set gxout contour'
@@ -226,7 +226,7 @@ if ( drawczeta = "TRUE" )
   'set ccolor 8'
   'set cthick 50'
   'set clab off'
-  'd zeta.3(z=12, ens='klen')'
+  'd zeta.3(z=11, ens='klen')'
 
   'set cmin 4e-4'
   'set cmax 1e-3'
@@ -234,7 +234,7 @@ if ( drawczeta = "TRUE" )
   'set ccolor 2'
   'set cthick 50'
   'set clab off'
-  'd zeta.3(z=12, ens='klen')'
+  'd zeta.3(z=11, ens='klen')'
 
   'set cmin 1e-3'
   'set cmax 1e2'
@@ -242,7 +242,7 @@ if ( drawczeta = "TRUE" )
   'set ccolor 9'
   'set cthick 50'
   'set clab off'
-  'd zeta.3(z=12, ens='klen')'
+  'd zeta.3(z=11, ens='klen')'
 
   'set lwid 80 2'
   'set rgb 83 0 0 0'
