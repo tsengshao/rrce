@@ -11,8 +11,9 @@ source ~/.bashrc
 conda activate py311
 
 #for i in 0 1 2 3 4; do
-for i in 1;do
-#python -u combine03.py ${i} &
-python -u combine.py ${i} &
+for i in 0 1 2 3 4 5;do
+#python -u combine03.py ${i} 
+python -u combine_zeta.py ${i} 
+#python -u combine.py ${i} &
 done
 wait

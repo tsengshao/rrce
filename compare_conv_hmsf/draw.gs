@@ -37,7 +37,7 @@ datPath="/data/C.shaoyu/rrce/data/"
 
 expList='RRCE_3km_f00_10 RRCE_3km_f00_15 RRCE_3km_f00_20 RRCE_3km_f00_25 RRCE_3km_f00_30 RRCE_3km_f00'
 dtList='20 20 20 20 20 20'
-tlastList='1441 493 2880 1441 1441 2881'
+tlastList='1441 1081 2880 1441 1441 2881'
 
 exp = subwrd(expList, iexp)
 dt  = subwrd(dtList, iexp)
@@ -82,6 +82,7 @@ say 't='it''
 
 *zz(11) --> 1.49km
 iz=11
+lev=1.5
 'set z 'iz
 'color -5 5 1 -gxout grfill'
 'd 1e4*zeta.4(ens=25km)'
