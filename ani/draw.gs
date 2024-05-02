@@ -39,9 +39,9 @@ datPath="/data/C.shaoyu/rrce/data/"
 ** sfCtlList='RCE_300K_3km RCE_300K_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km'
 ** enList='1 2 1 2 3 4 5'
 
-expList='RRCE_3km_f00_10 RRCE_3km_f00_15 RRCE_3km_f00_20 RRCE_3km_f00_25 RRCE_3km_f00_30 RRCE_3km_f00'
-dtList='20 20 20 20 20 20'
-tlastList='1441 1081 2880 1441 1441 2881'
+expList='RRCE_3km_f00 RRCE_3km_f00_10 RRCE_3km_f00_15 RRCE_3km_f00_20 RRCE_3km_f00_21 RRCE_3km_f00_25 RRCE_3km_f00_30'
+dtList='20 20 20 20 20 20 20'
+tlastList='2881 1441 1081 2880 361 1441 1441 2881'
 
 
 exp = subwrd(expList, iexp)
@@ -60,6 +60,7 @@ drawdis="FALSE"
 drawws="FALSE"
 drawczeta="FALSE"
 drawarr="FALSE"
+appendstr=''
 if ( type = 'ws' )
   drawws="TRUE"
 endif
@@ -68,12 +69,15 @@ if ( type = 'sf' )
   drawdis="TRUE"
 endif
 if ( type = 'czeta' )
-  klen='50km'
+  klen='25km'
   drawczeta="TRUE"
   drawarr="TRUE"
+  appendstr='_'klen
 endif
 
-outPath="./fig_"type"/"exp
+*outPath="./fig_"type""appendstr"/"exp
+outPath='./fig_'type''appendstr'/'exp
+say outPath
 '! mkdir -p 'outPath
 
 ******** write the status *******

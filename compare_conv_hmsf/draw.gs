@@ -35,9 +35,9 @@ endwhile
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
 
-expList='RRCE_3km_f00_10 RRCE_3km_f00_15 RRCE_3km_f00_20 RRCE_3km_f00_25 RRCE_3km_f00_30 RRCE_3km_f00'
-dtList='20 20 20 20 20 20'
-tlastList='1441 1081 2880 1441 1441 2881'
+expList='RRCE_3km_f00 RRCE_3km_f00_10 RRCE_3km_f00_15 RRCE_3km_f00_20 RRCE_3km_f00_21 RRCE_3km_f00_25 RRCE_3km_f00_30'
+dtList='20 20 20 20 20 20 20'
+tlastList='2881 1441 1081 2880 361 1441 1441'
 
 exp = subwrd(expList, iexp)
 dt  = subwrd(dtList, iexp)

@@ -15,7 +15,7 @@ conda activate py311
 #   echo ${i}
 #   mpirun -np 5 python -u mspace_daily_ptile.py ${i}
 # done
-python -u mspace_cloud_daily_ptile.py 1
+python -u mspace_cloud_daily_ptile.py 3
 
 wait
 

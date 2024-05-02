@@ -3,7 +3,7 @@
 #SBATCH -p all     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 10       # Run a single task
+#SBATCH -n 5       # Run a single task
 #SBATCH -w mogamd  # nodelist
 #SBATCH -o wp.%j.out  # output file
 
@@ -12,8 +12,8 @@ source ~/.bashrc
 conda activate py311
 
 #for i in $(seq 0 4);do
-for i in 1 ;do
-  mpirun -np 10 python -u wp.py ${i}
+for i in 3 ;do
+  mpirun -np 5 python -u wp.py ${i}
 done
 
 #  python -u lwp.py 0 &

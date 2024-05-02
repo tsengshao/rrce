@@ -13,7 +13,7 @@ lcList='1 7 8 30 90 14'
 'set lwid 55 3'
 TE=60
 hashtag='re_'
-klen='100km'
+klen='25252525252525252525252525252525252525252525252525km'
 
 outPath="./fig/"
 '! mkdir -p 'outPath

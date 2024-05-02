@@ -15,7 +15,7 @@ dt=100
 
 #for iexp in 3;do
 #for iexp in 3 1 4 5 6;do
-for iexp in 2;do
+for iexp in 5;do
   for i in {0..28};do
     ts=$(echo "${i}*${dt}+1"|bc)
     te=$(echo "(${i}+1)*${dt}"|bc)

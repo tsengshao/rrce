@@ -12,7 +12,7 @@
 source ~/.bashrc
 conda activate py311
 
-for i in 0 1 2 3 4 5;do
+for i in 3;do
 for c in 100km 50km 25km;do
 mpirun -np 10 python -u series_conv.py ${i} ${c} &
 done
