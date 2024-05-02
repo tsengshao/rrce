@@ -17,7 +17,7 @@ cpuid = comm.Get_rank()
 nexp = len(config.expList)
 iexp = int(sys.argv[1])
 klenstr = sys.argv[2] if len(sys.argv)>2 else '100km'
-tlev    = 1.5 #km
+tlev    = 1500
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
