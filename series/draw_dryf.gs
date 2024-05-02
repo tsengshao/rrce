@@ -13,15 +13,17 @@ lcList='11 4 1 7 8 30 14'
 TE=40
 hashtag=''
 
-nexp=5
-expList='RRCE_3km_f00 RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_25 RRCE_3km_f00_30'
-dtList='20 20 20 20 20'
-tlastList='2881 1441 2880 1441 1441'
-lcList='1 7 8 30 14'
+nexp=6
+expList='RRCE_3km_f00 RRCE_3km_f00_10 RRCE_3km_f00_15 RRCE_3km_f00_20 RRCE_3km_f00_25 RRCE_3km_f00_30'
+dtList='20 20 20 20 20 20'
+tlastList='2881 1441 1801 2880 1441 1441'
+lcList='1 7 8 30 90 14'
 'set rgb 30 255 85 33'
-'set lwid 55 5'
+'set rgb 90 252 56 241'
+'set lwid 55 3'
 TE=60
 hashtag='re_'
+
 
 outPath="./fig/"
 '! mkdir -p 'outPath
