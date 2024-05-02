@@ -9,11 +9,12 @@ exp='RRCE_3km_f00'
 
 'open 'datPath'mspace/'exp'.ctl'
 
-nday = 4
-dayList='10 20 25 30'
-legList='10_days 20_days 25_days 30_days'
-lcList='7 8 30 14'
+nday = 5
+dayList='10 15 20 25 30'
+legList='10_days 15_days 20_days 25_days 30_days'
+lcList='7 8 30 90 14'
 'set rgb 30 255 85 33'
+'set rgb 90 252 56 241'
 'set lwid 55 5'
 
 'set x 1 70'
