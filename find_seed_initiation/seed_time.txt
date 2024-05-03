@@ -1,4 +1,5 @@
 RRCE_3km_f00    ... max_zeta = 0.00010 at  181.00 hours ( 543   7.542)
+RRCE_3km_f10    ... max_zeta = 0.00010 at  420.00 hours ( 1260  17.500)
 RRCE_3km_f00_10 ... max_zeta = 0.00010 at  207.33 hours ( 622   8.639)
 RRCE_3km_f00_15 ... max_zeta = 0.00011 at   28.00 hours (  84   1.167)
 RRCE_3km_f00_20 ... max_zeta = 0.00011 at   25.00 hours (  75   1.042)
