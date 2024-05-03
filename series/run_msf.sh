@@ -12,7 +12,7 @@ source ~/.bashrc
 conda activate py311
 
 #for i in $(seq 0 5);do
-for i in 0 1 2 3 4;do
+for i in 1;do
 mpirun -np 20 python -u series_msf.py ${i}
 done
 
