@@ -1,16 +1,33 @@
 function main(args)
 
 nexp=7
-vvmPath="/data/C.shaoyu/rrce/vvm/"
-datPath="/data/C.shaoyu/rrce/data/"
-expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f05 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
-dtList='60 60 20 20 20 20 20'
-tlastList='2137 2030 3654 2765 2286 2161 2138'
-lcList='11 4 1 7 8 30 14'
-'set rgb 30 255 85 33'
-'set lwid 55 5'
-
+expNum='-1 0 10 15 20 21 25 30'
+TE=40
+hashtag='re_'
 outPath="./fig/"
+
+****** setting the expList and linecolor list ******
+'set lwid 55 3'
+lcList=''
+expList=''
+dtList=''
+i=1
+while(i<=nexp)
+  iiexp=subwrd(expNum,i)
+  if (iiexp > 0); expList=expList'RRCE_3km_f00_'iiexp' '; endif
+  if (iiexp < 0); expList=expList'RRCE_3km_f00 '; endif
+  if (iiexp = 0); expList=expList'RRCE_3km_f10 '; endif
+  lcList = lcList''i+15' '
+*  lcList = lcList''iiexp+16' '
+  dtList = dtList'20 '
+  i=i+1
+endwhile
+*'color -1 30 1 -kind white-(0)->yellow->orange->tomato->fuchsia->blueviolet --sample'
+'color -levs 'expNum' -kind white-(0)->yellow->orange->tomato->fuchsia->blueviolet' 
+say expList
+say lcList
+****** setting the expList and linecolor list ******
+
 '! mkdir -p 'outPath
 
 'reinit'
