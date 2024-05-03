@@ -3,8 +3,8 @@ function main(args)
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
 
-nexp=7
-expNum='-1 0 10 15 20 21 25 30'
+nexp=8
+expNum='-1 0 10 15 20 21 22 25 30'
 TE=40
 hashtag='re_'
 outPath="./fig/"
