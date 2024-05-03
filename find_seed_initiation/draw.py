@@ -28,9 +28,11 @@ est_time = []
 reday    = []
 for i in range(len(lines)):
   if (len(lines[i])<=0): continue
-  explist.append(lines[i].split()[0])
+  exp=lines[i].split()[0]
+  if (exp=='RRCE_3km_f00'): continue
+  explist.append(exp)
   est_time.append(float(lines[i].split()[6]))
-  if explist[-1]=='RRCE_3km_f00':
+  if explist[-1]=='RRCE_3km_f10':
     reday.append(0)
   else:
     reday.append(int(explist[-1].split('_')[-1]))
