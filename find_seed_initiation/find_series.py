@@ -13,6 +13,7 @@ cpuid = comm.Get_rank()
 
 nexp = len(config.expList)
 ofile = open('seed_time.txt','w')
+th=1e-4
 
 for iexp in range(nexp):
   nt = config.totalT[iexp]
@@ -26,9 +27,9 @@ for iexp in range(nexp):
   for it in range(nt):
     nc = Dataset(datpath+f'100km/series_conv_{it:06d}.nc', 'r')
     mzeta = nc.variables['max_zeta'][0]
-    if (mzeta > 1e-4): 
+    if (mzeta > th): 
       break
-  if it==nt-1 and mzeta <=1e-4:
+  if it==nt-1 and mzeta <= th:
     mzeta=-999.99
 
   line = f'{exp:15s} ... max_zeta = {mzeta:.5f} at {it*dtime/60:7.2f} hours ( {it:3d} {it/72:7.3f})'
