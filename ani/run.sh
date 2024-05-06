@@ -3,7 +3,7 @@
 #SBATCH -p all     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 29      # Run a single task
+#SBATCH -n 11      # Run a single task
 #SBATCH -w mogamd  # nodelist
 #SBATCH -o draw.%j.out  # output file
 
@@ -12,12 +12,12 @@ mode="SAVEFIG"
 gs="draw.gs"
 #gs="draw_olr.gs"
 dt=100
+dt=36
 
-#for i in $(seq 1 6);do
-#for iexp in 1 2 3 4 5 6;do
-for iexp in 5;do
-#for iexp in 2;do
-  for i in {0..28};do
+for iexp in $(seq 1 10);do
+#for iexp in 5;do
+  #for i in {0..28};do
+  for i in {0..10};do
     ts=$(echo "${i}*${dt}+1"|bc)
     te=$(echo "(${i}+1)*${dt}"|bc)
     echo ${i} ${ts} ${te}

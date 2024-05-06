@@ -35,26 +35,20 @@ endwhile
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
 
-expList='RRCE_3km_f00 RRCE_3km_f00_10 RRCE_3km_f00_15 RRCE_3km_f00_20 RRCE_3km_f00_21 RRCE_3km_f00_25 RRCE_3km_f00_30'
-dtList='20 20 20 20 20 20 20'
-tlastList='2881 1441 1081 2880 361 1441 1441'
+expList='f00 f10 f00_10 f00_15 f00_20 f00_21 f00_22 f00_23 f00_25 f00_30'
+tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
 
-expList='RRCE_3km_f10' 
-dtList='20'
-tlastList='2160'
-
-
-exp = subwrd(expList, iexp)
-dt  = subwrd(dtList, iexp)
+exp = 'RRCE_3km_'subwrd(expList, iexp)
+dt  = 20
 tlast = subwrd(tlastList, iexp)
+tlast = 361
 sfctl = subwrd(sfCtlList, iexp)
 sfen  = subwrd(enList, iexp)
+say exp', 'dt', 'tlast', 'type
 
 if (ts='none'); ts=1; endif
 if (te='none'); te=tlast; endif
 if (te>tlast);  te=tlast; endif
-
-say exp', 'dt', 'tlast', 'type
 say 'ts='ts', te='te
 
 
@@ -130,6 +124,8 @@ lev=1.5
 title='zeta / sf.'
 day=(it-1)*dt/60/24
 dy=math_format( '%.3f', day)
+hour=(it-1)*dt/60
+hr=math_format('%.1f', hour)
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 'draw string 2.6875 8 'exp
@@ -137,7 +133,8 @@ dy=math_format( '%.3f', day)
 
 'set string 1 br 10 0'
 'set strsiz 0.2'
-'draw string 8.3125 8 'dy'days'
+*'draw string 8.3125 8 'dy'days'
+'draw string 8.3125 8 'hr'hours'
 'draw string 8.3125 7.65 @'lev'km'
 
 if ( mode="SAVEFIG" )

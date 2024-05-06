@@ -31,19 +31,13 @@ endwhile
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
 
-** expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f05 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
-** dtList='60 60 20 20 20 20 20'
-** tlastList='2137 2030 3654 2765 2286 2161 2138'
-** sfCtlList='RCE_300K_3km RCE_300K_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km'
-** enList='1 2 1 2 3 4 5'
+expList='f00 f10 f00_10 f00_15 f00_20 f00_21 f00_22 f00_23 f00_25 f00_30'
+tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
 
-expList='RRCE_3km_f00 RRCE_3km_f00_10 RRCE_3km_f00_15 RRCE_3km_f00_20 RRCE_3km_f00_21 RRCE_3km_f00_25 RRCE_3km_f00_30'
-dtList='20 20 20 20 20 20 20'
-tlastList='2881 1441 1081 2880 361 1441 1441 2881'
-
-exp = subwrd(expList, iexp)
-dt  = subwrd(dtList, iexp)
+exp = 'RRCE_3km_'subwrd(expList, iexp)
+dt  = 20
 tlast = subwrd(tlastList, iexp)
+tlast = 361
 sfctl = subwrd(sfCtlList, iexp)
 sfen  = subwrd(enList, iexp)
 say exp', 'dt', 'tlast', 'type
@@ -138,6 +132,8 @@ endif
 
 day=(it-1)*dt/60/24
 dy=math_format( '%.3f', day)
+hour=(it-1)*dt/60
+hr=math_format('%.1f', hour)
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 'draw string 2.6875 8 'exp
@@ -157,7 +153,8 @@ endwhile
 
 'set string 1 br 10 0'
 'set strsiz 0.2'
-'draw string 8.3125 8 'dy'days'
+*'draw string 8.3125 8 'dy'days'
+'draw string 8.3125 8 'hr'hours'
 
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
