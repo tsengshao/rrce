@@ -24,12 +24,10 @@ dtime = config.getExpDeltaT(exp)    #minutes
 outdir=config.dataPath+f"/series/{exp}/"
 print(outdir)
 
-vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
-thData = vvmLoader.loadThermoDynamic(0)
-nz, ny, nx = thData['qv'][0].shape
-xc, yc, zc = thData['xc'], thData['yc'], thData['zc']
-rho = vvmLoader.loadRHO()[:-1]
-zz = vvmLoader.loadZZ()[:-1]
+nc = Dataset(f'{config.dataPath}/horimsf/{exp}/horimsf-000010.nc', 'r')
+msf = nc.variables['sf'][0,:,:,:]
+nz, ny, nz = msf.shape
+xc, yc, zz = nc.variables['xc'][:], nc.variables['yc'][:], nc.variables['zz'][:]
 
 idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
 print(cpuid, idxTS, idxTE, idxTE-idxTS)
@@ -38,19 +36,15 @@ dataWriter = DataWriter(outdir)
 for it in range(idxTS, idxTE):
   print(exp, it)
   time = it*dtime #minutes
-  hsf0km = np.fromfile(\
-             f'{config.dataPath}/horisf/{exp}/hrisf_0.00km_{it:06d}.dat',\
-             np.float32).reshape(ny,nx)
-  hsf275km = np.fromfile(\
-             f'{config.dataPath}/horisf/{exp}/hrisf_2.75km_{it:06d}.dat',\
-             np.float32).reshape(ny,nx)
+  nc = Dataset(f'{config.dataPath}/horimsf/{exp}/horimsf-{it:06d}.nc', 'r')
+  msf = np.nanmax(nc.variables['sf'][0,:,:,:], axis=(1,2))
 
   dataWriter.toNC(f"series_hsf_{it:06d}.nc", \
     data=dict(
-      sf000_max = (["time"], [np.nanmax(hsf0km)]),
-      sf275_max = (["time"], [np.nanmax(hsf275km)]),
+      maxsf = (["time", "zz"], [msf]),
     ),
     coords=dict(
-      time=[it*dtime],
+      time = [it*dtime],
+      zz   = zz,
     )
   )
