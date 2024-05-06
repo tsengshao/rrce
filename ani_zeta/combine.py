@@ -32,6 +32,6 @@ for iexp in [7]:
   final_clip = clips_array([vid])
 
   # Write output to the file
-  final_clip.write_videofile(f"./combine/{exp}.mp4", codec='libx264', \
+  final_clip.write_videofile(f"./combine/zeta_{exp}.mp4", codec='libx264', \
                         threads=10, ffmpeg_params=['-pix_fmt','yuv420p'])
 
