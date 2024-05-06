@@ -37,9 +37,11 @@ for i in range(len(lines)):
   else:
     reday.append(int(explist[-1].split('_')[-1]))
     
+
 explist = np.array(explist)
 est_time = np.array(est_time)
 reday   = np.array(reday)
+est_time[est_time<0] = np.nan
 
 plt.rcParams.update({'font.size':20,
                      'axes.linewidth':2,
@@ -52,6 +54,7 @@ ylim=[0,72]
 fig, ax = plt.subplots(figsize=(12,10))
 plt.plot(reday, est_time, '.', c=fontcolor, ms=30)
 for i in range(reday.size):
+  if est_time[i]<0: continue
   yyy=est_time[i] if est_time[i]<max(ylim) else max(ylim)-0.5
   plt.text(reday[i],yyy+1,f'{est_time[i]}',\
            fontweight='bold', ha='center', va='bottom', \
