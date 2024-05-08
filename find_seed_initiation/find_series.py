@@ -25,10 +25,15 @@ for iexp in range(nexp):
   #print(exp, nday, nt)
   
   datpath=config.dataPath+f"/series/{exp}/"
+  continuous = 0
   for it in range(nt):
     nc = Dataset(datpath+f'100km/series_conv_{it:06d}.nc', 'r')
     mzeta = nc.variables['max_zeta'][0]
-    if (mzeta > th): 
+    if (mzeta > th):
+      continuous += 1
+    else:
+      continuous = 0
+    if ( continuous >= 9 ):
       break
 
     # nc = Dataset(datpath+f'series_hsf_{it:06d}.nc', 'r')

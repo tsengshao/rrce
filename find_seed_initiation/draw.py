@@ -69,6 +69,7 @@ plt.title('TCseed development time',loc='left',fontweight='bold',y=1.05)
 plt.title('TCseed critia:\ncon100km-Zeta '+r'$1x10^{-4}s^{-1}$', loc='right', \
           y=1.0, fontsize=15)
 plt.savefig('development_time.png', dpi=250)
+plt.show()
 
 
 
