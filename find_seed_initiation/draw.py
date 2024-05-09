@@ -50,6 +50,7 @@ fontcolor = 'white'
 set_black_background()
 
 ylim=[0,72]
+ylim=[0,96]
 
 fig, ax = plt.subplots(figsize=(12,10))
 plt.plot(reday, est_time, '.', c=fontcolor, ms=30)
@@ -60,7 +61,7 @@ for i in range(reday.size):
            fontweight='bold', ha='center', va='bottom', \
            color=fontcolor)
 plt.xlim(reday.min()-3,reday.max()+3)
-plt.yticks(np.arange(0,73,12))
+plt.yticks(np.arange(0,max(ylim)+1,12))
 plt.ylim(ylim)
 plt.grid(True)
 plt.ylabel('[hr]', color=fontcolor)

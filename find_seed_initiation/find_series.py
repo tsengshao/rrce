@@ -33,7 +33,7 @@ for iexp in range(nexp):
       continuous += 1
     else:
       continuous = 0
-    if ( continuous >= 9 ):
+    if ( continuous >= 6 ):
       break
 
     # nc = Dataset(datpath+f'series_hsf_{it:06d}.nc', 'r')
