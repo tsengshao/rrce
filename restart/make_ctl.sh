@@ -2,7 +2,7 @@
 
 expList="RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15 RCE_300K_3km_f0 RCE_300K_3km_f05"
 expList="RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_30"
-expList="RRCE_3km_f00_24"
+expList="RRCE_3km_f00_17 RRCE_3km_f00_18"
 for exp in ${expList};do
 
   rundir="/data/C.shaoyu/rrce/vvm/${exp}"
@@ -34,18 +34,18 @@ for exp in ${expList};do
   nz=$(grep "vert_dimension" ${rundir}/vvm.setup|cut -d"'" -f2|cut -d"/" -f3)
 
   # get lon/lat
-  lat0=$(grep "RLAT=" ${rundir}/vvm.setup|cut -d',' -f1|cut -d'=' -f2)
-  lon0=$(grep "RLON=" ${rundir}/vvm.setup|cut -d',' -f2|cut -d'=' -f2|cut -d' ' -f1)
+  lat0=$(grep "RLAT=" ${rundir}/INPUT|cut -d',' -f1|cut -d'=' -f2)
+  lon0=$(grep "RLON=" ${rundir}/INPUT|cut -d',' -f2|cut -d'=' -f2|cut -d' ' -f1)
   lat0=0
   lon0=0
-  dx=$(grep "DX=" ${rundir}/vvm.setup|cut -d',' -f1|cut -d'=' -f2)
-  dy=$(grep "DY" ${rundir}/vvm.setup|cut -d',' -f2|cut -d'=' -f2)
+  dx=$(grep "DX=" ${rundir}/INPUT|cut -d',' -f1|cut -d'=' -f2)
+  dy=$(grep "DY" ${rundir}/INPUT|cut -d',' -f2|cut -d'=' -f2)
   dlon=$(echo "scale=6;${dx}/111000"|bc)
   dlat=$(echo "scale=6;${dx}/111000"|bc)
   
   # get dt
-  outfreq=$(grep "NXSAVG=" ${rundir}/vvm.setup |cut -d"," -f2|cut -d"=" -f2)
-  dt=$(grep "DT=" ${rundir}/vvm.setup |cut -d"," -f5|cut -d"=" -f2)
+  outfreq=$(grep "NXSAVG=" ${rundir}/INPUT |cut -d"," -f2|cut -d"=" -f2)
+  dt=$(grep "DT=" ${rundir}/INPUT |cut -d"," -f5|cut -d"=" -f2)
   deltatime=$(echo "scale=0;${outfreq}*${dt}/60"|bc)
   echo ${deltatime} min
   

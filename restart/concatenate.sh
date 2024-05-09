@@ -8,7 +8,7 @@ outVvmPath="/data/C.shaoyu/rrce/vvm/"
 typeList="C.Surface L.Diag L.Dynamic L.Radiation L.Thermodynamic"
 #expList="RRCE_3km_f00 RRCE_3km_f05 RRCE_3km_f10 RRCE_3km_f15 RCE_300K_3km_f0 RCE_300K_3km_f05"
 expList="RRCE_3km_f00_20"
-expList="RRCE_3km_f00_24"
+expList="RRCE_3km_f00_17 RRCE_3km_f00_18"
 
 
 for exp in ${expList};do
@@ -26,6 +26,7 @@ for exp in ${expList};do
   ln -sf ${dir}/TOPO.nc      ${out}/
   ln -sf ${dir}/fort.98      ${out}/
   ln -sf ${dir}/vvm.setup    ${out}/
+  ln -sf ${dir}/INPUT        ${out}/
 
   n=$(ls -d ${vvmPath}/${exp}_*|wc -l)
   if [ ${n} -le 0 ]; then
