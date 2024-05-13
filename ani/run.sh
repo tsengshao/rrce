@@ -11,11 +11,10 @@ source ~/.bashrc
 mode="SAVEFIG"
 gs="draw.gs"
 #gs="draw_olr.gs"
-dt=100
-dt=36
+dt=21
 
-#for iexp in $(seq 1 10);do
-for iexp in 8;do
+for iexp in $(seq 1 15);do
+#for iexp in 8;do
   #for i in {0..28};do
   for i in {0..10};do
     ts=$(echo "${i}*${dt}+1"|bc)

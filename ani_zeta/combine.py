@@ -10,7 +10,7 @@ iexp=0
 
 os.system(f'mkdir -p ./combine')
 #for iexp in range(len(config.expList)):
-for iexp in [7]:
+for iexp in [0]:
   exp=config.expList[iexp]
   print(exp)
 

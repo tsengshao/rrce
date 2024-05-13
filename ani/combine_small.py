@@ -15,8 +15,8 @@ iexp=0
 
 fdir='./combine_small/'
 os.system(f'mkdir -p {fdir}')
-#for iexp in range(len(config.expList)):
-for iexp in [-1]:
+for iexp in range(len(config.expList)):
+#for iexp in [-1]:
   exp=config.expList[iexp]
   print(exp)
 
@@ -24,8 +24,8 @@ for iexp in [-1]:
 
   dum0 = get_ImageSeq(f'./fig_olr_rain/{exp}/bla_olrrain_*.png')
   dum1 = get_ImageSeq(f'./fig_czeta_50km/{exp}/bla_cwvczeta_*.png')
-  #dum2 = get_ImageSeq(f'../ani_zeta/fig_zeta/{exp}/bla_11_zeta_*.png')
-  dum2 = get_ImageSeq(f'../compare_conv_hmsf/fig/{exp}/bla_vort_*.png')
+  dum2 = get_ImageSeq(f'../ani_zeta/fig_zeta/{exp}/bla_11_zeta_*.png')
+  #dum2 = get_ImageSeq(f'../compare_conv_hmsf/fig/{exp}/bla_vort_*.png')
   vid = [dum0, dum1, dum2]
 
   (w, h) = vid[0].size

@@ -1,24 +1,21 @@
 #!/usr/bin/bash
-#SBATCH -J draw     # Job name
+#SBATCH -J drawze    # Job name
 #SBATCH -p all     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 30      # Run a single task
+#SBATCH -n 11      # Run a single task
 #SBATCH -w mogamd  # nodelist
-#SBATCH -o draw.%j.out  # output file
+#SBATCH -o drawz.%j.out  # output file
 
 source ~/.bashrc
 mode="SAVEFIG"
 gs="draw.gs"
-dt=100
-#dt=36
+dt=21
 
-#for iexp in $(seq 1 6);do
-#for iexp in 7;do
-for iexp in 1 2;do
+for iexp in $(seq 1 15);do
   for zidx in 1 2 3; do
-    #for i in {0..10};do
-    for i in {0..29};do
+    for i in {0..10};do
+    #for i in {0..29};do
       ts=$(echo "${i}*${dt}+1"|bc)
       te=$(echo "(${i}+1)*${dt}"|bc)
       echo ${i} ${ts} ${te}

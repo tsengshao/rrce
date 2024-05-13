@@ -39,16 +39,17 @@ datPath="/data/C.shaoyu/rrce/data/"
 *tlastList='2881 1441 1081 2880 361 1441 1441 2881'
 dt  = subwrd(dtList, iexp)
 
-expList='f00 f10 f00_10 f00_15 f00_20 f00_21 f00_22 f00_23 f00_25 f00_30'
-tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
+expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_30'
+*tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
 
 exp = 'RRCE_3km_'subwrd(expList, iexp)
 dt  = 20
-if (iexp<=2)
-  tlast = subwrd(tlastList, iexp)
-else
-  tlast = 361
-endif
+* if (iexp<=2)
+*   tlast = subwrd(tlastList, iexp)
+* else
+*   tlast = 361
+* endif
+tlast = 217
 sfctl = subwrd(sfCtlList, iexp)
 sfen  = subwrd(enList, iexp)
 say exp', 'dt', 'tlast', 'type
