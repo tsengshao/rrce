@@ -12,6 +12,6 @@ source ~/.bashrc
 conda activate py311
 
 #for i in $(seq 5 -1 0);do
-for i in 4 5;do
+for i in 4;do
   mpirun -np 30 python -u cal_sf_fft.py ${i}
 done
