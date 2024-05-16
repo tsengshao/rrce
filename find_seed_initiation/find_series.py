@@ -6,15 +6,18 @@ import config
 from netCDF4 import Dataset
 import matplotlib as mpl
 from mpi4py import MPI
+import pandas as pd
 
 comm = MPI.COMM_WORLD
 nproc = comm.Get_size()
 cpuid = comm.Get_rank()
 
 nexp = len(config.expList)
-ofile = open('seed_time.txt','w')
 th=1e-4
-#th=5e5
+
+cols = np.array(['init', '2hr', '4hr', '6hr'])
+ncols = cols.size
+df = pd.DataFrame(np.zeros((nexp, ncols))*np.nan, columns=cols, index=config.expList)
 
 for iexp in range(nexp):
   nt = config.totalT[iexp]
@@ -26,30 +29,34 @@ for iexp in range(nexp):
   
   datpath=config.dataPath+f"/series/{exp}/"
   continuous = 0
+  continuous2 = 0
+  is_filled = np.ones(ncols)*False
+
   for it in range(nt):
     nc = Dataset(datpath+f'100km/series_conv_{it:06d}.nc', 'r')
     mzeta = nc.variables['max_zeta'][0]
-    if (mzeta > th):
+
+    if (mzeta > 1e-4):
       continuous += 1
     else:
       continuous = 0
-    if ( continuous >= 6 ):
-      break
 
-    # nc = Dataset(datpath+f'series_hsf_{it:06d}.nc', 'r')
-    # mzeta = nc.variables['maxsf'][0,10]
-    # if (mzeta > th): 
-    #   break
-
-  if it==nt-1 and mzeta <= th:
-    mzeta=-999.99
-    it   = -999
-
-  line = f'{exp:15s} ... max_zeta = {mzeta:.5f} at {it*dtime/60:7.2f} hours ( {it:3d} {it/72:7.3f})'
-  print(line)
-  ofile.write(line+'\n')
-     
+    if ( continuous >= 1 and not is_filled[0] ):
+      df.iloc[iexp, 0] = it*dtime/60
+      is_filled[0] = True
+    if ( continuous >= 6 and not is_filled[1] ):
+      df.iloc[iexp, 1] = it*dtime/60
+      is_filled[1] = True
+    if ( continuous >= 12 and not is_filled[2] ):
+      df.iloc[iexp, 2] = it*dtime/60
+      is_filled[2] = True
+    if ( continuous >= 18 and not is_filled[3] ):
+      df.iloc[iexp, 3] = it*dtime/60
+      is_filled[3] = True
 
 
+    if ( np.all(is_filled) ):
+      continue
+  print(df.iloc[iexp,:])
 
-
+df.to_csv('seed_time.csv',float_format='%10.2f',index_label='exp_name')

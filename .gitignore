@@ -7,4 +7,5 @@
 *.x
 *.mod
 *.a
+*.csv
 __pycache__

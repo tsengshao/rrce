@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def set_black_background():
   plt.rcParams.update({
@@ -11,37 +12,18 @@ def set_black_background():
                        'xtick.color': 'white',
                        'ytick.color': 'white',
                       })
-  
 
-# explist, est_time = np.loadtxt('seed_time.txt', delimiter=' ', usecols=[0, 6])
-## def rerange(arr):
-##   return np.vstack((arr[-1], arr[:-1]))
-## explist  = rerange(explist)
-## est_time = rerange(est_time)
-
-
-fname = 'seed_time.txt'
-f = open(fname, 'r')
-lines = f.read().split('\n')
-explist  = []
-est_time = []
-reday    = []
-for i in range(len(lines)):
-  if (len(lines[i])<=0): continue
-  exp=lines[i].split()[0]
-  if (exp=='RRCE_3km_f00'): continue
-  explist.append(exp)
-  est_time.append(float(lines[i].split()[6]))
-  if explist[-1]=='RRCE_3km_f10':
-    reday.append(0)
+def get_restart_date_from_expname(expname):
+  if expname=='RRCE_3km_f10':
+    return 0
+  elif expname=='RRCE_3km_f00':
+    return -1
   else:
-    reday.append(int(explist[-1].split('_')[-1]))
-    
-
-explist = np.array(explist)
-est_time = np.array(est_time)
-reday   = np.array(reday)
-est_time[est_time<0] = np.nan
+    strtmp = int(expname.split('_')[-1])
+    return float(strtmp)
+  
+df = pd.read_csv('seed_time.csv')
+df['restart_day'] = df['exp_name'].apply(get_restart_date_from_expname)
 
 plt.rcParams.update({'font.size':20,
                      'axes.linewidth':2,
@@ -50,23 +32,27 @@ fontcolor = 'white'
 set_black_background()
 
 ylim=[0,72]
-ylim=[0,96]
+xlim=[df['restart_day'].min()-3, df['restart_day'].max()+3]
+xlim = [15-3 , df['restart_day'].max()+3]
+
+colist = [fontcolor, '#55A4FF', '#FF8E55', '#E555FF']
 
 fig, ax = plt.subplots(figsize=(12,10))
-plt.plot(reday, est_time, '.', c=fontcolor, ms=30)
-for i in range(reday.size):
-  if est_time[i]<0: continue
-  yyy=est_time[i] if est_time[i]<max(ylim) else max(ylim)-0.5
-  plt.text(reday[i],yyy+1,f'{est_time[i]}',\
-           fontweight='bold', ha='center', va='bottom', \
-           color=fontcolor)
-plt.xlim(reday.min()-3,reday.max()+3)
+for idef in range(df.columns.size-2):
+  plt.plot(df['restart_day'], df.iloc[:,idef+1], '.',
+           c=colist[idef], ms=30, label=df.columns[idef+1])
+plt.legend()
+##   plt.text(reday[i],yyy+1,f'{est_time[i]}',\
+##            fontweight='bold', ha='center', va='bottom', \
+##            color=fontcolor)
 plt.yticks(np.arange(0,max(ylim)+1,12))
+plt.xticks(np.arange(0, 31, 5))
 plt.ylim(ylim)
+plt.xlim(xlim)
 plt.grid(True)
 plt.ylabel('[hr]', color=fontcolor)
 plt.xlabel('the restart day', color=fontcolor)
-plt.title('TCseed development time',loc='left',fontweight='bold',y=1.05)
+plt.title('TCseed development time',loc='left',fontweight='bold', y=1.05)
 plt.title('TCseed critia:\ncon100km-Zeta '+r'$1x10^{-4}s^{-1}$', loc='right', \
           y=1.0, fontsize=15)
 plt.savefig('development_time.png', dpi=250)
