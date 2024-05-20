@@ -15,7 +15,8 @@ cpuid = comm.Get_rank()
 nexp = len(config.expList)
 th=1e-4
 
-cols = np.array(['init', '2hr', '4hr', '6hr'])
+cols = np.array(['init', '2hr', '6hr', '12hr'])
+contime = np.array([0.33333, 2, 6, 12])
 ncols = cols.size
 df = pd.DataFrame(np.zeros((nexp, ncols))*np.nan, columns=cols, index=config.expList)
 
@@ -41,18 +42,10 @@ for iexp in range(nexp):
     else:
       continuous = 0
 
-    if ( continuous >= 1 and not is_filled[0] ):
-      df.iloc[iexp, 0] = it*dtime/60
-      is_filled[0] = True
-    if ( continuous >= 6 and not is_filled[1] ):
-      df.iloc[iexp, 1] = it*dtime/60
-      is_filled[1] = True
-    if ( continuous >= 12 and not is_filled[2] ):
-      df.iloc[iexp, 2] = it*dtime/60
-      is_filled[2] = True
-    if ( continuous >= 18 and not is_filled[3] ):
-      df.iloc[iexp, 3] = it*dtime/60
-      is_filled[3] = True
+    for idef in range(contime.size):
+      if ( continuous >= contime[idef]*60/dtime and not is_filled[idef] ):
+        df.iloc[iexp, idef] = (it-continuous)*dtime/60
+        is_filled[idef] = True
 
 
     if ( np.all(is_filled) ):

@@ -39,7 +39,7 @@ colist = [fontcolor, '#55A4FF', '#FF8E55', '#E555FF']
 
 fig, ax = plt.subplots(figsize=(12,10))
 for idef in range(df.columns.size-2):
-  plt.plot(df['restart_day'], df.iloc[:,idef+1], '.',
+  plt.plot(df['restart_day']+0.1*(idef-(df.columns.size-2)/2), df.iloc[:,idef+1], '.',
            c=colist[idef], ms=30, label=df.columns[idef+1])
 plt.legend()
 ##   plt.text(reday[i],yyy+1,f'{est_time[i]}',\
