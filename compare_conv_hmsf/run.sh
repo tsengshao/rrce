@@ -13,7 +13,7 @@ mode="SAVEFIG"
 gs="draw.gs"
 dt=21
 
-for iexp in $(seq 1 15);do
+for iexp in $(seq 15 18);do
   for i in {0..10};do
     ts=$(echo "${i}*${dt}+1"|bc)
     te=$(echo "(${i}+1)*${dt}"|bc)

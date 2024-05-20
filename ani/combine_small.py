@@ -15,7 +15,8 @@ iexp=0
 
 fdir='./combine_small/'
 os.system(f'mkdir -p {fdir}')
-for iexp in range(len(config.expList)):
+#for iexp in range(len(config.expList)):
+for iexp in [14, 15, 16, 17]:
 #for iexp in [-1]:
   exp=config.expList[iexp]
   print(exp)

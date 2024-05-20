@@ -12,7 +12,7 @@ mode="SAVEFIG"
 gs="draw.gs"
 dt=21
 
-for iexp in $(seq 1 15);do
+for iexp in $(seq 15 18);do
   for zidx in 1 2 3; do
     for i in {0..10};do
     #for i in {0..29};do

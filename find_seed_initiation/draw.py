@@ -24,6 +24,7 @@ def get_restart_date_from_expname(expname):
   
 df = pd.read_csv('seed_time.csv')
 df['restart_day'] = df['exp_name'].apply(get_restart_date_from_expname)
+df = df.iloc[:,[0,1,4,-1]]
 
 plt.rcParams.update({'font.size':20,
                      'axes.linewidth':2,

@@ -44,7 +44,7 @@ for iexp in range(nexp):
 
     for idef in range(contime.size):
       if ( continuous >= contime[idef]*60/dtime and not is_filled[idef] ):
-        df.iloc[iexp, idef] = (it-continuous)*dtime/60
+        df.iloc[iexp, idef] = (it+1-continuous)*dtime/60
         is_filled[idef] = True
 
 

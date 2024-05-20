@@ -10,10 +10,10 @@
 source ~/.bashrc
 mode="SAVEFIG"
 gs="draw.gs"
-#gs="draw_olr.gs"
+gs="draw_olr.gs"
 dt=21
 
-for iexp in $(seq 1 15);do
+for iexp in $(seq 15 18);do
 #for iexp in 8;do
   #for i in {0..28};do
   for i in {0..10};do
