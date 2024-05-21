@@ -3,8 +3,10 @@ function main(args)
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
 
-nexp=8
-expNum='-1 0 10 15 20 21 22 25 30'
+*nexp=19
+*expNum='-1 0 10 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30'
+nexp=18
+expNum='-1 10 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30'
 TE=40
 hashtag='re_'
 outPath="./fig/"
@@ -26,8 +28,8 @@ while(i<=nexp)
   dtList = dtList'20 '
   i=i+1
 endwhile
-*'color -1 30 1 -kind white-(0)->yellow->orange->tomato->fuchsia->blueviolet --sample'
-'color -levs 'expNum' -kind white-(0)->yellow->orange->tomato->fuchsia->blueviolet' 
+colorkind='white-(0)->yellow->orange->tomato->fuchsia->blueviolet'
+'color -levs 'expNum' -kind 'colorkind 
 say expList
 say lcList
 ****** setting the expList and linecolor list ******
@@ -70,7 +72,8 @@ endwhile
 'on.gs'
 
 'set cthick 55'
-'legend bl 'nexp' 10 55 'expList' 'lcList''
+*'legend bl 'nexp' 10 55 'expList' 'lcList''
+'color -levs 'expNum' -kind 'colorkind' -xcbar 9.8 10 1.2 6' 
 
 *X Limits = 1.2 to 10.5
 *Y Limits = 1 to 7.5
