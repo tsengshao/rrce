@@ -12,9 +12,10 @@ source ~/.bashrc
 conda activate py311
 
 #for i in $(seq 0 4);do
-for i in 7;do
+for i in 0;do
   echo ${i}
-  python -u mspace_daily_ptile.py ${i} 
+  #python -u mspace_daily_ptile.py ${i} 
+  python -u mspace_penta_ptile.py ${i} 
 done
 
 wait
