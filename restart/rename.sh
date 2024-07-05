@@ -7,7 +7,7 @@ outVvmPath="/data/C.shaoyu/rrce/vvm/"
 
 typeList="C.Surface L.Diag L.Dynamic L.Radiation L.Thermodynamic"
 expList="RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_30"
-expList="RRCE_3km_f00_20"
+expList="RRCE_3km_f00_30"
 
 for exp in ${expList};do
   echo "----- ${exp} -----"
@@ -24,6 +24,7 @@ for exp in ${expList};do
   ln -sf ${dir}/TOPO.nc      ${out}/
   ln -sf ${dir}/fort.98      ${out}/
   ln -sf ${dir}/vvm.setup    ${out}/
+  ln -sf ${dir}/INPUT    ${out}/
 
   hexp=$(ls ${dir}/archive/*.L.Dynamic-000000.nc|rev|cut -d/ -f1|rev|cut -d. -f1)
   echo ${hexp}
