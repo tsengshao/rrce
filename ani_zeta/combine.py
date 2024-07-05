@@ -9,13 +9,15 @@ iexp=0
 #iexp = int(sys.argv[1])
 
 os.system(f'mkdir -p ./combine')
-#for iexp in range(len(config.expList)):
-for iexp in [14,15,16,17]:
+#for iexp in range(10, len(config.expList)):
+for iexp in range(14,19):
+#for iexp in [14,15,16,17]:
   exp=config.expList[iexp]
   print(exp)
 
   vid = []
-  for idxz in [11, 20, 33]:
+  #for idxz in [11, 20, 33]:
+  for idxz in [6,9,11]:
     # read 
     flist=glob.glob(f'./fig_zeta/{exp}/bla_{idxz}_zeta_*.png')
     flist.sort()

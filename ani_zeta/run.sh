@@ -10,18 +10,25 @@
 source ~/.bashrc
 mode="SAVEFIG"
 gs="draw.gs"
-dt=21
+dt=22
 
-for iexp in $(seq 15 18);do
-  for zidx in 1 2 3; do
+for iexp in $(seq 1 18);do
+  if [ ${iexp} -eq "1" ]; then 
+    dt=231
+  else
+    dt=21
+  fi
+
+  for zidx in 6; do
     for i in {0..10};do
     #for i in {0..29};do
       ts=$(echo "${i}*${dt}+1"|bc)
       te=$(echo "(${i}+1)*${dt}"|bc)
-      echo ${i} ${ts} ${te}
+      echo ${iexp} ${zidx} ${i} ${ts} ${te}
       grads -blcx "run ${gs} ${iexp} -zidx ${zidx} -mode ${mode} -ts ${ts} -te ${te}" &
     done
     wait
+    echo "------"
   done
 done
 

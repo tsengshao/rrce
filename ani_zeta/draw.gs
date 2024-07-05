@@ -35,16 +35,16 @@ datPath="/data/C.shaoyu/rrce/data/"
 
 
 expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_26 f00_27 f00_28 f00_29 f00_30'
-*tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
+tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
+tlastList='2521 2161 1441 1081 2880 361 361 361 1441 1441'
 
 exp = 'RRCE_3km_'subwrd(expList, iexp)
 dt  = 20
-* if (iexp<=2)
-*   tlast = subwrd(tlastList, iexp)
-* else
-*   tlast = 361
-* endif
-tlast = 217
+if (iexp<=1)
+  tlast = subwrd(tlastList, iexp)
+else
+  tlast = 217
+endif
 sfctl = subwrd(sfCtlList, iexp)
 sfen  = subwrd(enList, iexp)
 say exp', 'dt', 'tlast', 'type
@@ -52,6 +52,9 @@ say exp', 'dt', 'tlast', 'type
 if (zidx=1); zname='1.5km';   iz=11; endif
 if (zidx=2); zname='5.75km';  iz=20; endif
 if (zidx=3); zname='12.25km'; iz=33; endif
+if (zidx=4); zname='0.457km'; iz=6; endif
+if (zidx=5); zname='0.952km'; iz=9; endif
+if (zidx=6); zname='0.240km'; iz=4; endif
 
 if (ts='none'); ts=1; endif
 if (te='none'); te=tlast; endif
@@ -114,7 +117,7 @@ say 't='it''
 'xcbar 8.6 8.8 0.8 7.55 -ft 10 -fs 1'
 
 'set cthick 10'
-'color 1 50 1 -gxout contour -kind gray->gray'
+'color 0.1 50 0.1 -gxout contour -kind gray->gray'
 'set clab masked'
 'd msf.5*1e-5'
 
