@@ -1,0 +1,8 @@
+********** center info **********
+variables: stream function
+level    : 951.5 meter ( 8 / surface 0 )
+threshold: 0.0
+center index start from: 0
+********** center info **********
+        ts       mean        max  hori_size   center_x   center_y
+       499   11119.58   90228.18     262.02     190.97      44.50
