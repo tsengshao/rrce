@@ -11,5 +11,8 @@
 source ~/.bashrc
 conda activate py311
 
-mpirun -np 40 python -u cal_distance.py 3
-mpirun -np 40 python -u axisymmertic.py 3
+for i in $(seq 0 18);do
+  #mpirun -np 40 python -u cal_distance.py ${i}
+  #mpirun -np 40 python -u axisymmertic.py ${i}
+  mpirun -np 40 python -u reconstruct_axismap.py ${i}
+done

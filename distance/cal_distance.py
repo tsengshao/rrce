@@ -44,7 +44,9 @@ nt = config.totalT[iexp]
 exp = config.expList[iexp]
 if (cpuid==0): print(exp, nt)
 
-outdir=config.dataPath+"/distance/"+exp+'/'
+center_flag='sf_largest_0'
+
+outdir=config.dataPath+f"/distance/{center_flag}/{exp}/"
 
 # read VVM coordinate
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
@@ -54,8 +56,13 @@ xc, yc, zc = thData['xc'][:], thData['yc'][:], thData['zc'][:]
 rho = vvmLoader.loadRHO()[:-1]
 
 # read location of maximum SF
-locfile=config.dataPath+f"/horisf/{exp}/maxloc_hrisf_0.00km.txt"
-locts, locx, locy = np.loadtxt(locfile, skiprows=1, usecols=[0,1,2], unpack=True, delimiter=',', dtype=int)
+## locfile=config.dataPath+f"/horisf/{exp}/maxloc_hrisf_0.00km.txt"
+## locts, locx, locy = np.loadtxt(locfile, skiprows=1, usecols=[0,1,2], unpack=True, delimiter=',', dtype=int)
+locfile=config.dataPath+f"/find_center/{center_flag}_{exp}.txt"
+locts, locx, locy = np.loadtxt(locfile, skiprows=7, usecols=[0,4,5], unpack=True)
+locts = locts.astype(int)
+locx  = xc[0] + locx*(xc[1]-xc[0])
+locy  = yc[0] + locy*(yc[1]-yc[0])
 
 # mpi for time
 idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
@@ -64,7 +71,9 @@ print(cpuid, idxTS, idxTE, idxTE-idxTS)
 dataWriter = DataWriter(outdir)
 for it in range(idxTS, idxTE):
   if locts[it]!=it: sys.exit('!!ERROR!!: inconsistent timestep')
-  x0, y0 = xc[locx[it]], xc[locy[it]]
+  #x0, y0 = xc[locx[it]], xc[locy[it]]
+  x0, y0 = locx[it], locy[it]
+  print(it, x0, y0)
   distances, theta = compute_shortest_distances_vectorized(xc, yc, x0, y0)
   #u=np.ones(distances.shape)
   #v=np.zeros(distances.shape)+1
@@ -90,15 +99,25 @@ for it in range(idxTS, idxTE):
     )
   )
 
-##  wind convert testing
-##  plt.pcolormesh(xc, yc, theta*180/np.pi)
-##  plt.colorbar()
-##  plt.contour(xc,yc,distances,colors=['k'])
-##  plt.figure()
-##  plt.pcolormesh(xc,yc,u_tangential)
-##  plt.colorbar()
-##  plt.title('u_tangential')
-##  plt.figure()
-##  plt.pcolormesh(xc,yc,u_radial)
-##  plt.colorbar()
-##  plt.title('u_radial')
+
+
+fout = open(f'{outdir}/../dis_{exp}.ctl','w')
+ctl=f"""
+DSET ^./{exp}/dis-%tm6.nc
+DTYPE netcdf
+OPTIONS template
+TITLE C.Surface variables
+UNDEF 99999.
+CACHESIZE 10000000
+XDEF 384 LINEAR 0. .027027
+YDEF 384 LINEAR 0. .027027
+ZDEF 1 LEVELS 1000
+TDEF {nt} LINEAR 01JAN1998 {config.getExpDeltaT(exp)}mn
+VARS 2
+  dis=>dis 0 t,y,x dis
+  angle=>angle 0 t,y,x angle
+ENDVARS
+"""
+fout.write(ctl)
+fout.close()
+
