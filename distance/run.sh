@@ -14,5 +14,6 @@ conda activate py311
 for i in $(seq 0 18);do
   #mpirun -np 40 python -u cal_distance.py ${i}
   #mpirun -np 40 python -u axisymmertic.py ${i}
-  mpirun -np 40 python -u reconstruct_axismap.py ${i}
+  #mpirun -np 40 python -u reconstruct_axismap.py ${i}
+  mpirun -np 40 python -u cal_axisymmetricity.py ${i}
 done
