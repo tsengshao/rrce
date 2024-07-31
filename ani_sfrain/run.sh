@@ -9,7 +9,7 @@
 
 source ~/.bashrc
 mode="SAVEFIG"
-gs="draw_sfrain.gs"
+gs="draw_sfws.gs"
 dt=21
 
 for iexp in $(seq 1 19);do
@@ -29,4 +29,5 @@ for iexp in $(seq 1 19);do
 done
 wait
 
-#bash make.sh
+bash make.sh
+wait
