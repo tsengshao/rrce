@@ -30,6 +30,12 @@ colorkind='white-(0)->yellow->orange->tomato->fuchsia->blueviolet'
 'color -levs 'expNum' -kind 'colorkind 
 say expList
 say lcList
+
+****
+iz=9
+zhei='1km'
+****
+
 ****** setting the expList and linecolor list ******
 
 '! mkdir -p 'outPath
@@ -46,7 +52,8 @@ dt=subwrd(dtList,1)
 idxTS=1
 idxTE=math_format('%.0f', TE*24*60/dt+1)
 'set t 1 'idxTE
-'set lev 1500'
+*'set lev 1500'
+'set z 'iz
 'set xlabs 0||'TE/4'||'TE/2'||'TE*0.75'||'TE
 
 'set parea 1.2 10.5 1 7.5'
@@ -88,10 +95,10 @@ endwhile
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 *'draw string 1.2 8 'exp
-'draw string 1.2 7.65 maximum stream function @1.5km'
+'draw string 1.2 7.65 maximum stream function @'zhei
 
 
-'gxprint 'outPath'/'hashtag'max_msf1p5.png x1600 y1200'
-'gxprint 'outPath'/white/'hashtag'max_msf1p5.png x1600 y1200 white'
+'gxprint 'outPath'/'hashtag'max_msf'zhei'.png x1600 y1200'
+'gxprint 'outPath'/white/'hashtag'max_msf'zhei'.png x1600 y1200 white'
 
 exit
