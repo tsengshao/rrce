@@ -1,6 +1,6 @@
 function main(args)
 iexp = subwrd(args,1)
-if (iexp = ''); iexp=6; endif
+if (iexp = ''); iexp=1; endif
 
 **default 
 te='none'
@@ -28,28 +28,32 @@ endwhile
 
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
-expList='RCE_300K_3km_f0 RCE_300K_3km_f05 RRCE_3km_f00 RRCE_3km_f05 RRCE_3km_f10 RRCE_3km_f15 RRCE_3km_f20'
-dtList='60 60 20 20 20 20 20 20'
-tlastList='2137 2030 3654 2765 2286 2161 2138'
+expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_26 f00_27 f00_28 f00_29 f00_30'
+*tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
 
-sfCtlList='RCE_300K_3km RCE_300K_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km RRCE_3km'
-enList='1 2 1 2 3 4 5'
-
-drawradi="TRUE"
-drawqc="FALSE"
-drawqv="TRUE"
-exp = subwrd(expList, iexp)
-dt  = subwrd(dtList, iexp)
-tlast = subwrd(tlastList, iexp)
-sfctl = subwrd(sfCtlList, iexp)
-sfen  = subwrd(enList, iexp)
+exp = 'RRCE_3km_'subwrd(expList, iexp)
+dt  = 20
+*tlast = subwrd(tlastList, iexp)
+*tlast = 217
+if (iexp<=1)
+  tlast = 2521
+else
+  tlast = 217
+endif
 say exp', 'dt', 'tlast
 
 if (ts='none'); ts=1; endif
 if (te='none'); te=tlast; endif
 if (te>tlast);  te=tlast; endif
 
-outPath="./fig/"exp"/"
+centertype='sf_largest_0'
+
+drawradi="FALSE"
+drawtang="TRUE"
+drawqc="FALSE"
+drawqv="FALSE"
+
+outPath="./fig_axisym/"centertype"/"exp"/"
 '! mkdir -p 'outPath
 
 ******** write the status *******
@@ -59,11 +63,11 @@ say 'drawing mode ... 'mode
 say 'iexp='iexp', exp='exp', dt='dt
 say 'ts='ts', te='te
 say 'radial   : 'drawradi
+say 'tang     : 'drawtang
 say 'qc   : 'drawqc
 say 'qv   : 'drawqv
 
 say 'outpath='outPath
-say 'outPathBlack='outPathBlack
 say '**********'
 say ''
 ********************************
@@ -71,10 +75,16 @@ say ''
 'reinit'
 *'set background 1'
 'c'
-'open 'datPath'/distance/'exp'_axisym.ctl'
+'open 'datPath'/distance/'centertype'/axisym_'exp'.ctl'
+'open 'datPath'/distance/'centertype'/axisym_gamma_'exp'.ctl'
+
+* get dx
+'q ctlinfo'
+line=sublin(result, 5)
+dx = subwrd(line,5)
+nx = subwrd(line,2)
 
 it = ts
-*while(it<=tlast)
 while(it<=te)
 say 't='it''
 'c'
@@ -86,10 +96,10 @@ say 't='it''
 'set timelab off'
 'set mpdraw off'
 
-'set x 1 100'
-'set lev 0 16'
+'set x 1 'nx
+'set lev 0 16000'
 'set xlabs ||||||||||'
-'set ylabs 0|4|8|12|16'
+'set ylabs 0|2|4|6|8|10|12|14|16'
 
 'set t 'it
 if (drawqv="TRUE")
@@ -123,6 +133,20 @@ if ( drawradi="TRUE" )
   'd radi'
 endif
 
+if ( drawtang="TRUE" )
+  'color -10 10 1 -kind darkviolet->blueviolet->white->orange->crimson -gxout grfill'
+  'd tang'
+
+  'set gxout contour'
+  'set clevs 0.1 0.5 0.75 1'
+  'set rgb 40 0 0 0'
+  'set ccolor 40'
+  'set clab masked'
+  'd tang.2'
+
+  'xcbar 9.8 10 3.5 7.5 -ft 10' 
+endif
+
 if (drawqc="TRUE")
   'set gxout contour'
   'set clevs 0 0.02 0.04 0.06 0.08 0.1 0.15 0.2 0.3 1'
@@ -138,41 +162,46 @@ endif
 'draw string 0.25 5.25 [km]'
 
 *------ draw lower pannel
+tot=nx*dx
+idxz=9
+idxhei='0.9km'
+
 'set parea 1 9.5 1 3'
-'set xlabs 0|50|100|150|200|250|300|350|400|450|500'
-'set vrange 10 90'
-'set ylabs 10|30|50|70|90'
+'set xlabs 0|'tot*1/10'|'tot*2/10'|'tot*3/10'|'tot*4/10'|'tot*5/10'|'tot*6/10'|'tot*7/10'|'tot*8/10'|'tot*9/10'|'tot
+
+'set vrange 0 1'
+'set ylabs 0|.25|0.5|0.75|1'
 'set cmark 0'
 'set lwid 50 5'
 'set cthick 50'
 'set ccolor 1'
-'set z 1'
-'d maskout(cwv,sample>0)'
+'set z 'idxz
+'d maskout(tang.2,sample(z=1)>0)'
 
 'set parea 1 9.5 1 3'
 'off'
-'set vrange -10 30'
+'set vrange 0 8' 
 'set cmark 0'
 'set cthick 50'
 
 'set rgb 50 240 145 255'
 'set ccolor 50'
-'d maskout(tang(z=1), sample>0)'
+'d maskout(tang, sample(z=1)>0)'
 'set string 50 l 10 0'
-'draw string 9.6 1   -10'
-'draw string 9.6 1.5 0'
-'draw string 9.6 2   10'
-'draw string 9.6 2.5 20'
-'draw string 9.6 3   30'
+'draw string 9.6 1   0'
+'draw string 9.6 1.5 2'
+'draw string 9.6 2   4'
+'draw string 9.6 2.5 6'
+'draw string 9.6 3   8'
 
 'set string 50 tc 10 90'
-'draw string 10.2 2 Wind`btangential`n@Surf.'
+'draw string 10.2 2 Wind`btangential`n@0.9km'
 'draw string 10.6 2 [m/s]'
 'on'
 
 'set string 1 c 10 90'
-'set strsiz 0.17'
-'draw string 0.25 2 CWV [mm]'
+'set strsiz 0.2'
+'draw string 0.15 2 axisymmetricity'
 
 'set string 1 tr 10 0'
 'set strsiz 0.17'
@@ -184,24 +213,32 @@ endif
 
 day=(it-1)*dt/60/24
 dy=math_format( '%.3f', day)
+
+hour=(it-1)*dt/60
+hr=math_format('%.1f', hour)
+
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 'draw string 1 8 'exp
-title='anomaly_qv [g/kg]'
+title='tangwind[m/s] / axisymmetricity'
 if ( drawradi="TRUE" ); title=title' / radial wind [m/s]';endif
 if ( drawqc="TRUE"); title=title' / qc [g/kg]'; endif
-*if ( drawqv="TRUE"); title=title' / anomaly_qv [g/kg]'; endif
+if ( drawqv="TRUE"); title=title' / anomaly_qv [g/kg]'; endif
 
 'draw string 1 7.65 'title
 
 'set string 1 br 10 0'
 'set strsiz 0.2'
-'draw string 9.5 7.65 'dy'days'
+if ( RRCE_3km_f00=exp )
+  'draw string 9.5 8 'dy'days'
+else
+  'draw string 9.5 8 'hr'hours'
+endif
 
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
-  'gxprint 'outPath'/whi_axsym_qv_'itt'.png x2400 y1800 white'
-  'gxprint 'outPath'/bla_axsym_qv_'itt'.png x2400 y1800'
+*  'gxprint 'outPath'/whi_axisym_'itt'.png x2400 y1800 white'
+  'gxprint 'outPath'/bla_axisym_tang_'itt'.png x2400 y1800'
   it = it+1
 endif
 

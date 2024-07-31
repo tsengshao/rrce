@@ -71,6 +71,7 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
+if exp!='RRCE_3km_f00': nt=217
 if (cpuid==0): print(exp, nt)
 
 center_flag = 'sf_largest_0'
@@ -109,6 +110,7 @@ for it in range(idxTS, idxTE):
   v = dyData['v'][0].data #3d, m/s
   w = dyData['w'][0].data #3d, m/s
   zeta = dyData['zeta'][0].data #3d
+  ws = np.sqrt(u**2+v**2)
   u_radial, u_tangential = convert_uv2rt(u,v,angle[np.newaxis,:,:])
 
   thData = vvmLoader.loadThermoDynamic(it)
@@ -137,6 +139,7 @@ for it in range(idxTS, idxTE):
   naxxc=ax_xc.size
   ax_radi = ax_average3d(u_radial,     dis_idx, naxxc)
   ax_tang = ax_average3d(u_tangential, dis_idx, naxxc)
+  ax_ws   = ax_average3d(ws,           dis_idx, naxxc)
   ax_w    = ax_average3d(w,            dis_idx, naxxc)
   ax_zeta = ax_average3d(zeta,         dis_idx, naxxc)
   ax_qv   = ax_average3d(qv,           dis_idx, naxxc)
@@ -161,6 +164,7 @@ for it in range(idxTS, idxTE):
     data=dict(
       u_radi=(["time", "zc", "rc"], ax_radi[np.newaxis, :, :], {'units':'m s-1'}),\
       u_tang=(["time", "zc", "rc"], ax_tang[np.newaxis, :, :], {'units':'m s-1'}),\
+      ws    =(["time", "zc", "rc"], ax_ws[np.newaxis, :, :],   {'units':'m s-1'}),\
       w     =(["time", "zc", "rc"], ax_w[np.newaxis,:,:],      {'units':'m s-1'}),\
       zeta  =(["time", "zc", "rc"], ax_zeta[np.newaxis,:,:],   {'units':'s-1'}),\
       qv    =(["time", "zc", "rc"], ax_qv[np.newaxis,:,:],     {'units':'kg kg-1'}),\
@@ -198,9 +202,10 @@ DSET ^./{exp}/axisym-%tm6.nc
  YDEF 1 LINEAR 0. .027027
  ZDEF {nz} LEVELS {' '.join(['%.1f'%i for i in zc])}
  TDEF {nt} LINEAR 01JAN1998 {config.getExpDeltaT(exp)}mn
- VARS 19
+ VARS 20
   u_radi=>radi 75 t,z,x "m s-1" 
   u_tang=>tang 75 t,z,x "m s-1" 
+  ws=>ws       75 t,z,x "m s-1" 
   w=>w         75 t,z,x "m s-1" 
   zeta=>zeta   75 t,z,x "s-1" 
   qv=>qv       75 t,z,x "kg kg-1" 

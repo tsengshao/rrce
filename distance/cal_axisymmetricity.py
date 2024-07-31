@@ -71,6 +71,7 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
+if exp!='RRCE_3km_f00': nt=217
 if (cpuid==0): print(exp, nt)
 
 center_flag = 'sf_largest_0'
@@ -160,10 +161,11 @@ DSET ^./{exp}/axisym_gamma-%tm6.nc
  YDEF 1 LINEAR 0 1
  ZDEF {nz} LEVELS {' '.join(['%.1f'%i for i in zc])}
  TDEF {nt} LINEAR 01JAN1998 {config.getExpDeltaT(exp)}mn
- VARS 17
+ VARS 18
   u_radi=>radi {nz} t,z,x "m s-1" 
   u_tang=>tang {nz} t,z,x "m s-1" 
   w=>w         {nz} t,z,x "m s-1" 
+  ws=>ws       {nz} t,z,x "m s-1" 
   qv=>qv       {nz} t,z,x "kg kg-1" 
   qc=>qc       {nz} t,z,x "kg kg-1" 
   qi=>qi       {nz} t,z,x "kg kg-1" 

@@ -57,6 +57,7 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
+if exp!='RRCE_3km_f00': nt=217
 if (cpuid==0): print(exp, nt)
 
 center_flag = 'sf_largest_0'
@@ -118,17 +119,20 @@ for it in range(idxTS, idxTE):
   axsy_radi = nc_ax.variables['u_radi'][0, :iztop].data
   axsy_tang = nc_ax.variables['u_tang'][0, :iztop].data
   axsy_w = nc_ax.variables['w'][0, :iztop].data
+  axsy_ws = nc_ax.variables['ws'][0, :iztop].data
   dyData = vvmLoader.loadDynamic(it)
   u = dyData['u'][0, :iztop].data #3d, m/s
   v = dyData['v'][0, :iztop].data #3d, m/s
+  ws = np.sqrt(u**2+v**2)
   w = dyData['w'][0, :iztop].data #3d, m/s
   u_radial, u_tangential = convert_uv2rt(u,v,angle[np.newaxis,:,:])
 
   cons_radi = construct_AaA_3d(u_radial,     axsy_radi, dis_idx)
   cons_tang = construct_AaA_3d(u_tangential, axsy_tang, dis_idx)
   cons_w    = construct_AaA_3d(w,           axsy_w,    dis_idx)
-  del axsy_radi, axsy_tang, axsy_w
-  del u, v, w, u_radial, u_tangential
+  cons_ws   = construct_AaA_3d(ws,          axsy_w,    dis_idx)
+  del axsy_radi, axsy_tang, axsy_w, axsy_ws
+  del u, v, w, u_radial, u_tangential, ws
 
   axsy_qv   = nc_ax.variables['qv'][0, :iztop].data
   axsy_qc   = nc_ax.variables['qc'][0, :iztop].data
@@ -181,6 +185,7 @@ for it in range(idxTS, idxTE):
         u_radi=(["time", "zc", "yc", "xc"],   cons_radi[idx][np.newaxis, :, :], {'units':'m s-1'}),\
         u_tang=(["time", "zc", "yc", "xc"],   cons_tang[idx][np.newaxis, :, :], {'units':'m s-1'}),\
         w     =(["time", "zc", "yc", "xc"],   cons_w[idx][np.newaxis,:,:],      {'units':'m s-1'}),\
+        ws    =(["time", "zc", "yc", "xc"],   cons_ws[idx][np.newaxis,:,:],     {'units':'m s-1'}),\
         qv    =(["time", "zc", "yc", "xc"],   cons_qv[idx][np.newaxis,:,:],     {'units':'kg kg-1'}),\
         qc    =(["time", "zc", "yc", "xc"],   cons_qc[idx][np.newaxis,:,:],     {'units':'kg kg-1'}),\
         qi    =(["time", "zc", "yc", "xc"],   cons_qi[idx][np.newaxis,:,:],     {'units':'kg kg-1'}),\
@@ -221,10 +226,11 @@ for idx in dic.keys():
    YDEF {yc.size} LINEAR {yc[0]} {yc[1]-yc[0]}
    ZDEF {zc.size} LEVELS {' '.join(['%.1f'%i for i in zc])}
    TDEF {nt} LINEAR 01JAN1998 {config.getExpDeltaT(exp)}mn
-   VARS 20
+   VARS 21
     u_radi=>radi 75 t,z,y,x "m s-1" 
     u_tang=>tang 75 t,z,y,x "m s-1" 
     w=>w         75 t,z,y,x "m s-1" 
+    ws=>ws       75 t,z,y,x "m s-1" 
     qv=>qv       75 t,z,y,x "kg kg-1" 
     qc=>qc       75 t,z,y,x "kg kg-1" 
     qi=>qi       75 t,z,y,x "kg kg-1" 

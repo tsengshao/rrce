@@ -42,6 +42,7 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
+if exp!='RRCE_3km_f00': nt=217
 if (cpuid==0): print(exp, nt)
 
 center_flag='sf_largest_0'
@@ -73,7 +74,7 @@ for it in range(idxTS, idxTE):
   if locts[it]!=it: sys.exit('!!ERROR!!: inconsistent timestep')
   #x0, y0 = xc[locx[it]], xc[locy[it]]
   x0, y0 = locx[it], locy[it]
-  print(it, x0, y0)
+  #print(it, x0, y0)
   distances, theta = compute_shortest_distances_vectorized(xc, yc, x0, y0)
   #u=np.ones(distances.shape)
   #v=np.zeros(distances.shape)+1
