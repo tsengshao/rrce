@@ -18,7 +18,12 @@ def set_black_background():
                        'text.color': 'white',
                        'xtick.color': 'white',
                        'ytick.color': 'white',
+                       'axes.labelcolor': 'white',
                       })
+
+plt.rcParams.update({'font.size':20,
+                     'axes.linewidth':2,
+                     'lines.linewidth':5})
 
 comm = MPI.COMM_WORLD
 nproc = comm.Get_size()
@@ -26,11 +31,7 @@ cpuid = comm.Get_rank()
 
 nexp = len(config.expList)
 
-nc = Dataset(config.dataPath+"/series/RRCE_3km_f00_10/series_hsf_000000.nc",'r')
-zz = nc.variables['zz'][:]
-iz1p5 = np.argmin(np.abs(zz-1500))
-iz1p5 = np.argmin(np.abs(zz-1000))
-zhei=zz[iz1p5]
+center_flag = 'sf_largest_0'
 
 df = pd.DataFrame(np.zeros((nexp,3)), columns=['restart_day', 'nself', 'nf00'])
 
@@ -48,28 +49,28 @@ for iexp in range(nexp):
   else:
     restart_day = 0
   
-  datpath=config.dataPath+f"/series/{exp}/"
+  #../../data/find_center/sf_largest_0_RRCE_3km_f00.txt
+  datdir=config.dataPath+f"/find_center/"
+  
+  # read hei
+  f=open(f'{datdir}/{center_flag}_{exp}.txt','r')
+  line = f.read().split('\n')[2]
+  zhei = float(line.split()[2])
+  
+  data = np.loadtxt(f'{datdir}/{center_flag}_{exp}.txt', skiprows=7, usecols=[0,1])
+  mzeta0 = data[0,1]
+  mzeta1 = data[216,1]
 
-  it=0
-  nc = Dataset(datpath+f'series_hsf_{it:06d}.nc', 'r')
-  mzeta0 = nc.variables['maxsf'][0,iz1p5]
 
-  it=216
-  nc = Dataset(datpath+f'series_hsf_{it:06d}.nc', 'r')
-  mzeta1 = nc.variables['maxsf'][0,iz1p5]
-
-  it=restart_day*3*24+217
-  nc = Dataset(datpath+f'../RRCE_3km_f00/series_hsf_{it:06d}.nc', 'r')
-  mzeta2 = nc.variables['maxsf'][0,iz1p5]
+  data = np.loadtxt(f'{datdir}/{center_flag}_RRCE_3km_f00.txt', skiprows=7, usecols=[0,1])
+  it=restart_day*3*24+216
+  mzeta2 = data[it,1]
 
   df.iloc[iexp,0] = restart_day
   df.iloc[iexp,1] = mzeta1/mzeta0
   df.iloc[iexp,2] = mzeta1/mzeta2
 
 
-plt.rcParams.update({'font.size':20,
-                     'axes.linewidth':2,
-                     'lines.linewidth':2})
 fontcolor = 'white'
 set_black_background()
 
@@ -94,10 +95,10 @@ plt.xticks(xticks, xtlabel)
 plt.ylim(ylim)
 plt.xlim(xlim)
 plt.grid(True)
-plt.ylabel('max SF ratio', color=fontcolor)
-plt.xlabel('the restart day', color=fontcolor)
-plt.title(f'maxSF@{zhei*1e-3:.1f}km enhancement in 3days',loc='left',fontweight='bold')
-plt.savefig('scatter_msf.png', dpi=250)
+plt.ylabel('center SF ratio')
+plt.xlabel('the restart day')
+plt.title(f'centerSF@{zhei*1e-3:.1f}km enhancement in 3days',loc='left',fontweight='bold')
+plt.savefig('scatter_msf_center.png', dpi=250)
 plt.show()
 
 
