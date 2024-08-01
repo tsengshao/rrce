@@ -74,8 +74,8 @@ for iexp in range(nexp):
 fontcolor = 'white'
 set_black_background()
 
-ylim=[3,20]
-xlim = [15-0.6 , df['restart_day'].max()+0.6]
+ylim=[6,20]
+xlim = [10-0.6 , df['restart_day'].max()+0.6]
 
 colist = [fontcolor, '#55A4FF', '#FF8E55', '#E555FF']
 
@@ -87,9 +87,9 @@ plt.legend()
 yticks=np.arange(0,max(ylim)+1,2)
 plt.yticks(yticks)
 
-xticks = np.arange(0,31,1)
+xticks = np.arange(0,31,2)
 xtlabel = xticks.astype(str)
-xtlabel[1::2]=''
+#xtlabel[1::2]=''
 plt.xticks(xticks, xtlabel)
 
 plt.ylim(ylim)
@@ -97,9 +97,9 @@ plt.xlim(xlim)
 plt.grid(True)
 plt.ylabel('center SF ratio')
 plt.xlabel('the restart day')
-plt.title(f'centerSF@{zhei*1e-3:.1f}km enhancement in 3days',loc='left',fontweight='bold')
+plt.title(f'centerSF@{zhei:.1f}m enhancement in 3days',loc='left',fontweight='bold')
 plt.savefig('scatter_msf_center.png', dpi=250)
-plt.show()
+#plt.show()
 
 
 
