@@ -9,6 +9,7 @@ typeList="C.Surface L.Diag L.Dynamic L.Radiation L.Thermodynamic"
 #expList="RRCE_3km_f00 RRCE_3km_f05 RRCE_3km_f10 RRCE_3km_f15 RCE_300K_3km_f0 RCE_300K_3km_f05"
 expList="RRCE_3km_f00_20"
 expList="RRCE_3km_f00_26 RRCE_3km_f00_27 RRCE_3km_f00_28 RRCE_3km_f00_29"
+expList="RRCE_3km_f00 RRCE_3km_f10"
 
 
 for exp in ${expList};do

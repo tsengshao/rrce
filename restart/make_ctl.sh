@@ -2,7 +2,7 @@
 
 expList="RRCE_3km_f00 RRCE_3km_f10 RRCE_3km_f15 RCE_300K_3km_f0 RCE_300K_3km_f05"
 expList="RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_30"
-expList="RRCE_3km_f00_30"
+expList="RRCE_3km_f00 RRCE_3km_f00_30 RRCE_3km_f10"
 for exp in ${expList};do
 
   rundir="/data/C.shaoyu/rrce/vvm/${exp}"
@@ -29,6 +29,15 @@ for exp in ${expList};do
   
   # ----- dimension
   nt=$(ls ${ncdir}/*.${dum0}.${dum1}-*.nc|wc -l)
+  # n=0
+  # nfmt=$(printf "%06d" ${n})
+  # echo "${ncdir}/${ncheader}.${dum0}.${dum1}-${nfmt}.nc"
+  # while [ -f ${ncdir}/${ncheader}.${dum0}.${dum1}-${nfmt}.nc ]; do
+  #   n=$(echo "${n}+1"|bc)
+  #   nfmt=$(printf "%06d" ${n})
+  # done
+  # nt=${n}
+
   nx=$(grep "zonal_dimension" ${rundir}/vvm.setup|cut -d"'" -f2|cut -d"/" -f3)
   ny=$(grep "merid_dimension" ${rundir}/vvm.setup|cut -d"'" -f2|cut -d"/" -f3)
   nz=$(grep "vert_dimension" ${rundir}/vvm.setup|cut -d"'" -f2|cut -d"/" -f3)
