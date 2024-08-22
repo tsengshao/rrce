@@ -34,7 +34,7 @@ dtime = config.getExpDeltaT(exp)    #minutes
 center_flag = 'sf_largest_0'
 datdir=config.dataPath+f"/distance/{center_flag}/{exp}/"
 
-outpath=f'./fig/{center_flag}/{exp}/'
+outpath=f'./fig_radi/{center_flag}/{exp}/'
 os.system(f'mkdir -p {outpath}')
 
 nc = Dataset(f'{datdir}/axisym-{10:06d}.nc', 'r')
@@ -42,6 +42,7 @@ rc = nc.variables['rc'][:]
 zc = nc.variables['zc'][:]
 izc = np.argmin(np.abs(zc-1000))-1
 izc = 8; zhei='951.5m'
+izc = 0; zhei='Surf.'
 nc.close()
 
 #rossby number
@@ -50,12 +51,14 @@ f = 2*2*np.pi/86400*np.sin(np.pi/180* 10)
 func_L_rossby = lambda u: u/f/1000 #[km], u[m/s]
 U_rossby = rc*1000*f  #[m/s]
 
-for it in range(nt):
+#for it in range(nt):
+for it in [216]:
   print(it)
   ncax = Dataset(f'{datdir}/axisym-{it:06d}.nc', 'r')
   ncga = Dataset(f'{datdir}/axisym_gamma-{it:06d}.nc', 'r')
   vname = 'u_tang'
   vname = 'ws'
+  vname = 'u_radi'
   ws = ncax[vname][0,izc,:]
   ws_gamma = ncga[vname][0,izc,:]
   
@@ -78,8 +81,10 @@ for it in range(nt):
   plt.plot(rc, ws, c=c, alpha=0.5)
   plt.plot(rc, np.where(ws_gamma>0.5, ws, np.nan), c=c, alpha=1)
   plt.plot(rc, U_rossby, '--', c=c, lw=3)
+  plt.plot(rc, -1*U_rossby, '--', c=c, lw=3)
   plt.ylabel(f'{vname} [m/s]')
-  plt.ylim(0, 16)
+  #plt.ylim(0, 16)
+  plt.ylim(-5, 5)
   plt.grid(True)
   plt.gca().yaxis.label.set_color(c)
   plt.gca().tick_params(axis='y', colors=c)
@@ -91,9 +96,10 @@ for it in range(nt):
   c = 'C1'
   plt.plot(rc, func_L_rossby(ws), c=c, alpha=0.5)
   plt.plot(rc, np.where(ws_gamma>0.5, func_L_rossby(ws), np.nan), c=c, alpha=1)
-  plt.plot(rc, rc, '--', c=c, lw=3)
+  plt.plot(rc, rc, '--', c=c,  lw=3)
+  plt.plot(rc, -rc, '--', c=c, lw=3)
   plt.ylabel('R [km]')
-  plt.ylim(0, 800)
+  plt.ylim(-500, 500)
   plt.xlim(0, xticks.max())
   plt.gca().yaxis.label.set_color(c)
   plt.gca().tick_params(axis='y', colors=c)
@@ -117,4 +123,5 @@ for it in range(nt):
   plt.grid(True)
   
   plt.savefig(f'./{outpath}/{vname}_{it:06d}.png', dpi=200)
+  plt.show()
   plt.close('all')
