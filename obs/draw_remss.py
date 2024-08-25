@@ -27,30 +27,42 @@ def set_black_background():
 
 # ASCAT metop-B
 inpath='/data/C.shaoyu/data/'
+
+iasc = 1 # local morning (descending) passes, local evening (ascending) passes
 fname_ascat='ascatb_20240716_v02.1.gz'
 fname_mtpw2 = 'comp20240716.120000.nc'
 fname_h8    = '202407161240.tir.02.fld.dat'
 
+iasc = 0
 fname_ascat = 'ascatb_20240718_v02.1.gz'
-fname_mtpw2 = 'comp20240718.120000.nc'
-fname_h8    = '202407181200.tir.02.fld.dat'
+fname_mtpw2 = 'comp20240718.010000.nc'
+fname_h8    = '202407180050.tir.02.fld.dat'
 
-fname_ascat = 'ascatb_20240719_v02.1.gz'
-fname_mtpw2 = 'comp20240719.120000.nc'
-fname_h8    = '202407191140.tir.02.fld.dat'
-
+## iasc = 1
+## fname_ascat = 'ascatb_20240718_v02.1.gz'
+## fname_mtpw2 = 'comp20240718.120000.nc'
+## fname_h8    = '202407181200.tir.02.fld.dat'
+## 
+## iasc = 1
+## fname_ascat = 'ascatb_20240719_v02.1.gz'
+## fname_mtpw2 = 'comp20240719.120000.nc'
+## fname_h8    = '202407191140.tir.02.fld.dat'
+## 
+## iasc = 0
+## fname_ascat = 'ascatb_20240719_v02.1.gz'
+## fname_mtpw2 = 'comp20240719.000000.nc'
+## fname_h8    = '202407190030.tir.02.fld.dat'
 
 lonb = [115, 145]
 latb = [-5,  25]
 
 figdate = datetime.strptime(fname_h8.split('.')[0],'%Y%m%d%H%M')
 str_title_date = figdate.strftime('%Y%m%d_%H:%MZ')
-str_file = figdate.strftime('%Y%m%d')
+str_file = figdate.strftime('%Y%m%d')+f'_{iasc}'
 
 
 # ---------------------
 # -- ascat, remss -----
-iasc = 1 # local morning (descending) passes, local evening (ascending) passes
 ds = ASCATDaily(f"{inpath}/ascat/remss/{fname_ascat}", missing=-999.)
 
 # get lon/lat:
