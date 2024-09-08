@@ -1,15 +1,16 @@
-function main(args)
-iexp = subwrd(args,1)
-if (iexp = ''); iexp=6; endif
 
-**default 
+function main(args)
+
+iexp = subwrd(args,1)
+if (iexp = ''); iexp=3; endif
+
+** ========= default =========**
 te='none'
-ts='1'
+ts='none'
 *mode='SAVEFIG'
 mode='PAUSE'
-type='zeta'
-zidx=5
-**default
+type=''
+** ========= default =========**
 
 i = 2
 while( 1 )
@@ -24,82 +25,51 @@ while( 1 )
     if( arg = '-ts' ) ; ts=subwrd(args,i) ; i=i+1 ; break ; endif
     if( arg = '-mode' ) ; mode=subwrd(args,i) ; i=i+1 ; break ; endif
     if( arg = '-type' ) ; type=subwrd(args,i) ; i=i+1 ; break ; endif
-    if( arg = '-zidx' ) ; zidx=subwrd(args,i) ; i=i+1 ; break ; endif
     say 'syntax error: 'arg
     return
   endwhile
 endwhile
 
+
+
 vvmPath="/data/C.shaoyu/rrce/vvm/"
 datPath="/data/C.shaoyu/rrce/data/"
 
-
+*expList='f00 f10 f00_10 f00_15 f00_20 f00_21 f00_22 f00_23 f00_25 f00_30'
 expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_26 f00_27 f00_28 f00_29 f00_30'
 tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
-tlastList='2521 2161 1441 1081 2880 361 361 361 1441 1441'
 
 exp = 'RRCE_3km_'subwrd(expList, iexp)
 dt  = 20
-if (iexp<=1)
-  tlast = subwrd(tlastList, iexp)
-else
-  tlast = 217
-endif
+tlast = subwrd(tlastList, iexp)
+tlast = 217
 sfctl = subwrd(sfCtlList, iexp)
 sfen  = subwrd(enList, iexp)
 say exp', 'dt', 'tlast', 'type
 
-if (zidx=1); zname='1.5km';   iz=11; endif
-if (zidx=2); zname='5.75km';  iz=20; endif
-if (zidx=3); zname='12.25km'; iz=33; endif
-if (zidx=4); zname='0.457km'; iz=6; endif
-if (zidx=5); zname='0.952km'; iz=9; endif
-if (zidx=6); zname='0.240km'; iz=4; endif
-
 if (ts='none'); ts=1; endif
 if (te='none'); te=tlast; endif
 if (te>tlast);  te=tlast; endif
-
-drawzeta="FALSE"
-drawcore="FALSE"
-if ( type = 'zeta' )
-  drawzeta="TRUE"
-  drawcore="TRUE"
-endif
-
-outPath="./fig_"type"/"exp
-'! mkdir -p 'outPath
-
-******** write the status *******
-say ''
-say '**********'
-say 'drawing mode ... 'mode
-say 'iexp='iexp', exp='exp', dt='dt
 say 'ts='ts', te='te
-say 'drawrain='drawrain
-say 'height='zname' ( 'iz' )'
 
-say 'outpath='outPath
-say '**********'
-say ''
-********************************
+
+outPath="./fig/"exp
+'! mkdir -p 'outPath''
 
 'reinit'
 *'set background 1'
 'c'
 'open 'vvmPath'/'exp'/gs_ctl_files/Dynamic.ctl'
 'open 'vvmPath'/'exp'/gs_ctl_files/Thermodynamic.ctl'
-'open 'vvmPath'/'exp'/gs_ctl_files/Surface.ctl'
-if ( type='zeta' )
-  'open 'datPath'/convolve/'exp'/convolve.ctl'
-  'open 'datPath'/horimsf/msf_'exp'.ctl'
-endif
+'open 'datPath'/wp/'exp'.ctl'
+'open 'datPath'/convolve/'exp'/convolve.ctl'
+'open 'datPath'/horimsf/msf_'exp'.ctl'
 
 it = ts
-say it' 'ts' 'te
 while(it<=te)
 say 't='it''
 'c'
+'set t 'it
 
 'set parea 2.58333 8.41667 0.8 7.55'
 'set xlopts 1 10 0.2'
@@ -110,32 +80,13 @@ say 't='it''
 'set xlabs 0|288|576|864|1152'
 'set ylabs 0|288|576|864|1152'
 
-'set t 'it
+*zz(11) --> 1.49km
+iz=11
+lev=1.5
 'set z 'iz
-
-*'color -5 5 1 -gxout grfill'
-'color -levs -100 -10 -1 0 1 10 100 -gxout grfill'
-'d 1e5*zeta.1'
-*'d zeta.4(ens=25km)*1e5'
+'color -5 5 1 -gxout grfill'
+'d 1e4*zeta.4(ens=25km)'
 'xcbar 8.6 8.8 0.8 7.55 -ft 10 -fs 1'
-it=it+216
-
-*'color -levs 1 3 5 7 -kind grainbow'
-'set arrscl 0.5 10'
-'set cthick 5'
-*'define ua=maskout(u,mag(u,v)>=3)'
-*'d skip(ua,5);v'
-
-pull step
-endwhile
-exit
-
-
-while(t<1)
-'set cthick 10'
-'color 0.1 50 0.1 -gxout contour -kind gray->gray'
-'set clab masked'
-'d msf.5*1e-5'
 
 'set gxout contour'
 'set lwid 50 5'
@@ -146,32 +97,36 @@ while(t<1)
 'set clab off'
 'd 1e4*zeta.4(ens=100km)'
 
+** 'set rgb 100 50 50 50'
+** 'set ccolor 100'
+** 'set clevs 0.5'
+** 'd 1e4*zeta.4(ens=100km)'
+
+'set cthick 10'
+'color 1 50 1 -gxout contour -kind gray->gray'
+'set clab masked'
+'d msf.5*1e-5'
+
 'set string 1 bl 10 0'
-'set strsiz 0.2'
+'set strsiz 0.15'
+'draw string 8.55 8.0 con25km'
+'draw string 8.55 7.65 zeta[10`a-5`ns`a-1`n]'
 
-'set string 1 c 10'
-'set strsiz 0.17'
-'draw string 5.5 0.2 [km]'
-
-'set string 1 c 10 90'
-'set strsiz 0.17'
-'draw string 1.7 4.375 [km]'
 
 'set lwid 80 2'
-'set strsiz 0.1'
 'set rgb 83 0 0 0'
 'set string 83 tl 80 0'
-'draw string 2.75 7.5 black  : zeta ( 100km / 25km )'
+'set strsiz 0.1'
+'draw string 2.75 7.5 black : con100km-zeta [1x10`a-5`ns`a-1`n]'
 'set rgb 83 100 100 100'
+'set string 83 tl 80 0'
 'draw string 2.75 7.3 grey  : hori. sf. [10`a5`n kg*m`a2`ns`a-2`n]'
 
-title='zeta [10`a-4`ns`a-1`n] / sf.'
+title='zeta / sf.'
 day=(it-1)*dt/60/24
 dy=math_format( '%.3f', day)
-
 hour=(it-1)*dt/60
 hr=math_format('%.1f', hour)
-
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 'draw string 2.6875 8 'exp
@@ -181,14 +136,15 @@ hr=math_format('%.1f', hour)
 'set strsiz 0.2'
 *'draw string 8.3125 8 'dy'days'
 'draw string 8.3125 8 'hr'hours'
-'draw string 8.3125 7.65 @'zname
+'draw string 8.3125 7.65 @'lev'km'
 
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
-* 'gxprint 'outPath'/whi_olr'type'_'itt'.png x2400 y1800 white'
-  'gxprint 'outPath'/bla_'iz'_'type'_'itt'.png x2400 y1800'
+*  'gxprint 'outPath'/whi_cwv'type'_'itt'.png x2400 y1800 white'
+  'gxprint 'outPath'/bla_vort'type'_'itt'.png x2400 y1800'
   it = it+1
 endif
+
 
 if ( mode="PAUSE")
   te=tlast

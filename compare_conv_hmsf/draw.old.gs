@@ -4,11 +4,11 @@ if (iexp = ''); iexp=6; endif
 
 **default 
 te='none'
-ts='1'
+ts='217'
 *mode='SAVEFIG'
 mode='PAUSE'
 type='zeta'
-zidx=5
+zidx=1
 **default
 
 i = 2
@@ -112,26 +112,10 @@ say 't='it''
 
 'set t 'it
 'set z 'iz
-
-*'color -5 5 1 -gxout grfill'
-'color -levs -100 -10 -1 0 1 10 100 -gxout grfill'
-'d 1e5*zeta.1'
-*'d zeta.4(ens=25km)*1e5'
+'color -5 5 1 -gxout grfill'
+'d 1e4*zeta.4(ens=25km)'
 'xcbar 8.6 8.8 0.8 7.55 -ft 10 -fs 1'
-it=it+216
 
-*'color -levs 1 3 5 7 -kind grainbow'
-'set arrscl 0.5 10'
-'set cthick 5'
-*'define ua=maskout(u,mag(u,v)>=3)'
-*'d skip(ua,5);v'
-
-pull step
-endwhile
-exit
-
-
-while(t<1)
 'set cthick 10'
 'color 0.1 50 0.1 -gxout contour -kind gray->gray'
 'set clab masked'

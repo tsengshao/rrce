@@ -26,6 +26,7 @@ plt.rcParams.update({'font.size':20,
 
 nexp = len(config.expList)
 center_flag = 'sf_largest_0'
+center_flag = 'conzeta_max'
 
 bounds=np.array('10 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30'.split()).astype(int)
 newcolors = np.vstack((
@@ -35,7 +36,7 @@ newcolors = np.vstack((
                        plt.cm.Purples(np.linspace(0.2,0.9,5))
                      ))
 cmap = mpl.colors.ListedColormap(newcolors, name='OrangeBlue')
-cmap.set_under((1,1,1))
+cmap.set_under((0.7,0.7,0.7))
 cmap.set_over(plt.cm.Purples(0.95))
 norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
@@ -57,23 +58,34 @@ for iexp in range(nexp):
   else:
     restart_day = int(restart_day)
   color = cmap(norm(restart_day))
+
+  if exp == 'RRCE_3km_f00':
+    color = (1,1,1,1)
+    #restart_day = 0
+
+  print(restart_day, exp, color)
   
   fname=config.dataPath+f'/find_center/{center_flag}_{exp}.txt'
   f=open(fname,'r')
   line = f.read().split('\n')[2]
   zhei = float(line.split()[2])
-  x0, value = np.loadtxt(fname, skiprows=7, usecols=[0,1], unpack=True, max_rows=nt)
+  #x0, value = np.loadtxt(fname, skiprows=7, usecols=[0,1], unpack=True, max_rows=nt)
+  x0, value = np.loadtxt(fname, skiprows=7, usecols=[0,2], unpack=True, max_rows=nt)
   x = restart_day + x0*dtime/60/24 #days
 
-  plt.plot(x, value*1e-5, c=color)
+  plt.plot(x, value*1e5, c=color)
 
 CB=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
        cax=cax, orientation='horizontal', extend='both', label='restart_day')
 CB.ax.set_xticks([15,20,25,30])
-plt.ylabel(f'center SF [1e5]')
-plt.ylim(0,6)
+#plt.ylabel(f'center SF [1e5]')
+plt.ylabel(f'maximum con-zeta [1e5]')
+#plt.ylim(0,6)
+plt.ylim(0,50)
 plt.xlim(0,35)
 plt.grid(True)
-plt.title(f'center SF@{zhei}m [mean]', loc='left', fontweight='bold')
-plt.savefig('center_sf_series.png', dpi=200)
+#plt.title(f'center SF@{zhei}m [mean]', loc='left', fontweight='bold')
+plt.title(f'maximum con100km-zeta@{zhei}m', loc='left', fontweight='bold')
+
+plt.savefig(f'center_sf_series_{center_flag}.png', dpi=300, transparent=True)
 #plt.show()
