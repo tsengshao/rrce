@@ -1,6 +1,6 @@
 function main(args)
 iexp = subwrd(args,1)
-if (iexp = ''); iexp=3; endif
+if (iexp = ''); iexp=12; endif
 
 **default 
 te='none'
@@ -67,7 +67,7 @@ if ( type = 'zeta' )
   drawcore="TRUE"
 endif
 
-outPath="./fig_"type"/"exp
+outPath="./fig_"type"_ws/"exp
 '! mkdir -p 'outPath
 
 ******** write the status *******
@@ -101,71 +101,92 @@ while(it<=te)
 say 't='it''
 'c'
 
-'set parea 2.58333 8.41667 0.8 7.55'
+*'set parea 2.58333 8.41667 0.8 7.55'
+'set parea 1 9.5 0.8 7.55'
 'set xlopts 1 10 0.2'
 'set ylopts 1 10 0.2'
 'set grads off'
 'set timelab off'
 'set mpdraw off'
+
+* 'set xlabs 0|288|576|864|1152'
+* 'set ylabs 0|288|576|864|1152'
+
+'set x 1 384'
+'set y 192 384'
 'set xlabs 0|288|576|864|1152'
-'set ylabs 0|288|576|864|1152'
+'set ylabs 576|864|1152'
 
 'set t 'it
 'set z 'iz
 
-*'color -5 5 1 -gxout grfill'
-'color -levs -100 -10 -1 0 1 10 100 -gxout grfill'
-*'d 1e5*zeta.1'
-'d zeta.4(ens=100km)*1e5'
-'xcbar 8.6 8.8 0.8 7.55 -ft 10 -fs 1'
-it=it+216
+*X Limits = 1 to 9.5
+*Y Limits = 1.61834 to 6.73166
 
-*'color -levs 1 3 5 7 -kind grainbow'
+'color -levs 1 3 5 7 -kind grainbow'
 'set arrscl 0.5 10'
-'set cthick 5'
-'define ua=maskout(u,mag(u,v)>=2)'
-'d skip(ua,3);v'
+'d skip(u,3);v;mag(u,v)'
+'xcbar 10 10.3 1.61834 6.73166 -ft 10 -fs 1 -fw 0.2 -fh 0.15'
 
-pull step
-endwhile
-exit
-
-
-while(t<1)
-'set cthick 10'
-'color 0.1 50 0.1 -gxout contour -kind gray->gray'
-'set clab masked'
-'d msf.5*1e-5'
+**  'set gxout contour'
+**  'set cthick 10'
+**  'set ccolor 1'
+**  'set clevs 1e-5'
+**  'd zeta.4(ens=100km)'
+**  
+**  'set gxout contour'
+**  'set lwid 20 5'
+**  'set cthick 20'
+**  'set ccolor 1'
+**  'set clevs 1e-4'
+**  'd zeta.4(ens=100km)'
 
 'set gxout contour'
-'set lwid 50 5'
-'set cthick 50'
-'set rgb 100 0 0 0'
-'set ccolor 100'
-'set clevs 1'
-'set clab off'
-'d 1e4*zeta.4(ens=100km)'
+'set cthick 10'
+'set ccolor 1'
+'set clevs 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16'
+'d msf.5*1e-5'
 
+** 'set gxout contour'
+** 'set lwid 20 5'
+** 'set cthick 20'
+** 'set ccolor 1'
+** 'set clevs 1e5'
+** 'd msf.5'
+
+
+**  'color -5 5 1 -gxout grfill'
+**  'd 1e4*zeta.4(ens=25km)'
+**  'xcbar 8.6 8.8 0.8 7.55 -ft 10 -fs 1'
+**  
+**  'set cthick 10'
+**  'color 0.1 50 0.1 -gxout contour -kind gray->gray'
+**  'set clab masked'
+**  'd msf.5*1e-5'
+
+**  'set gxout contour'
+**  'set lwid 50 5'
+**  'set cthick 50'
+**  'set rgb 100 0 0 0'
+**  'set ccolor 100'
+**  'set clevs 1'
+**  'set clab off'
+**  'd 1e4*zeta.4(ens=100km)'
+
+*X Limits = 1 to 9.5
+*Y Limits = 1.61834 to 6.73166
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 
 'set string 1 c 10'
 'set strsiz 0.17'
-'draw string 5.5 0.2 [km]'
+'draw string 5.5 1 [km]'
 
 'set string 1 c 10 90'
 'set strsiz 0.17'
-'draw string 1.7 4.375 [km]'
+'draw string 0.1 4.375 [km]'
 
-'set lwid 80 2'
-'set strsiz 0.1'
-'set rgb 83 0 0 0'
-'set string 83 tl 80 0'
-'draw string 2.75 7.5 black  : zeta ( 100km / 25km )'
-'set rgb 83 100 100 100'
-'draw string 2.75 7.3 grey  : hori. sf. [10`a5`n kg*m`a2`ns`a-2`n]'
-
-title='zeta [10`a-4`ns`a-1`n] / sf.'
+title='wind speed [m/s] / SF. [10`a5`n kg*m`a2`ns`a-2`n]'
 day=(it-1)*dt/60/24
 dy=math_format( '%.3f', day)
 
@@ -174,19 +195,28 @@ hr=math_format('%.1f', hour)
 
 'set string 1 bl 10 0'
 'set strsiz 0.2'
-'draw string 2.6875 8 'exp
-'draw string 2.6875 7.65 'title
+'draw string 1 7.45 'exp
+'draw string 1 7. 'title
 
 'set string 1 br 10 0'
 'set strsiz 0.2'
 *'draw string 8.3125 8 'dy'days'
-'draw string 8.3125 8 'hr'hours'
-'draw string 8.3125 7.65 @'zname
+'draw string 9.5 7.45 @'zname' / 'hr'hours'
+*'draw string 9.5 8 @'zname
 
-if ( mode="SAVEFIG" )
+itt=math_format( '%06.0f', it)
+'gxprint 'outPath'/bla_'iz'_'type'_sf_'itt'.png x2400 y1800'
+pull get
+
+it = it+216
+endwhile
+exit
+
+*if ( mode="SAVEFIG" )
+if ( mode="PAUSE")
   itt=math_format( '%06.0f', it)
 * 'gxprint 'outPath'/whi_olr'type'_'itt'.png x2400 y1800 white'
-  'gxprint 'outPath'/bla_'iz'_'type'_'itt'.png x2400 y1800'
+  'gxprint 'outPath'/bla_'iz'_'type'_sf_'itt'.png x2400 y1800'
   it = it+1
 endif
 
@@ -200,6 +230,4 @@ if ( mode="PAUSE")
     if(rc=1&step>0);it=step;endif
   endif
 endif
-
-endwhile
 
