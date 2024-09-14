@@ -102,6 +102,7 @@ cpuid = comm.Get_rank()
 
 nexp = len(config.expList)
 iexp = int(sys.argv[1])
+str_kernel = sys.argv[2]
 #iexp = cpuid
 
 exp = config.expList[iexp]
@@ -113,10 +114,15 @@ print(exp, nt)
 #  else:
 #    nt = int(3*72+1)
 
-str_kernel = '100km'
-path=f"{config.dataPath}/convolve/RRCE_3km_f00_15/{str_kernel}/conv-000004.nc"
-nc = Dataset(path, 'r')
-zz = nc.variables['zz'][:]; nz=zz.size
+#str_kernel = '25km'
+if str_kernel=='0km':
+  vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
+  nc = vvmLoader.loadDynamic(4)
+  zz = vvmLoader.loadZZ()[:-1]
+else:
+  path=f"{config.dataPath}/convolve/RRCE_3km_f00_15/{str_kernel}/conv-000004.nc"
+  nc = Dataset(path, 'r')
+  zz = nc.variables['zz'][:]; nz=zz.size
 xc = nc.variables['xc'][:]; nx=xc.size
 yc = nc.variables['yc'][:]; ny=yc.size
 dx, dy = np.diff(xc)[0], np.diff(yc)[0]
@@ -128,7 +134,7 @@ outdir=config.dataPath+"/find_center/"
 os.system('mkdir -p '+outdir)
 
 width=15
-fout = open(f'{outdir}/conzeta_max_{exp}.txt','w')
+fout = open(f'{outdir}/conzeta{str_kernel}_max_{exp}.txt','w')
 fout.write(\
 f"""********** center info **********
 variables: convolution zeta with {str_kernel} gaussion kernel
@@ -137,12 +143,16 @@ threshold: {threshold}
 center index start from: 0
 ********** center info **********
 """)
-fout.write(f"{'ts':>{width}s} {'mean':>{width}s} {'max':>{width}s} {'hori_size':>{width}s} {'center_x':>{width}s} {'center_y':>{width}s}\n")
+fout.write(f"{'ts':>{width}s} {'mean':>{width}s} {'max':>{width}s} {'hori_size':>{width}s} {'center_x':>{width}s} {'center_y':>{width}s} {'max_locx':>{width}s} {'max_locy':>{width}s}\n")
 
 for it in range(nt):
   print(exp, it)
-  path=f"{config.dataPath}/convolve/{exp}/{str_kernel}/conv-{it:06d}.nc"
-  nc = Dataset(path, 'r')
+  if str_kernel=='0km':
+    vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
+    nc = vvmLoader.loadDynamic(it)
+  else:
+    path=f"{config.dataPath}/convolve/{exp}/{str_kernel}/conv-{it:06d}.nc"
+    nc = Dataset(path, 'r')
   czeta = nc.variables['zeta'][0,iheit,:,:]
   label_array, num_features = label_periodic(czeta>=threshold)
 
@@ -154,6 +164,7 @@ for it in range(nt):
 
     iy, ix = np.unravel_index(czeta.argmax(), czeta.shape)
     maximum_id   = label_array[iy,ix]
+    max_iy, max_ix = iy, ix
 
     center_y, center_x = label_centroid(czeta, label_array, maximum_id)
     label_max  = scimage.maximum(czeta, \
@@ -162,8 +173,8 @@ for it in range(nt):
     label_mean  = scimage.mean(czeta, \
                                label_array, \
                                maximum_id)
-    fout.write(f"{it:{width}d} {label_mean:{width}.4e} {label_max:{width}.4e} {label_size[maximum_id-1]**0.5:{width}.4e} {center_x:{width}.4e} {center_y:{width}.4e}\n")
+    fout.write(f"{it:{width}d} {label_mean:{width}.4e} {label_max:{width}.4e} {label_size[maximum_id-1]**0.5:{width}.4e} {center_x:{width}.4e} {center_y:{width}.4e} {max_ix:{width}d} {max_iy:{width}d}\n")
   else:
-    fout.write(f"{it:{width}d} {0:{width}.4e} {0:{width}.4e} {0:{width}.4e} {0:{width}.0f} {0:{width}.0f}\n")
+    fout.write(f"{it:{width}d} {0:{width}.4e} {0:{width}.4e} {0:{width}.4e} {0:{width}.0f} {0:{width}.0f} {0:{width}.0f} {0:{width}.0f}\n")
 fout.close()
 

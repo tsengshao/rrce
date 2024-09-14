@@ -31,8 +31,9 @@ cpuid = comm.Get_rank()
 
 nexp = len(config.expList)
 
-#center_flag = 'sf_largest_0'
-center_flag = 'conzeta_max'
+str_kernel  = '0km'
+center_flag = f'conzeta{str_kernel}_max'
+method      = 'mean' #mean; max
 
 df = pd.DataFrame(np.zeros((nexp,3)), columns=['restart_day', 'nself', 'nf00'])
 
@@ -57,12 +58,17 @@ for iexp in range(nexp):
   f=open(f'{datdir}/{center_flag}_{exp}.txt','r')
   line = f.read().split('\n')[2]
   zhei = float(line.split()[2])
+
+  if method=='mean':
+    idx=1
+  elif method=='max':
+    idx=2
   
-  data = np.loadtxt(f'{datdir}/{center_flag}_{exp}.txt', skiprows=7, usecols=[0,2])
+  data = np.loadtxt(f'{datdir}/{center_flag}_{exp}.txt', skiprows=7, usecols=[0,idx])
   mzeta0 = data[0,1]
   mzeta1 = data[216,1]
 
-  data = np.loadtxt(f'{datdir}/{center_flag}_RRCE_3km_f00.txt', skiprows=7, usecols=[0,2])
+  data = np.loadtxt(f'{datdir}/{center_flag}_RRCE_3km_f00.txt', skiprows=7, usecols=[0,idx])
   it=restart_day*3*24+216
   mzeta2 = data[it,1]
 
@@ -97,10 +103,14 @@ plt.xticks(xticks, xtlabel)
 plt.ylim(ylim)
 plt.xlim(xlim)
 plt.grid(True)
-plt.ylabel('maximum con-zeta ratio')
+plt.ylabel(f'{method} con{str_kernel}-zeta ratio')
 plt.xlabel('the restart day')
-plt.title(f'maximum conv100km-zeta@{zhei:.1f}m\nenhancement in 3days',loc='left',fontweight='bold')
-plt.savefig(f'scatter_{center_flag}.png', dpi=300, transparent=True)
+plt.title(f'conv{str_kernel}-zeta@{zhei:.1f}m\nenhancement in 3days',loc='left',fontweight='bold')
+plt.title(f'strongest objects [{method}]', loc='right', fontsize=12)
+
+os.system('mkdir -p ./fig')
+plt.savefig(f'./fig/scatter_{center_flag}_{method}.png', dpi=300, transparent=True)
+plt.close('all')
 #plt.show()
 
 

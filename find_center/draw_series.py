@@ -7,7 +7,6 @@ import config
 import util.tools as tools
 from datetime import datetime, timedelta
 from netCDF4 import Dataset
-
 def set_black_background():
   plt.rcParams.update({
                        'axes.edgecolor': 'white',
@@ -25,8 +24,10 @@ plt.rcParams.update({'font.size':20,
                      'lines.linewidth':5})
 
 nexp = len(config.expList)
-center_flag = 'sf_largest_0'
-center_flag = 'conzeta_max'
+
+str_kernel  = '0km'
+center_flag = f'conzeta{str_kernel}_max'
+method      = 'mean' #max;mean
 
 bounds=np.array('10 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30'.split()).astype(int)
 newcolors = np.vstack((
@@ -69,8 +70,10 @@ for iexp in range(nexp):
   f=open(fname,'r')
   line = f.read().split('\n')[2]
   zhei = float(line.split()[2])
-  #x0, value = np.loadtxt(fname, skiprows=7, usecols=[0,1], unpack=True, max_rows=nt)
-  x0, value = np.loadtxt(fname, skiprows=7, usecols=[0,2], unpack=True, max_rows=nt)
+  if method == 'max':
+    x0, value = np.loadtxt(fname, skiprows=7, usecols=[0,2], unpack=True, max_rows=nt)
+  elif method=='mean':
+    x0, value = np.loadtxt(fname, skiprows=7, usecols=[0,1], unpack=True, max_rows=nt) #
   x = restart_day + x0*dtime/60/24 #days
 
   plt.plot(x, value*1e5, c=color)
@@ -80,12 +83,13 @@ CB=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
 CB.ax.set_xticks([15,20,25,30])
 #plt.ylabel(f'center SF [1e5]')
 plt.ylabel(f'maximum con-zeta [1e5]')
-#plt.ylim(0,6)
 plt.ylim(0,50)
 plt.xlim(0,35)
 plt.grid(True)
 #plt.title(f'center SF@{zhei}m [mean]', loc='left', fontweight='bold')
-plt.title(f'maximum con100km-zeta@{zhei}m', loc='left', fontweight='bold')
+plt.title(f'con{str_kernel}-zeta@{zhei}m [{method}]', loc='left', fontweight='bold')
+plt.title(f'strongest object', loc='right', fontsize=12)
 
-plt.savefig(f'center_sf_series_{center_flag}.png', dpi=300, transparent=True)
+os.system('mkdir -p ./fig')
+plt.savefig(f'./fig/{center_flag}_series_{method}.png', dpi=300, transparent=True)
 #plt.show()
