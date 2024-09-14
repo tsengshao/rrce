@@ -106,6 +106,54 @@ say 't='it''
 icon = 1
 while(icon<=4)
 contype=subwrd(conZetaList,icon)
+
+** read center file **
+file = datPath'/find_center/conzeta'contype'_max_'exp'.txt'
+*say file
+** read center file **
+i=1
+while(i<=7)
+  res = read(file)
+  line1 = sublin(res,1)
+  line2 = sublin(res,2)
+  if (i=3)
+    sfidz = subwrd(line2,6)+1
+    sfhei = subwrd(line2,3)
+    sfhei = sfhei'm'
+    say 'draw 'sfhei'meter ( 'sfidz' )'
+  endif
+  i=i+1
+endwhile
+
+while (1)
+  res = read(file)
+  line1 = sublin(res,1)
+  line2 = sublin(res,2)
+  rc1 = subwrd(line1,1)
+  if (rc1); break; endif
+
+  cts = subwrd(line2,1)+1
+  carea = subwrd(line2,4)
+  if (carea>0)
+    cmean   = subwrd(line2,2)
+    cmax    = subwrd(line2,3)
+    cx.cts  = subwrd(line2,5)+1
+    cy.cts  = subwrd(line2,6)+1
+    maxcx.cts  = subwrd(line2,7)+1
+    maxcy.cts  = subwrd(line2,8)+1
+  else
+    cmean   = 'NaN'
+    cmax    = 'NaN'
+    cx.cts  = 'NaN'
+    cy.cts  = 'NaN'
+    maxcx.cts  = 'NaN'
+    maxcy.cts  = 'NaN'
+  endif
+*say cts' 'carea' 'cx.cts' 'cy.cts
+endwhile
+rc = close(file)
+
+
 'c'
 
 *'set parea 2.58333 8.41667 0.8 7.55'
@@ -130,36 +178,65 @@ contype=subwrd(conZetaList,icon)
 *X Limits = 1 to 9.5
 *Y Limits = 1.61834 to 6.73166
 
+scale=1e5
+
 'set gxout shaded'
-'color -levs -100 -10 0 10 100 -gxout grfill -kind (73,32,255)->white->(255,132,36)'
+*'color -levs -100 -20 -10 0 10 20 100 -gxout grfill -kind (73,32,255)->white->(255,132,36)'
+'color -levs -100 -20 -10 0 10 20 100 -gxout grfill -kind (183,0,255)->white->(255,106,0)'
 if ( contype='0km')
-  'd zeta.1*1e5'
+  'define var=zeta.1*'scale
 else
-  'd zeta.4(ens='contype')*1e5'
+  'define var=zeta.4(ens='contype')*'scale
 endif
+'d var'
 'xcbar 9.7 9.85 1.61834 6.73166 -ft 10 -fs 1 -fw 0.1 -fh 0.15'
 
 'set gxout contour'
 'set cthick 5'
 'set ccolor 0'
 'set clab masked'
-'set clevs 3'
+cws=3
+'set clevs 'cws
 'd mag(u,v)'
 
-** *'color -levs 1 3 5 7 -kind grainbow'
-** 'set cthick 3'
-** 'set arrscl 0.5 10'
-** 'set clevs 1 4 7'
-** 'set rgb 50 100 100 100'
-** 'set rgb 52 150 150 150'
-** 'set ccols -1 1 52 50'
-** 'd skip(u,3);v;mag(u,v)'
-** 'xcbar 10.5 10.65 1.61834 6.73166 -ft 10 -fs 1 -fw 0.1 -fh 0.15 -line off'
+say 'mean sf loc, (x,y)='cx.it', 'cy.it
+if ( cx.it!='NaN' )
+  'q gr2xy 'cx.it' 'cy.it''
+  x=subwrd(result,3)
+  y=subwrd(result,6)
+  c=math_format('%.1f', cmean*scale)
+  'set rgb 40 0 166 255'
+  'set line 40'
+  'draw mark 6 'x' 'y' 0.10'
+  'set string 40 bc 10'
+  'set strsiz 0.15'
+  'draw string 'x' 'y+0.15' mean('c')'
+
+  'q gr2xy 'maxcx.it' 'maxcy.it''
+  x=subwrd(result,3)
+  y=subwrd(result,6)
+  c=math_format('%.1f', cmax*scale)
+  'set line 40'
+  'draw mark 6 'x' 'y' 0.10'
+  'set string 40 bc 10'
+  'set strsiz 0.15'
+  'draw string 'x' 'y+0.15' max('c')'
+else
+  say 'mean loc, (x,y)='cx.it','cy.it
+  say 'max  loc, (x,y)='maxcx.it','maxcy.it
+endif
+
+'set x 1'
+'set y 1'
+'define mean=aave(var,x=1,x=384,y=1,y=192)'
+'d mean'
+mvalue=subwrd(result,4)
 
 *X Limits = 1 to 9.5
 *Y Limits = 1.61834 to 6.73166
-'set string 1 bl 10 0'
-'set strsiz 0.2'
+'set string 0 tr 10 0'
+'set strsiz 0.1'
+'draw string 9.3 6.65 Wind Speed = 'cws'm/s (contour)'
 
 'set string 1 c 10'
 'set strsiz 0.17'
@@ -169,7 +246,7 @@ endif
 'set strsiz 0.17'
 'draw string 0.1 4.375 [km]'
 
-title='wind speed [m/s] / con-'contype' zeta [10`a5`ns`a-1`n]'
+title='con-'contype' zeta [10`a5`ns`a-1`n]'
 day=(it-1)*dt/60/24
 dy=math_format( '%.3f', day)
 
@@ -188,6 +265,8 @@ if ( exp='RRCE_3km_f00' )
 else
   'draw string 9.5 7.45 @'zname' / 'hr'hours'
 endif
+c=math_format('%.5f',mvalue)
+'draw string 9.5 7 mean='c
 *'draw string 9.5 8 @'zname
 
 itt=math_format( '%06.0f', it)
@@ -201,24 +280,4 @@ endwhile
 *it=it+216
 it=it+3*72
 endwhile
-
-exit
-*if ( mode="SAVEFIG" )
-if ( mode="PAUSE")
-  itt=math_format( '%06.0f', it)
-* 'gxprint 'outPath'/whi_olr'type'_'itt'.png x2400 y1800 white'
-  'gxprint 'outPath'/bla_'iz'_'type'_con'contype'_'itt'.png x2400 y1800'
-  it = it+1
-endif
-
-if ( mode="PAUSE")
-  te=tlast
-  pull step
-  if(step='q'|step='quit'|step='exit');exit;endif
-  if(step='');it=it+1;continue;else
-    rc=valnum(step)
-    if(rc=0);step;pull step;endif
-    if(rc=1&step>0);it=step;endif
-  endif
-endif
 
