@@ -10,10 +10,10 @@
 
 source ~/.bashrc
 conda activate py311
-py="find_center_czeta_max.py"
+py="find_center_domain_mean.py"
 ncpu=5
 cpum=$(echo "${ncpu}-1"|bc)
-str_kernel='0km'
+str_kernel='100km'
 
 for i in $(seq 0 18);do
   a=$(echo "mod(${i},${ncpu})"|bc -l ~/.bcrc)
