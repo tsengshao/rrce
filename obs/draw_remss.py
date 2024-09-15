@@ -48,10 +48,10 @@ fname_h8    = '202407180050.tir.02.fld.dat'
 ## fname_mtpw2 = 'comp20240719.120000.nc'
 ## fname_h8    = '202407191140.tir.02.fld.dat'
 ## 
-## iasc = 0
-## fname_ascat = 'ascatb_20240719_v02.1.gz'
-## fname_mtpw2 = 'comp20240719.000000.nc'
-## fname_h8    = '202407190030.tir.02.fld.dat'
+iasc = 0
+fname_ascat = 'ascatb_20240719_v02.1.gz'
+fname_mtpw2 = 'comp20240719.000000.nc'
+fname_h8    = '202407190030.tir.02.fld.dat'
 
 lonb = [115, 145]
 latb = [-5,  25]
@@ -206,5 +206,6 @@ cb.ax.set_title('[m/s]', loc='left')
 
 #plt.title(f'{datestr}\nWind[m/s], Brightness Temp.[K]',loc='left',fontweight='bold')
 plt.title(f'{str_title_date}\nASCAT Wind, H8 Band14 Brightness Temp.',loc='left',fontweight='bold')
-plt.savefig(str_file+'.png', dpi=250)
-plt.show(block=False)
+plt.savefig(str_file+'.png', dpi=300, transparent=True)
+plt.close('all')
+#plt.show(block=False)
