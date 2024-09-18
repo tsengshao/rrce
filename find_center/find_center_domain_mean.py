@@ -144,8 +144,7 @@ outdir=config.dataPath+f"/find_center/{str_type}/"
 os.system('mkdir -p '+outdir)
 
 width=15
-#fout = open(f'{outdir}/{exp}.txt','w')
-fout = open('test.txt','w')
+fout = open(f'{outdir}/{exp}.txt','w')
 fout.write(\
 f"""********** center info **********
 variables: convolution zeta with {str_kernel} gaussion kernel
@@ -154,11 +153,12 @@ threshold: domain mean
 center index start from: 0
 ********** center info **********
 """)
-fout.write(f"{'ts':>{width}s} {'mean':>{width}s} {'max':>{width}s} {'hori_size[no]':>{width}s} {'center_x':>{width}s} {'center_y':>{width}s} {'max_locx':>{width}s} {'max_locy':>{width}s}\n")
+fout.write(f"{'ts':>{width}s} {'mean':>{width}s} {'max':>{width}s} {'hori_size[no]':>{width}s} {'center_x':>{width}s} {'center_y':>{width}s} {'max_locx':>{width}s} {'max_locy':>{width}s} {'posi_mean':>{width}s}\n")
 
 plt.close('all')
-#for it in range(0,nt,int(3*60*24/dtime)):
-for it in [216]:
+#for it in range(0,nt,int(3*60/dtime)):
+#for it in [int(30*72)]:
+for it in range(nt):
   print(exp, it)
   if str_kernel=='0km':
     vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
@@ -171,16 +171,15 @@ for it in [216]:
   yic = np.arange(yc.size)
   xc2,yc2 = np.meshgrid(xic,yic)
 
-
   # **** idealized test **********
-  czeta = np.ones(czeta.shape)*0.
+  ## czeta = np.ones(czeta.shape)*0.
 
-  indata = nc.variables['zeta'][0,iheit,:,:]
-  #czeta = np.roll(np.where(indata>5e-5, -indata, 0), -int(xc.size/6), axis=1)
-  single = np.where(indata>5e-5, indata, 0) 
-  czeta  = np.copy(single)
-  czeta  += np.roll(-single,-int(xc.size*1/6),axis=1)
-  czeta  += np.roll(-single, int(xc.size*1/6),axis=1)
+  ## indata = nc.variables['zeta'][0,iheit,:,:]
+  ## #czeta = np.roll(np.where(indata>5e-5, -indata, 0), -int(xc.size/6), axis=1)
+  ## single = np.where(indata>5e-5, indata, 0) 
+  ## czeta  = np.copy(single)
+  ## czeta  += np.roll(-single,-int(xc.size*1/6),axis=1)
+  ## czeta  += np.roll(-single, int(xc.size*1/6),axis=1)
 
   #czeta = np.where(np.abs(czeta)>5e-5, czeta, 0)
   #czeta = np.where(czeta<=-5e-5, czeta, 0)
@@ -203,6 +202,7 @@ for it in [216]:
   # ******************************
 
   mean_value = czeta.mean()
+  posi_mean_value = np.mean(czeta[czeta>0])
   mean_ix, mean_iy = calculate_weighted_centroid_periodic(\
                          x_coords   = np.arange(czeta.shape[1]), \
                          y_coords   = np.arange(czeta.shape[0]), \
@@ -210,30 +210,15 @@ for it in [216]:
                          L_x        = czeta.shape[1], \
                          L_y        = czeta.shape[0], \
                      )
-  mean_ix2, mean_iy2 = calculate_weighted_centroid(\
-                         x_coords   = np.arange(czeta.shape[1]), \
-                         y_coords   = np.arange(czeta.shape[0]), \
-                         weights_in = czeta, \
-                         L_x        = czeta.shape[1], \
-                         L_y        = czeta.shape[0], \
-                     )
-  ## mean_x, mean_y = calculate_weighted_centroid_periodic(\
-  ##                        x_coords = xc, \
-  ##                        y_coords = yc, \
-  ##                        weights  = czeta, \
-  ##                        L_x      = xc.max(), \
-  ##                        L_y      = yc.max(), \
-  ##                    )
-  ## mean_ix = (mean_x - xc[0])/dx
-  ## mean_iy = (mean_x - yc[0])/dy
   print(mean_value)
   print(mean_ix, mean_iy)
-  print(mean_ix2, mean_iy2)
   print('90th, 99th:', np.percentile(czeta*1e5, [90,99]))
 
   max_iy, max_ix = np.unravel_index(np.argmax(czeta, axis=None), czeta.shape)
   max_value = czeta[max_iy, max_ix]
 
+  """
+  plt.close('all')
   set_black_background()
   levels = [-100,-50,-20,-10,-5,-0.1,0.1,5,10,20,50,100]
   cmap = mpl.colors.ListedColormap(plt.cm.bwr(np.linspace(0.1,0.9,256)))
@@ -244,7 +229,6 @@ for it in [216]:
   CB.ax.set_yticks(levels)
   CB.ax.set_title(r'10$^{-5}$'+' '+r'$s^{-1}$', fontsize=12)
   plt.scatter(mean_ix, mean_iy, s=100,c='g')
-  #plt.scatter(mean_ix2, mean_iy2, s=100,c='C2')
   plt.plot([xc.size/2, xc.size/2],[0,yc.size], 'k-')
   plt.plot([0, xc.size],[yc.size/2,yc.size/2], 'k-')
   plt.xlim(0,xc.size)
@@ -253,17 +237,21 @@ for it in [216]:
   plt.yticks(np.linspace(0,yc.size,5), np.linspace(0,yc.size,5)*dy/1000)
   plt.xlabel('[km]')
   plt.ylabel('[km]')
-  plt.title('idealized triple vortex')
-  os.system('mkdir -p ./fig_example/')
-  plt.savefig('./fig_example/triple_vortex.png')
-  
+  # plt.title('idealized triple vortex')
+  # os.system(f'mkdir -p ./fig_example/')
+  # plt.savefig('./fig_example/2_triple_vortex.png')
 
-  # plt.title(f'{exp} / conzeta-{str_kernel}',fontweight='bold', loc='left', fontsize=15)
-  # plt.title(f'{it*dtime/60:.1f}hr ({it:06d})', fontweight='bold', loc='right', fontsize=12)
-  # plt.savefig(f'./test_fig/{str_kernel}_{it:06d}.png',dpi=250)
-  plt.show(block=True)
-  #sys.exit()
+  plt.title(f'{exp} / conzeta-{str_kernel}',fontweight='bold', loc='left', fontsize=15)
+  if exp='RRCE_3km_f00':
+    plt.title(f'{it*dtime/60/24:.1f}day ({it:06d})', fontweight='bold', loc='right', fontsize=12)
+  else:
+    plt.title(f'{it*dtime/60:.1f}hr ({it:06d})', fontweight='bold', loc='right', fontsize=12)
+  figPath = f'./fig_example_method2/{exp}/'
+  os.system(f'mkdir -p {figPath}')
+  plt.savefig(f'{figPath}/{str_kernel}_{it:06d}.png',dpi=250)
+  plt.show(block=False)
+  """
 
-  fout.write(f"{it:{width}d} {mean_value:{width}.4e} {max_value:{width}.4e} {0:{width}.4e} {mean_ix:{width}.4e} {mean_ix:{width}.4e} {max_ix:{width}d} {max_iy:{width}d}\n")
+  fout.write(f"{it:{width}d} {mean_value:{width}.4e} {max_value:{width}.4e} {0:{width}.4e} {mean_ix:{width}.4e} {mean_ix:{width}.4e} {max_ix:{width}d} {max_iy:{width}d} {posi_mean_value:{width}.4e}\n")
 fout.close()
 
