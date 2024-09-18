@@ -46,10 +46,34 @@ def calculate_weighted_centroid_periodic(x_coords, y_coords, weights_in, L_x, L_
     theta_x = (2 * np.pi * np.array(x_coords) / L_x )
     theta_y = (2 * np.pi * np.array(y_coords) / L_y )
     theta_x, theta_y = np.meshgrid(theta_x, theta_y)
+    # count postive center
+    weights = np.where(weights_in>=0, weights_in, 0)
+    sum_weights = np.sum(weights)
+    if sum_weights>0:
+      s_x = np.sum(weights * np.sin(theta_x)) / sum_weights
+      c_x = np.sum(weights * np.cos(theta_x)) / sum_weights
+      s_y = np.sum(weights * np.sin(theta_y)) / sum_weights
+      c_y = np.sum(weights * np.cos(theta_y)) / sum_weights
+      shift_theta_x = np.arctan2(s_x, c_x)
+      shift_theta_y = np.arctan2(s_y, c_y)
+      shift_centroid_x = (shift_theta_x * L_x) / (2 * np.pi)
+      shift_centroid_y = (shift_theta_y * L_y) / (2 * np.pi)
+    else:
+      shift_theta_x    = 0
+      shift_theta_y    = 0
+      shift_centroid_x = 0
+      shift_centroid_y = 0
+    print(shift_centroid_x, shift_centroid_y)
+
+    # transform theta
+    theta_x = (theta_x - shift_theta_x)%(np.pi*2)
+    theta_y = (theta_y - shift_theta_y)%(np.pi*2)
+    
     # deal with nagitive value
     idx=weights_in<0
     theta_x[idx] *= -1
     theta_y[idx] *= -1
+
     weights = np.abs(weights_in)
     # Compute weighted mean sine and cosine
     sum_weights = np.sum(weights)
@@ -59,10 +83,10 @@ def calculate_weighted_centroid_periodic(x_coords, y_coords, weights_in, L_x, L_
     c_y = np.sum(weights * np.cos(theta_y)) / sum_weights
     print('s_x, c_x, len_x: ',s_x, c_x, np.sqrt(s_x**2+c_x**2))
     print('s_y, c_y, len_y: ',s_y, c_y, np.sqrt(s_y**2+c_y**2))
-    ## if np.abs(s_y)<5e-17: s_y = 0
-    ## if np.abs(s_x)<5e-17: s_x = 0
-    ## if np.abs(c_y)<5e-17: c_y = 0
-    ## if np.abs(c_x)<5e-17: c_x = 0
+    if np.abs(s_y)<5e-17: s_y = 0
+    if np.abs(s_x)<5e-17: s_x = 0
+    if np.abs(c_y)<5e-17: c_y = 0
+    if np.abs(c_x)<5e-17: c_x = 0
     # Compute mean angles
     mean_theta_x = np.arctan2(s_x, c_x)
     mean_theta_y = np.arctan2(s_y, c_y)
@@ -70,8 +94,13 @@ def calculate_weighted_centroid_periodic(x_coords, y_coords, weights_in, L_x, L_
     print('mean_theta_y:',mean_theta_y)
  
     # Convert mean angles back to coordinates
-    centroid_x = (mean_theta_x * L_x) / (2 * np.pi)
-    centroid_y = (mean_theta_y * L_y) / (2 * np.pi)
+    centroid_x = (mean_theta_x * L_x) / (2 * np.pi) + shift_centroid_x
+    centroid_y = (mean_theta_y * L_y) / (2 * np.pi) + shift_centroid_y
+
+    # negative contribution
+    print('negative contribution, x:', centroid_x-shift_centroid_x)
+    print('negative contribution, y:', centroid_y-shift_centroid_y)
+
     # Ensure the centroid is within the bounds
     if centroid_x < 0:
         centroid_x += L_x
@@ -127,7 +156,8 @@ center index start from: 0
 """)
 fout.write(f"{'ts':>{width}s} {'mean':>{width}s} {'max':>{width}s} {'hori_size[no]':>{width}s} {'center_x':>{width}s} {'center_y':>{width}s} {'max_locx':>{width}s} {'max_locy':>{width}s}\n")
 
-#for it in range(0,nt,int(3*60/dtime)):
+plt.close('all')
+#for it in range(0,nt,int(3*60*24/dtime)):
 for it in [216]:
   print(exp, it)
   if str_kernel=='0km':
@@ -147,7 +177,7 @@ for it in [216]:
 
   indata = nc.variables['zeta'][0,iheit,:,:]
   #czeta = np.roll(np.where(indata>5e-5, -indata, 0), -int(xc.size/6), axis=1)
-  single = np.where(indata>5e-5, indata, 0)
+  single = np.where(indata>5e-5, indata, 0) 
   czeta  = np.copy(single)
   czeta  += np.roll(-single,-int(xc.size*1/6),axis=1)
   czeta  += np.roll(-single, int(xc.size*1/6),axis=1)
@@ -204,7 +234,6 @@ for it in [216]:
   max_iy, max_ix = np.unravel_index(np.argmax(czeta, axis=None), czeta.shape)
   max_value = czeta[max_iy, max_ix]
 
-  plt.close('all')
   set_black_background()
   levels = [-100,-50,-20,-10,-5,-0.1,0.1,5,10,20,50,100]
   cmap = mpl.colors.ListedColormap(plt.cm.bwr(np.linspace(0.1,0.9,256)))
@@ -232,7 +261,7 @@ for it in [216]:
   # plt.title(f'{exp} / conzeta-{str_kernel}',fontweight='bold', loc='left', fontsize=15)
   # plt.title(f'{it*dtime/60:.1f}hr ({it:06d})', fontweight='bold', loc='right', fontsize=12)
   # plt.savefig(f'./test_fig/{str_kernel}_{it:06d}.png',dpi=250)
-  plt.show(block=False)
+  plt.show(block=True)
   #sys.exit()
 
   fout.write(f"{it:{width}d} {mean_value:{width}.4e} {max_value:{width}.4e} {0:{width}.4e} {mean_ix:{width}.4e} {mean_ix:{width}.4e} {max_ix:{width}d} {max_iy:{width}d}\n")
