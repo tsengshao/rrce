@@ -29,6 +29,11 @@ str_kernel  = '0km'
 center_flag = f'conzeta{str_kernel}_max'
 method      = 'mean' #max;mean
 
+str_kernel  = '0km'
+center_flag = f'czeta{str_kernel}_domainmean'
+method      = 'max'
+
+
 bounds=np.array('10 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30'.split()).astype(int)
 newcolors = np.vstack((
                        plt.cm.Greens(np.linspace(0.2,0.9,1)),
@@ -66,7 +71,8 @@ for iexp in range(nexp):
 
   print(restart_day, exp, color)
   
-  fname=config.dataPath+f'/find_center/{center_flag}_{exp}.txt'
+  #fname=config.dataPath+f'/find_center/{center_flag}_{exp}.txt'
+  fname=config.dataPath+f'/find_center/{center_flag}/{exp}.txt'
   f=open(fname,'r')
   line = f.read().split('\n')[2]
   zhei = float(line.split()[2])
@@ -74,6 +80,8 @@ for iexp in range(nexp):
     x0, value = np.loadtxt(fname, skiprows=7, usecols=[0,2], unpack=True, max_rows=nt)
   elif method=='mean':
     x0, value = np.loadtxt(fname, skiprows=7, usecols=[0,1], unpack=True, max_rows=nt) #
+  elif method=='positive_mean':
+    x0, value = np.loadtxt(fname, skiprows=7, usecols=[0,8], unpack=True, max_rows=nt) #
   x = restart_day + x0*dtime/60/24 #days
 
   plt.plot(x, value*1e5, c=color)
@@ -82,13 +90,12 @@ CB=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
        cax=cax, orientation='horizontal', extend='both', label='restart_day')
 CB.ax.set_xticks([15,20,25,30])
 #plt.ylabel(f'center SF [1e5]')
-plt.ylabel(f'maximum con-zeta [1e5]')
-plt.ylim(0,50)
+plt.ylabel(f'zeta [1e5]')
+plt.ylim(100,3000)
 plt.xlim(0,35)
 plt.grid(True)
 #plt.title(f'center SF@{zhei}m [mean]', loc='left', fontweight='bold')
 plt.title(f'con{str_kernel}-zeta@{zhei}m [{method}]', loc='left', fontweight='bold')
-plt.title(f'strongest object', loc='right', fontsize=12)
 
 os.system('mkdir -p ./fig')
 plt.savefig(f'./fig/{center_flag}_series_{method}.png', dpi=300, transparent=True)
