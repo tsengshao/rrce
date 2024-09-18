@@ -146,9 +146,11 @@ for it in [216]:
   czeta = np.ones(czeta.shape)*0.
 
   indata = nc.variables['zeta'][0,iheit,:,:]
-  czeta = np.where(indata>5e-5, indata, 0) 
   #czeta = np.roll(np.where(indata>5e-5, -indata, 0), -int(xc.size/6), axis=1)
-  #czeta = np.roll(-czeta,-int(xc.size*1/6),axis=1)+czeta
+  single = np.where(indata>5e-5, indata, 0)
+  czeta  = np.copy(single)
+  czeta  += np.roll(-single,-int(xc.size*1/6),axis=1)
+  czeta  += np.roll(-single, int(xc.size*1/6),axis=1)
 
   #czeta = np.where(np.abs(czeta)>5e-5, czeta, 0)
   #czeta = np.where(czeta<=-5e-5, czeta, 0)
@@ -222,9 +224,9 @@ for it in [216]:
   plt.yticks(np.linspace(0,yc.size,5), np.linspace(0,yc.size,5)*dy/1000)
   plt.xlabel('[km]')
   plt.ylabel('[km]')
-  plt.title('idealized positive single vortex')
+  plt.title('idealized triple vortex')
   os.system('mkdir -p ./fig_example/')
-  plt.savefig('./fig_example/positive_single_vortex.png')
+  plt.savefig('./fig_example/triple_vortex.png')
   
 
   # plt.title(f'{exp} / conzeta-{str_kernel}',fontweight='bold', loc='left', fontsize=15)
