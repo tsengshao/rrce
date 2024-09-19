@@ -41,11 +41,15 @@ def calculate_weighted_centroid(x_coords, y_coords, weights_in, L_x, L_y):
     return cx%L_x, cy%L_y
 
 
-def calculate_weighted_centroid_periodic(x_coords, y_coords, weights_in, L_x, L_y):
+def calculate_weighted_centroid_periodic(x_coords, y_coords, weights_in, L_x, L_y, only_positive):
     # Convert to angles
     theta_x = (2 * np.pi * np.array(x_coords) / L_x )
     theta_y = (2 * np.pi * np.array(y_coords) / L_y )
     theta_x, theta_y = np.meshgrid(theta_x, theta_y)
+
+    ##------------------------------------------------
+    ## find the positive value centeroid
+    ## ------
     # count postive center
     weights = np.where(weights_in>=0, weights_in, 0)
     sum_weights = np.sum(weights)
@@ -54,6 +58,10 @@ def calculate_weighted_centroid_periodic(x_coords, y_coords, weights_in, L_x, L_
       c_x = np.sum(weights * np.cos(theta_x)) / sum_weights
       s_y = np.sum(weights * np.sin(theta_y)) / sum_weights
       c_y = np.sum(weights * np.cos(theta_y)) / sum_weights
+      if np.abs(s_y)<5e-17: s_y = 0
+      if np.abs(s_x)<5e-17: s_x = 0
+      if np.abs(c_y)<5e-17: c_y = 0
+      if np.abs(c_x)<5e-17: c_x = 0
       shift_theta_x = np.arctan2(s_x, c_x)
       shift_theta_y = np.arctan2(s_y, c_y)
       shift_centroid_x = (shift_theta_x * L_x) / (2 * np.pi)
@@ -63,18 +71,27 @@ def calculate_weighted_centroid_periodic(x_coords, y_coords, weights_in, L_x, L_
       shift_theta_y    = 0
       shift_centroid_x = 0
       shift_centroid_y = 0
+    shift_centroid_x %= L_x
+    shift_centroid_y %= L_y
     print(shift_centroid_x, shift_centroid_y)
 
-    # transform theta
+    if only_positive: 
+      # if only_positive = False, calculate positive centeroid only positive weights
+      return shift_centroid_x, shift_centroid_y
+   
+     
+    ## -------------------------------- 
+    ## deal with nagitive value, let negative contribute to the distance, not value
+    ## ----
+    # shift reference point of theta coordinate
     theta_x = (theta_x - shift_theta_x)%(np.pi*2)
     theta_y = (theta_y - shift_theta_y)%(np.pi*2)
-    
-    # deal with nagitive value
+   
     idx=weights_in<0
     theta_x[idx] *= -1
     theta_y[idx] *= -1
-
     weights = np.abs(weights_in)
+
     # Compute weighted mean sine and cosine
     sum_weights = np.sum(weights)
     s_x = np.sum(weights * np.sin(theta_x)) / sum_weights
@@ -102,10 +119,9 @@ def calculate_weighted_centroid_periodic(x_coords, y_coords, weights_in, L_x, L_
     print('negative contribution, y:', centroid_y-shift_centroid_y)
 
     # Ensure the centroid is within the bounds
-    if centroid_x < 0:
-        centroid_x += L_x
-    if centroid_y < 0:
-        centroid_y += L_y
+    centroid_x %= L_x
+    centroid_y %= L_y
+
     return centroid_x, centroid_y
 
 comm = MPI.COMM_WORLD
@@ -139,7 +155,7 @@ dx, dy = np.diff(xc)[0], np.diff(yc)[0]
 
 iheit = np.argmin(np.abs(zz-1000))
 
-str_type = f'czeta{str_kernel}_domainmean'
+str_type = f'czeta{str_kernel}_positivemean'
 outdir=config.dataPath+f"/find_center/{str_type}/"
 os.system('mkdir -p '+outdir)
 
@@ -153,7 +169,7 @@ threshold: domain mean
 center index start from: 0
 ********** center info **********
 """)
-fout.write(f"{'ts':>{width}s} {'mean':>{width}s} {'max':>{width}s} {'hori_size[no]':>{width}s} {'center_x':>{width}s} {'center_y':>{width}s} {'max_locx':>{width}s} {'max_locy':>{width}s} {'posi_mean':>{width}s}\n")
+fout.write(f"{'ts':>{width}s} {'mean':>{width}s} {'max':>{width}s} {'parea_ratio[%]':>{width}s} {'center_x':>{width}s} {'center_y':>{width}s} {'max_locx':>{width}s} {'max_locy':>{width}s} {'posi_mean':>{width}s}\n")
 
 plt.close('all')
 #for it in range(0,nt,int(3*60/dtime)):
@@ -167,11 +183,13 @@ for it in range(nt):
     path=f"{config.dataPath}/convolve/{exp}/{str_kernel}/conv-{it:06d}.nc"
     nc = Dataset(path, 'r')
   czeta = nc.variables['zeta'][0,iheit,:,:]
-  xic = np.arange(xc.size)
-  yic = np.arange(yc.size)
-  xc2,yc2 = np.meshgrid(xic,yic)
+
 
   # **** idealized test **********
+  ## xic = np.arange(xc.size)
+  ## yic = np.arange(yc.size)
+  ## xc2,yc2 = np.meshgrid(xic,yic)
+
   ## czeta = np.ones(czeta.shape)*0.
 
   ## indata = nc.variables['zeta'][0,iheit,:,:]
@@ -209,6 +227,7 @@ for it in range(nt):
                          weights_in = czeta, \
                          L_x        = czeta.shape[1], \
                          L_y        = czeta.shape[0], \
+                         only_positive = True, \
                      )
   print(mean_value)
   print(mean_ix, mean_iy)
@@ -216,6 +235,8 @@ for it in range(nt):
 
   max_iy, max_ix = np.unravel_index(np.argmax(czeta, axis=None), czeta.shape)
   max_value = czeta[max_iy, max_ix]
+
+  hori_size = np.sum(czeta>0)/nx/ny*100
 
   """
   plt.close('all')
@@ -242,16 +263,16 @@ for it in range(nt):
   # plt.savefig('./fig_example/2_triple_vortex.png')
 
   plt.title(f'{exp} / conzeta-{str_kernel}',fontweight='bold', loc='left', fontsize=15)
-  if exp='RRCE_3km_f00':
+  if exp=='RRCE_3km_f00':
     plt.title(f'{it*dtime/60/24:.1f}day ({it:06d})', fontweight='bold', loc='right', fontsize=12)
   else:
     plt.title(f'{it*dtime/60:.1f}hr ({it:06d})', fontweight='bold', loc='right', fontsize=12)
   figPath = f'./fig_example_method2/{exp}/'
-  os.system(f'mkdir -p {figPath}')
-  plt.savefig(f'{figPath}/{str_kernel}_{it:06d}.png',dpi=250)
-  plt.show(block=False)
+  #os.system(f'mkdir -p {figPath}')
+  #plt.savefig(f'{figPath}/{str_kernel}_{it:06d}.png',dpi=250)
+  plt.show(block=True)
   """
 
-  fout.write(f"{it:{width}d} {mean_value:{width}.4e} {max_value:{width}.4e} {0:{width}.4e} {mean_ix:{width}.4e} {mean_ix:{width}.4e} {max_ix:{width}d} {max_iy:{width}d} {posi_mean_value:{width}.4e}\n")
+  fout.write(f"{it:{width}d} {mean_value:{width}.4e} {max_value:{width}.4e} {hori_size:{width}.4f} {mean_ix:{width}.4e} {mean_ix:{width}.4e} {max_ix:{width}d} {max_iy:{width}d} {posi_mean_value:{width}.4e}\n")
 fout.close()
 

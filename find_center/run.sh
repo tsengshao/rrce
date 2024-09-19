@@ -3,7 +3,7 @@
 #SBATCH -p all     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 5       # Run a single task
+#SBATCH -n 6       # Run a single task
 ##SBATCH -w node01  # nodelist
 #SBATCH -o center.%j.out  # output file
 
@@ -15,15 +15,26 @@ ncpu=5
 cpum=$(echo "${ncpu}-1"|bc)
 str_kernel='0km'
 
-for i in $(seq 0 18);do
+python -u ${py} 0 ${str_kernel} &
+echo $!
+
+for i in $(seq 1 18);do
+  pids=()
   a=$(echo "mod(${i},${ncpu})"|bc -l ~/.bcrc)
   echo ${i}...${a}
   #mpirun -np 1 python -u ${py} ${i} ${str_kernel} &
   python -u ${py} ${i} ${str_kernel} &
+  pids[${a}]=$!
+  
   if [ "${a}" == "${cpum}" ]; then
-    wait
+    for pid in ${pids[*]};do
+      wait $pid
+    done
+    pids=()
   fi
+  echo $(jobs -p)
 done
 
+echo $(jobs -p)
 wait
 
