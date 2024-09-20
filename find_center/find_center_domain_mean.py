@@ -270,9 +270,9 @@ for it in range(nt):
   figPath = f'./fig_example_method2/{exp}/'
   #os.system(f'mkdir -p {figPath}')
   #plt.savefig(f'{figPath}/{str_kernel}_{it:06d}.png',dpi=250)
-  plt.show(block=True)
+  #plt.show(block=True)
   """
 
-  fout.write(f"{it:{width}d} {mean_value:{width}.4e} {max_value:{width}.4e} {hori_size:{width}.4f} {mean_ix:{width}.4e} {mean_ix:{width}.4e} {max_ix:{width}d} {max_iy:{width}d} {posi_mean_value:{width}.4e}\n")
+  fout.write(f"{it:{width}d} {mean_value:{width}.4e} {max_value:{width}.4e} {hori_size:{width}.4f} {mean_ix:{width}.4e} {mean_iy:{width}.4e} {max_ix:{width}d} {max_iy:{width}d} {posi_mean_value:{width}.4e}\n")
 fout.close()
 
