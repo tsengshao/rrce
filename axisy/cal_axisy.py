@@ -38,13 +38,14 @@ nz, ny, nx = thData['qv'][0].shape
 xc, yc, zc = thData['xc'][:], thData['yc'][:], thData['zc'][:]
 dx, dy = np.diff(xc)[0], np.diff(yc)[0]
 rho = vvmLoader.loadRHO()[:-1]
-idxTOP = np.argmin(np.abs(zc-18000))+1
+pibar = vvmLoader.loadPIBAR()[:-1]
+idxTOP = np.argmin(np.abs(zc-18000))
 zc = zc[:idxTOP]
 nz = zc.size
 
 
 # create r/theta coordinate
-radius = np.arange(0, (nx*dx)//1.5, dx) + dx/2
+radius = np.arange(0, (nx*dx)//2, dx) + dx/2
 theta  = np.arange(0,360,0.5) + 0.25
 theta  = theta*np.pi/180.
 theta, radius = np.meshgrid(theta, radius)
@@ -68,14 +69,13 @@ x_polar, y_polar  =  axisy.convert_rth2xy(\
 sdis, stheta = axisy.compute_shortest_distances_vectorized(xc, yc, cx, cy)
 
 
-# read cwv data
-nc = Dataset(f'{config.dataPath}/wp/{exp}/wp-{it:06d}.nc', 'r')
-cwv = nc.variables['cwv'][0].data #kg/m2
-lwp = nc.variables['lwp'][0].data #kg/m2
-iwp = nc.variables['iwp'][0].data #kg/m2
+# read data
+dataCollector = axisy.data_collector(exp, it, idztop=idxTOP+1)
+data_dict= dataCollector.get_variable('th')
 
 # regrid data
-rawdata = sdis
+rawdata = data_dict['data'][8,:,:]
+#rawdata = data_dict['data']
 data_polar = axisy.regrid_data_c2p(xc_1d = xc,\
                              yc_1d = yc,\
                              rawdata = rawdata,\
@@ -83,6 +83,8 @@ data_polar = axisy.regrid_data_c2p(xc_1d = xc,\
                              y_polar = y_polar,\
                             )
 
+
+############ quick view
 plt.figure()
 plt.scatter(x_polar/1000,y_polar/1000,c=radius/1000,s=1)
 plt.colorbar()
@@ -94,32 +96,29 @@ plt.title('theta')
 
 # draw
 fig = plt.figure()
-bounds = np.linspace(10, 60, 26)
-bounds = np.arange(0, 1150*1e3, 3e3)
-norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=bounds.size+2, extend='both')
+bounds = np.arange(20, 60, 2)
+bounds = np.linspace(-20, 20, 21)
+bounds = np.arange(0, 300, 20)
+bounds = np.arange(270, 300, 1)
 
-c = plt.pcolormesh(xc/1000, yc/1000, rawdata, norm=norm, cmap=plt.cm.jet)
+cmap   = plt.cm.jet
+#cmap = plt.cm.RdYlBu
+
+norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=256, extend='both')
+
+c = plt.pcolormesh(xc/1000, yc/1000, rawdata, norm=norm, cmap=cmap)
 cb = plt.colorbar(c)
 plt.scatter(cx/1000, cy/1000,s=10,c=['k'])
 
 plt.figure()
-plt.scatter(x_polar/1000, y_polar/1000, c=data_polar, s=1, cmap=plt.cm.jet, norm=norm)
+plt.scatter(x_polar/1000, y_polar/1000, c=data_polar, s=1, cmap=cmap, norm=norm)
 plt.colorbar()
 plt.scatter(cx/1000, cy/1000,s=10,c=['k'])
 
 plt.figure()
-plt.pcolormesh(radius/1000,theta,data_polar,norm=norm,cmap=plt.cm.jet)
+plt.pcolormesh(radius/1000,theta,data_polar,norm=norm,cmap=cmap)
 plt.colorbar()
-plt.contour(radius/1000,theta,(data_polar-radius)<1,levels=[0])
 plt.show()
-
-
-
-
-
-
-
-
 
 
 
