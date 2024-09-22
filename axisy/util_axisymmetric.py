@@ -29,9 +29,9 @@ class data_collector:
         self.nz = self.idztop
 
     def setGRIDinfo(self):
-        self.xc = self.thNC['xc'][:]  #meter
-        self.yc = self.thNC['yc'][:]  #meter
-        self.zc = self.thNC['zc'][:]  #meter
+        self.xc = self.thNC['xc'][:].data  #meter
+        self.yc = self.thNC['yc'][:].data  #meter
+        self.zc = self.thNC['zc'][:].data  #meter
         self.nx = self.xc.size
         self.ny = self.yc.size
         self.nz = self.zc.size
@@ -58,6 +58,14 @@ class data_collector:
         self.wpNC.close()
         self.radNC.close()
 
+    def get_radial_and_tangential_wind(self, theta_2d):
+        u_3d = self.get_variable('u')['data']
+        v_3d = self.get_variable('v')['data']
+        radial, tangential = convert_uv2rt(u_3d,v_3d,theta_2d[np.newaxis,:,:])
+        radial_dict = {'data':radial, 'long_name':'radial wind', 'units':'m/s', 'ndim':'3d'}
+        tangential_dict = {'data':tangential, 'long_name':'tangential wind', 'units':'m/s', 'ndim':'3d'}
+        return radial_dict, tangential_dict
+
     def get_variable(self,varn):
       varn_check = varn.lower()
       ## integral qv/qc/qi
@@ -75,7 +83,7 @@ class data_collector:
           data = self.sfNC.variables['sprec'][0].data*3600
           return {'data':data, 'long_name':'rain', 'units':'mm/hr', 'ndim':'2d'}
       elif varn_check == 'sh':
-          data = self.sfNC.variables['wth'][0].data*1004
+          data = self.sfNC.variables['wth'][0].data*1004 # @1000hPa
           return {'data':data, 'long_name':'sensible heat flux', 'units':'W/m2', 'ndim':'2d'}
       elif varn_check == 'lh':
           data = self.sfNC.variables['wqv'][0].data*2.5e6
@@ -130,18 +138,18 @@ class data_collector:
       ## Radiation
       elif varn_check == 'netlw':
           down_toa = self.radNC.variables['fdlw'][0,-1,:,:].data
-          down_suf = self.radNC.variables['fdlw'][0,0,:,:].data
+          down_suf = self.radNC.variables['fdlw'][0,1,:,:].data
           up_toa   = self.radNC.variables['fulw'][0,-1,:,:].data
-          up_suf   = self.radNC.variables['fulw'][0,0,:,:].data
+          up_suf   = self.radNC.variables['fulw'][0,1,:,:].data
           # positive flux is defined to be upward
           # NetLW = LWsfc - LWtop
           data     = (-down_suf+up_suf) - (-down_toa+up_toa)
           return {'data':data, 'long_name':'column longwave radiative flux convergence', 'units':'W/m2', 'ndim':'2d'}
       elif varn_check == 'netsw':
           down_toa = self.radNC.variables['fdsw'][0,-1,:,:].data
-          down_suf = self.radNC.variables['fdsw'][0,0,:,:].data
+          down_suf = self.radNC.variables['fdsw'][0,1,:,:].data
           up_toa   = self.radNC.variables['fusw'][0,-1,:,:].data
-          up_suf   = self.radNC.variables['fusw'][0,0,:,:].data
+          up_suf   = self.radNC.variables['fusw'][0,1,:,:].data
           # positive flux is defined to be downward
           # NetSW = SWtop - SWsfc
           data     = (down_toa-up_toa) - (down_suf-up_suf)
