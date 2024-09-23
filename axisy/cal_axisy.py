@@ -1,17 +1,13 @@
-import matplotlib.pyplot as plt
-import matplotlib as mpl
+#import matplotlib.pyplot as plt
+#import matplotlib as mpl
 import numpy as np
 import sys, os
 sys.path.insert(1,'../')
 import config
 from util.vvmLoader import VVMLoader, VVMGeoLoader
-import util.calculator as calc
 import util.tools as tools
-from util.dataWriter import DataWriter
 from mpi4py import MPI
 from datetime import datetime, timedelta
-import numba
-from netCDF4 import Dataset
 import util_axisymmetric as axisy
 
 
@@ -37,8 +33,10 @@ thData = vvmLoader.loadThermoDynamic(0)
 nz, ny, nx = thData['qv'][0].shape
 xc, yc, zc = thData['xc'][:], thData['yc'][:], thData['zc'][:]
 dx, dy = np.diff(xc)[0], np.diff(yc)[0]
+dtime  = 20  #minutes
 rho = vvmLoader.loadRHO()[:-1]
 pibar = vvmLoader.loadPIBAR()[:-1]
+pbar = vvmLoader.loadPBAR()[:-1]
 idxTOP = np.argmin(np.abs(zc-18000))
 zc = zc[:idxTOP]
 nz = zc.size
@@ -48,7 +46,7 @@ nz = zc.size
 radius_1d = np.arange(0, (nx*dx)//2, dx) + dx/2
 theta_1d  = np.arange(0,360,0.5) + 0.25
 theta_1d  = theta_1d*np.pi/180.
-theta, radius = np.meshgrid(theta_1d, radius_1d)
+radius, theta = np.meshgrid(radius_1d, theta_1d)
 
 # read center file
 fname = f'{config.dataPath}/find_center/{center_flag}/{exp}.txt'
@@ -56,45 +54,77 @@ center_info, center_loc = axisy.read_center_file(fname, \
                             colname=['center_x','center_y'])
 
 
-it = 216
+it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
+#it_start, it_end =  tools.get_mpi_time_span(212, 217, cpuid, nproc)
+print(cpuid, it_start, it_end, it_end-it_start)
+comm.Barrier()
 
-## # create nc file
-## outNC = Dataset(f'{outdir}/axisy-{it:06d}.nc', 'w', format='NTECDF4')
-## time_nc  = outNC.createDimension("time", None)
-## zc_nc = outNC.createDimension("zc", nz)
-## r_nc  = outNC.createDimension("radius", radius_1d.size)
-## th_nc = outNC.createDimension("theta", theta_1d.size)
-## 
+for it in np.arange(it_start, it_end):
+    # calculate corespond x/y from r/theta
+    cx = center_loc['center_x'].iloc[it]*dx
+    cy = center_loc['center_y'].iloc[it]*dy
+    x_polar, y_polar  =  axisy.convert_rth2xy(\
+                          radius, theta, \
+                          cx, cy, \
+                          nx*dx, ny*dy, \
+                         )
+    sdis, stheta = axisy.compute_shortest_distances_vectorized(xc, yc, cx, cy)
+    
+    fname  = f'{outdir}/axisy-{it:06d}.nc'
+    axisyWriter = axisy.ncWriter(fname)
+    axisyWriter.create_coordinate(t_min = it*dtime,\
+                                z_zc_m = zc,\
+                                y_theta_rad = theta_1d, \
+                                x_radius_m  = radius_1d, \
+                                center_x_grid = cx/dx, \
+                                center_y_grid = cy/dy, \
+                               )
+    
+    # read data
+    dataCollector = axisy.data_collector(exp, it, idztop=idxTOP+1)
+    radial_dict, tangential_dict = dataCollector.get_radial_and_tangential_wind(stheta)
+    
+    # regrid 2d datasets
+    for varname in dataCollector.var2dlist:
+      data_dict = dataCollector.get_variable(varname)
+      rawdata   = data_dict.pop('data')
+      positive  = data_dict.pop('positive')
+      data_polar = axisy.regrid_data_c2p(xc_1d = xc,\
+                                 yc_1d = yc,\
+                                 rawdata = rawdata,\
+                                 x_polar = x_polar,\
+                                 y_polar = y_polar,\
+                                 always_positive = positive, \
+                                )
+      axisyWriter.put_variables(varname, data_polar, data_dict)
+    
+    # regrid 3d datasets
+    radial_dict, tangential_dict = dataCollector.get_radial_and_tangential_wind(stheta)
+    for varname in dataCollector.var3dlist + ['radi_wind', 'tang_wind']:
+      data_polar = np.zeros((nz, theta_1d.size, radius_1d.size))
+    
+      if varname=='radi_wind':
+        data_dict = radial_dict
+      elif varname=='tang_wind':
+        data_dict = tangential_dict
+      else:
+        data_dict = dataCollector.get_variable(varname)
+      rawdata = data_dict.pop('data')
+      positive  = data_dict.pop('positive')
+    
+      for iz in range(nz):
+        data_polar[iz] = axisy.regrid_data_c2p(xc_1d = xc,\
+                                   yc_1d = yc,\
+                                   rawdata = rawdata[iz],\
+                                   x_polar = x_polar,\
+                                   y_polar = y_polar,\
+                                   always_positive = positive, \
+                                  )
+      axisyWriter.put_variables(varname, data_polar, data_dict)
+    axisyWriter.close_ncfile()
+ 
 
-
-
-# calculate corespond x/y from r/theta
-cx = center_loc['center_x'].iloc[it]*dx
-cy = center_loc['center_y'].iloc[it]*dy
-x_polar, y_polar  =  axisy.convert_rth2xy(\
-                      radius, theta, \
-                      cx, cy, \
-                      nx*dx, ny*dy, \
-                     )
-sdis, stheta = axisy.compute_shortest_distances_vectorized(xc, yc, cx, cy)
-
-
-# read data
-dataCollector = axisy.data_collector(exp, it, idztop=idxTOP+1)
-radial_dict, tangential_dict = dataCollector.get_radial_and_tangential_wind(stheta)
-data_dict = tangential_dict
-
-# regrid data
-if data_dict['ndim']=='3d':
-  rawdata = data_dict['data'][8,:,:]
-elif data_dict['ndim']=='2d':
-  rawdata = data_dict['data']
-data_polar = axisy.regrid_data_c2p(xc_1d = xc,\
-                             yc_1d = yc,\
-                             rawdata = rawdata,\
-                             x_polar = x_polar,\
-                             y_polar = y_polar,\
-                            )
+sys.exit()
 
 ############ quick view
 plt.figure()

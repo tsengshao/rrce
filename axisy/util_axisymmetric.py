@@ -4,8 +4,10 @@ import sys, os
 sys.path.insert(1,'../')
 import config
 from util.vvmLoader import VVMLoader, VVMGeoLoader
+import util.thermo as thermo
 from netCDF4 import Dataset
 from scipy.interpolate import RectBivariateSpline
+from datetime import datetime, timedelta
 
 class data_collector:
     def __init__(self, exp, tIdx, idztop=None):
@@ -17,9 +19,9 @@ class data_collector:
         self.radNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Radiation-{self.tIdx:06d}.nc','r')
         self.wpNC = Dataset(f'{config.dataPath}/wp/{exp}/wp-{self.tIdx:06d}.nc','r')
         
-        self.var2dlist = ['cwv','iwp','lwp','rain','olr','netLW','netSW', 'sh', 'lw']
+        self.var2dlist = ['cwv','iwp','lwp','rain','olr','netLW','netSW', 'sh', 'lh']
         self.var3dlist = ['u', 'v', 'w', 'zeta', 'eta', 'xi', 'divg',\
-                          'th', 'qv', 'qc', 'qi', 'qr',\
+                          'th', 'qv', 'qc', 'qi', 'qr', 'qvs', 'mse',\
                          ]
 
         self.setGRIDinfo()
@@ -27,6 +29,8 @@ class data_collector:
         if type(idztop) == type(None): self.idztop = int(nz)
         self.zc = self.zc[:self.idztop]
         self.nz = self.idztop
+
+        self.setBARinfo()
 
     def setGRIDinfo(self):
         self.xc = self.thNC['xc'][:].data  #meter
@@ -37,6 +41,12 @@ class data_collector:
         self.nz = self.zc.size
         self.dx = np.diff(self.xc)[0]
         self.dy = np.diff(self.yc)[0]
+
+    def setBARinfo(self):
+        vvmLoader    = VVMLoader(f"{config.vvmPath}/{self.exp}/", subName=self.exp)
+        self.rho3d   = vvmLoader.loadRHO()[:self.idztop][:,np.newaxis,np.newaxis]
+        self.pibar3d = vvmLoader.loadPIBAR()[:self.idztop][:,np.newaxis,np.newaxis]
+        self.pbar3d  = vvmLoader.loadPBAR()[:self.idztop][:,np.newaxis,np.newaxis]
 
     def extend_3d_data(self, var3d):
         dum = np.zeros((self.nz,self.ny+2,self.nx+2))
@@ -62,8 +72,8 @@ class data_collector:
         u_3d = self.get_variable('u')['data']
         v_3d = self.get_variable('v')['data']
         radial, tangential = convert_uv2rt(u_3d,v_3d,theta_2d[np.newaxis,:,:])
-        radial_dict = {'data':radial, 'long_name':'radial wind', 'units':'m/s', 'ndim':'3d'}
-        tangential_dict = {'data':tangential, 'long_name':'tangential wind', 'units':'m/s', 'ndim':'3d'}
+        radial_dict = {'data':radial, 'long_name':'radial wind', 'units':'m/s', 'dim_type':'3d', 'positive':False}
+        tangential_dict = {'data':tangential, 'long_name':'tangential wind', 'units':'m/s', 'dim_type':'3d', 'positive':False}
         return radial_dict, tangential_dict
 
     def get_variable(self,varn):
@@ -71,45 +81,45 @@ class data_collector:
       ## integral qv/qc/qi
       if varn_check == 'cwv':
           data = self.wpNC.variables['cwv'][0].data
-          return {'data':data, 'long_name':'column water vapor', 'units':'kg/m2', 'ndim':'2d'}
+          return {'data':data, 'long_name':'column water vapor', 'units':'kg/m2', 'dim_type':'2d', 'positive':True}
       elif varn_check == 'lwp':
           data = self.wpNC.variables['lwp'][0].data
-          return {'data':data, 'long_name':'liquid water path', 'units':'kg/m2', 'ndim':'2d'}
+          return {'data':data, 'long_name':'liquid water path', 'units':'kg/m2', 'dim_type':'2d', 'positive':True}
       elif varn_check == 'iwp':
           data = self.wpNC.variables['iwp'][0].data
-          return {'data':data, 'long_name':'ice water path', 'units':'kg/m2', 'ndim':'2d'}
+          return {'data':data, 'long_name':'ice water path', 'units':'kg/m2', 'dim_type':'2d', 'positive':True}
       ## Surface
       elif varn_check == 'rain':
           data = self.sfNC.variables['sprec'][0].data*3600
-          return {'data':data, 'long_name':'rain', 'units':'mm/hr', 'ndim':'2d'}
+          return {'data':data, 'long_name':'rain', 'units':'mm/hr', 'dim_type':'2d', 'positive':True}
       elif varn_check == 'sh':
-          data = self.sfNC.variables['wth'][0].data*1004 # @1000hPa
-          return {'data':data, 'long_name':'sensible heat flux', 'units':'W/m2', 'ndim':'2d'}
+          data = self.sfNC.variables['wth'][0].data*1004 
+          return {'data':data, 'long_name':'sensible heat flux', 'units':'W/m2', 'dim_type':'2d', 'positive':False}
       elif varn_check == 'lh':
           data = self.sfNC.variables['wqv'][0].data*2.5e6
-          return {'data':data, 'long_name':'latent heat flux', 'units':'W/m2', 'ndim':'2d'}
+          return {'data':data, 'long_name':'latent heat flux', 'units':'W/m2', 'dim_type':'2d', 'positive':False}
       elif varn_check == 'olr':
           data = self.sfNC.variables['olr'][0].data
-          return {'data':data, 'long_name':'outgoing longwave radiation', 'units':'W/m2', 'ndim':'2d'}
+          return {'data':data, 'long_name':'outgoing longwave radiation', 'units':'W/m2', 'dim_type':'2d', 'positive':True}
       ## Dynamics
       elif varn_check == 'zeta':
           data = self.dyNC.variables['zeta'][0,:self.idztop].data
-          return {'data':data, 'long_name':'z-component of vorticity', 'units':'1/s2', 'ndim':'3d'}
+          return {'data':data, 'long_name':'z-component of vorticity', 'units':'1/s2', 'dim_type':'3d', 'positive':False}
       elif varn_check == 'eta':
           data = self.dyNC.variables['eta'][0,:self.idztop].data
-          return {'data':data, 'long_name':'y-component of vorticity', 'units':'1/s2', 'ndim':'3d'}
+          return {'data':data, 'long_name':'y-component of vorticity', 'units':'1/s2', 'dim_type':'3d', 'positive':False}
       elif varn_check == 'xi':
           data = self.dyNC.variables['xi'][0,:self.idztop].data
-          return {'data':data, 'long_name':'x-component of vorticity', 'units':'1/s2', 'ndim':'3d'}
+          return {'data':data, 'long_name':'x-component of vorticity', 'units':'1/s2', 'dim_type':'3d', 'positive':False}
       elif varn_check == 'u':
           data = self.dyNC.variables['u'][0,:self.idztop].data
-          return {'data':data, 'long_name':'zonal velocity', 'units':'m/s', 'ndim':'3d'}
+          return {'data':data, 'long_name':'zonal velocity', 'units':'m/s', 'dim_type':'3d', 'positive':False}
       elif varn_check == 'v':
           data = self.dyNC.variables['v'][0,:self.idztop].data
-          return {'data':data, 'long_name':'meridional velocity', 'units':'m/s', 'ndim':'3d'}
+          return {'data':data, 'long_name':'meridional velocity', 'units':'m/s', 'dim_type':'3d', 'positive':False}
       elif varn_check == 'w':
           data = self.dyNC.variables['w'][0,:self.idztop].data
-          return {'data':data, 'long_name':'vertical velocity', 'units':'m/s', 'ndim':'3d'}
+          return {'data':data, 'long_name':'vertical velocity', 'units':'m/s', 'dim_type':'3d', 'positive':False}
       elif varn_check == 'divg':
           u = self.dyNC.variables['u'][0,:self.idztop].data
           v = self.dyNC.variables['v'][0,:self.idztop].data
@@ -118,23 +128,33 @@ class data_collector:
           divg_pad  = np.gradient(u_pad, axis=2)/self.dx + \
                       np.gradient(v_pad, axis=1)/self.dy
           divg  = divg_pad[:,1:-1,1:-1]
-          return {'data':divg, 'long_name':'horizontial divergence', 'units':'1/s2', 'ndim':'3d'}
+          return {'data':divg, 'long_name':'horizontial divergence', 'units':'1/s2', 'dim_type':'3d', 'positive':False}
       ## Thermodynamics 
       elif varn_check == 'th':
           data = self.thNC.variables['th'][0,:self.idztop].data
-          return {'data':data, 'long_name':'potential temperature', 'units':'K', 'ndim':'3d'}
+          return {'data':data, 'long_name':'potential temperature', 'units':'K', 'dim_type':'3d', 'positive':True}
       elif varn_check == 'qv':
           data = self.thNC.variables['qv'][0,:self.idztop].data
-          return {'data':data, 'long_name':'water vapor mixing ratio', 'units':'kg/kg', 'ndim':'3d'}
+          return {'data':data, 'long_name':'water vapor mixing ratio', 'units':'kg/kg', 'dim_type':'3d', 'positive':True}
       elif varn_check == 'qc':
           data = self.thNC.variables['qc'][0,:self.idztop].data
-          return {'data':data, 'long_name':'cloud water mixing ratio', 'units':'kg/kg', 'ndim':'3d'}
+          return {'data':data, 'long_name':'cloud water mixing ratio', 'units':'kg/kg', 'dim_type':'3d', 'positive':True}
       elif varn_check == 'qi':
           data = self.thNC.variables['qi'][0,:self.idztop].data
-          return {'data':data, 'long_name':'cloud ice mixing ratio', 'units':'kg/kg', 'ndim':'3d'}
+          return {'data':data, 'long_name':'cloud ice mixing ratio', 'units':'kg/kg', 'dim_type':'3d', 'positive':True}
       elif varn_check == 'qr':
           data = self.thNC.variables['qr'][0,:self.idztop].data
-          return {'data':data, 'long_name':'rain mixing ratio', 'units':'kg/kg', 'ndim':'3d'}
+          return {'data':data, 'long_name':'rain mixing ratio', 'units':'kg/kg', 'dim_type':'3d', 'positive':True}
+      elif varn_check == 'mse':
+          data_cpt   = self.thNC.variables['th'][0,:self.idztop].data*self.pibar3d*1004.
+          data_lvqv  = self.thNC.variables['qv'][0,:self.idztop].data*2.5e6
+          data_gz    = self.zc[:,np.newaxis,np.newaxis]*9.8
+          data = (data_cpt + data_lvqv + data_gz)/1004.
+          return {'data':data, 'long_name':'moist static temperature', 'units':'K', 'dim_type':'3d', 'positive':True}
+      elif varn_check == 'qvs':
+          data_t = self.thNC.variables['th'][0,:self.idztop].data*self.pibar3d
+          data    = thermo.qv_sat(data_t, self.pbar3d)
+          return {'data':data, 'long_name':'saturated water vapor mixing ratio', 'units':'kg/kg', 'dim_type':'3d', 'positive':True}
       ## Radiation
       elif varn_check == 'netlw':
           down_toa = self.radNC.variables['fdlw'][0,-1,:,:].data
@@ -144,7 +164,7 @@ class data_collector:
           # positive flux is defined to be upward
           # NetLW = LWsfc - LWtop
           data     = (-down_suf+up_suf) - (-down_toa+up_toa)
-          return {'data':data, 'long_name':'column longwave radiative flux convergence', 'units':'W/m2', 'ndim':'2d'}
+          return {'data':data, 'long_name':'column longwave radiative flux convergence', 'units':'W/m2', 'dim_type':'2d', 'positive':False}
       elif varn_check == 'netsw':
           down_toa = self.radNC.variables['fdsw'][0,-1,:,:].data
           down_suf = self.radNC.variables['fdsw'][0,1,:,:].data
@@ -153,7 +173,92 @@ class data_collector:
           # positive flux is defined to be downward
           # NetSW = SWtop - SWsfc
           data     = (down_toa-up_toa) - (down_suf-up_suf)
-          return {'data':data, 'long_name':'column shortwave radiative flux convergence', 'units':'W/m2', 'ndim':'2d'}
+          return {'data':data, 'long_name':'column shortwave radiative flux convergence', 'units':'W/m2', 'dim_type':'2d', 'positive':False}
+
+class ncWriter:
+    def __init__(self, fname):
+        self.fname = fname
+
+    def put_variables(self, varname, data, attrs):
+        if 'nc' not in self.__dict__.keys(): 
+            print('This ncWriter can not put variables ... ')
+            print('...... please create the coordinate first, ncWriter.create_coordinate !!')
+            return
+        if len(data.shape)==2:
+          vardims = ('time', 'theta', 'radius')
+          chunks  = (1, data.shape[0], data.shape[1])
+        elif len(data.shape)==3:
+          vardims = ('time', 'zc', 'theta', 'radius')
+          chunks  = (1, data.shape[0], data.shape[1], data.shape[2])
+        else:
+          print('error data input shape, not 2d or 3d')
+          return
+        var_nc  = self.nc.createVariable(varname, 'f4', vardims,\
+                                         compression='zlib', complevel=4,\
+                                         fill_value=-999000000,\
+                                         chunksizes=chunks,\
+                                        )
+        for name, value in attrs.items():
+            setattr(var_nc, name, value)
+        var_nc[:]  = data[np.newaxis,:,:]
+        return
+
+    def close_ncfile(self):
+        if 'nc' not in self.__dict__.keys(): 
+            print('This ncWriter does not have ncfile ... ')
+            print('...... please create the coordinate first, ncWriter.create_coordinate !!')
+            return
+        self.nc.close()
+        return
+        
+       
+    def reset_coordinate(self):
+        if 'nc' not in self.__dict__.keys(): 
+            print('This ncWriter can not reset_coordinate ... ')
+            print('...... please create the coordinate first, ncWriter.create_coordinate !!')
+            return
+        self.nc.close()
+        self.__delattr__('nc')
+        return
+
+    def create_coordinate(self, t_min, z_zc_m, y_theta_rad, x_radius_m, center_x_grid, center_y_grid):
+        if 'nc' in self.__dict__.keys():
+            print('This ncWriter already has the coordinate ... ')
+            print('...... no create_coordinate !!')
+            return 
+
+        outNC = Dataset(self.fname, 'w', format='NETCDF4')
+        _ = outNC.createDimension("time", None)
+        _ = outNC.createDimension("zc", z_zc_m.size)
+        _ = outNC.createDimension("radius", x_radius_m.size)
+        _ = outNC.createDimension("theta",  y_theta_rad.size)
+        
+        # create variables of coordinate
+        time_nc = outNC.createVariable('time',   'f8', ('time'),   fill_value=-9.99e6)
+        r_nc    = outNC.createVariable('radius', 'f8', ('radius'), fill_value=-9.99e6)
+        th_nc   = outNC.createVariable('theta',  'f8', ('theta'),  fill_value=-9.99e6)
+        zc_nc   = outNC.createVariable('zc',     'f8', ('zc'),     fill_value=-9.99e6)
+        
+        # write attributes(units) of coordinate
+        time_nc.units    = "minutes since 0001-01-01 00:00:00.0"
+        time_nc.calendar = 'gregorian'
+        zc_nc.units      = 'm'
+        th_nc.units      = 'rad'
+        r_nc.units       = 'm'
+        outNC.discription    = "axisysmmetric average"
+        outNC.center_x_grid  = center_x_grid
+        outNC.center_y_grid  = center_y_grid
+        outNC.history        = "Created " + datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # write data of coordinate
+        r_nc[:]  = x_radius_m
+        th_nc[:] = y_theta_rad
+        zc_nc[:] = z_zc_m
+        time_nc[:] = t_min   # minutes, follow time_nc.units
+        
+        self.nc = outNC
+        return
+
 
 
 
@@ -208,8 +313,9 @@ def read_center_file(fname, colname=None):
       output = table
     return center_info, output
 
-def regrid_data_c2p(xc_1d, yc_1d, rawdata, x_polar, y_polar):
+def regrid_data_c2p(xc_1d, yc_1d, rawdata, x_polar, y_polar, always_positive=False):
   fun = RectBivariateSpline(xc_1d, yc_1d, rawdata.T)
   data_polar = fun(x_polar.flatten(), y_polar.flatten(), grid=False)
   data_polar = data_polar.reshape(x_polar.shape)
+  if always_positive: data_polar = np.where(data_polar<0, 0, data_polar)
   return data_polar
