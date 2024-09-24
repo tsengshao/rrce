@@ -20,7 +20,10 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
-if exp!='RRCE_3km_f00': nt=217
+if exp!='RRCE_3km_f00':
+  nt=217
+else:
+  nt=2521
 if (cpuid==0): print(exp, nt)
 
 center_flag='czeta0km_positivemean'
@@ -122,7 +125,17 @@ for it in np.arange(it_start, it_end):
                                   )
       axisyWriter.put_variables(varname, data_polar, data_dict)
     axisyWriter.close_ncfile()
- 
+
+    if cpuid==0 and it==it_start:
+        print(f'cpuid={cpuid}, write ctl file ... ')
+        axisyWriter.write_ctl(fname = f'{outdir}/../axisy_{exp}.ctl',\
+                                exp = exp,\
+                                  x = radius_1d,\
+                                  y = theta_1d,\
+                                  z = zc,\
+                                  nt = nt,\
+                                  dt = dtime\
+                             )
 
 sys.exit()
 

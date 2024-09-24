@@ -189,7 +189,7 @@ class ncWriter:
           chunks  = (1, data.shape[0], data.shape[1])
         elif len(data.shape)==3:
           vardims = ('time', 'zc', 'theta', 'radius')
-          chunks  = (1, data.shape[0], data.shape[1], data.shape[2])
+          chunks  = (1, 1, data.shape[1], data.shape[2])
         else:
           print('error data input shape, not 2d or 3d')
           return
@@ -258,6 +258,58 @@ class ncWriter:
         
         self.nc = outNC
         return
+
+    def write_ctl(self,fname,exp,x,y,z,nt,dt):
+        dset = f'^./{exp}/axisy-%tm6.nc'
+        str_z = ' '.join(z.astype(str))
+        dt = 20 #min
+        x  = np.arange(x.size)*2
+        y  = np.linspace(0,1,y.size)*360
+        fctl=f"""
+ DSET {dset} 
+ DTYPE netcdf
+ OPTIONS template
+ TITLE C.Surface variables
+ UNDEF 99999.
+ CACHESIZE  1000000
+ XDEF {x.size} LINEAR {x[0]} {x[1]-x[0]}
+ YDEF {y.size} LINEAR {y[0]} {y[1]-y[0]}
+ ZDEF {z.size} levels {str_z}
+ TDEF {nt} LINEAR 01JAN1998 {dt}mn
+ VARS 25
+   cwv=>cwv     0 t,y,x column_water_vapor
+   iwp=>iwp     0 t,y,x ice
+   lwp=>lwp     0 t,y,x liquid
+   olr=>olr     0 t,y,x olr
+   rain=>rain   0 t,y,x rain
+   netLW=>netLW 0 t,y,x netLW
+   netSW=>netSW 0 t,y,x netSW
+   sh=>sh       0 t,y,x sh
+   lh=>lh       0 t,y,x lh
+   u=>u        44 t,z,y,x  u
+   v=>v        44 t,z,y,x  v
+   w=>w        44 t,z,y,x  w
+   zeta=>zeta  44 t,z,y,x  zeta
+   eta=>eta    44 t,z,y,x  eta
+   xi=>xi      44 t,z,y,x  xi
+   divg=>divg  44 t,z,y,x  divg
+   th=>th      44 t,z,y,x  th
+   qv=>qv      44 t,z,y,x  qv
+   qc=>qc      44 t,z,y,x  qc
+   qi=>qi      44 t,z,y,x  qi
+   qr=>qr      44 t,z,y,x  qr
+   qvs=>qvs    44 t,z,y,x  qvs
+   mse=>mse    44 t,z,y,x  mse
+   radi_wind=>rwind      44 t,z,y,x  radial wind
+   tang_wind=>twind      44 t,z,y,x  tang wind
+ ENDVARS
+"""
+        fout = open(fname,'w')
+        fout.write(fctl)
+        fout.close()
+
+        return 
+
 
 
 
