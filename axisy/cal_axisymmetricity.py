@@ -50,6 +50,9 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 print(cpuid, it_start, it_end, it_end-it_start)
 comm.Barrier()
 
+if cpuid==0:
+  _ = axisy.create_axmean_ctl_from_axisy_ctl(outdir, exp)
+
 
 for it in range(it_start, it_end):
   nc_axsy   = Dataset(f'{outdir}/axisy-{it:06d}.nc', 'r')
