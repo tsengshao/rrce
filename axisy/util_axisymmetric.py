@@ -371,3 +371,34 @@ def regrid_data_c2p(xc_1d, yc_1d, rawdata, x_polar, y_polar, always_positive=Fal
   data_polar = data_polar.reshape(x_polar.shape)
   if always_positive: data_polar = np.where(data_polar<0, 0, data_polar)
   return data_polar
+
+def create_nc_copy_dims(fname, src, kick_out_members):
+  # src is the netCDF.Dataset
+  # fname is the string
+  dst = Dataset(fname,'w')
+  # copy global attributes all at once via dictionary
+  dst.setncatts(src.__dict__)
+  # copy dimensions
+  for name, dimension in src.dimensions.items():
+    if name in kick_out_members: continue
+    size=len(dimension)
+    dst.createDimension(
+      name, (size if not dimension.isunlimited() else None))
+  # copy all file data except for the excluded
+  for name in src.dimensions.keys():
+    if name in kick_out_members: continue
+    variable = src.variables[name]
+    data  = variable[:]
+    x = dst.createVariable(name, variable.datatype, variable.dimensions)
+    # copy variable attributes all at once via dictionary
+    dst[name].setncatts(src[name].__dict__)
+    dst[name][:] = data
+  return dst
+ 
+def add_dims_into_nc(dst, varn, var, dims, attrs):
+    _ = dst.createDimension(varn, var.size)
+    x = dst.createVariable(varn, 'f8', dims, fill_value=-999000000)
+    x[:] = var
+    x.setncatts(attrs)
+    return x
+
