@@ -414,7 +414,7 @@ def create_axmean_ctl_from_axisy_ctl(outdir, exp):
       if 'YDEF' in c1[i]:
         idx_ydef = i
         break
-    c1[idx_ydef] = ' YDEF 0 LINEAR 0 1'
+    c1[idx_ydef] = ' YDEF 1 LINEAR 0 1'
     c1.insert(idx_ydef+1, ' EDEF 2 NAMES mean gamma')
     f=open(f'{outdir}/../axmean_{exp}.ctl','w')
     f.write('\n'.join(c1))
