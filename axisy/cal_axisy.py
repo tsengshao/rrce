@@ -60,8 +60,8 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 print(cpuid, it_start, it_end, it_end-it_start)
 comm.Barrier()
 
-#for it in np.arange(it_start, it_end):
-for it in [216]:
+for it in np.arange(it_start, it_end):
+#for it in [216]:
     # calculate corespond x/y from r/theta
     cx = center_loc['center_x'].iloc[it]*dx
     cy = center_loc['center_y'].iloc[it]*dy
@@ -126,7 +126,7 @@ for it in [216]:
                                    always_positive = positive, \
                                   )
    
-      if varname in ['tang_wind', 'radi_wind']:
+      if varname in []:
         iz = 8
         axisy.axisy_quick_view(x_polar, y_polar, radius, theta, data_polar[iz],\
                                xc, yc, rawdata[iz], cx, cy, varname,\
