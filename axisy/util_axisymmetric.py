@@ -8,6 +8,8 @@ import util.thermo as thermo
 from netCDF4 import Dataset
 from scipy.interpolate import RectBivariateSpline
 from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 class data_collector:
     def __init__(self, exp, tIdx, idztop=None):
@@ -420,4 +422,64 @@ def create_axmean_ctl_from_axisy_ctl(outdir, exp):
     f.write('\n'.join(c1))
     f.close()
     return
+
+def axisy_quick_view(x_polar, y_polar, radius, theta, data_polar,\
+                     xc, yc, rawdata, cx, cy, varname,\
+                     savefig=False,savedir=None,saveheader=None):
+
+    if savefig:
+        if type(savedir)==type(None) or type(saveheader)==type(None):
+            print('please input argument of savedir and saveheader')
+            return
+        os.system(f'mkdir -p {savedir}')
+            
+    ############ quick view
+    plt.figure()
+    plt.scatter(x_polar/1000,y_polar/1000,c=radius/1000,s=1)
+    plt.colorbar()
+    plt.title('radius')
+    if savefig: plt.savefig(f'{savedir}/{saveheader}_radius.png', dpi=250)
+    plt.figure()
+    plt.scatter(x_polar/1000,y_polar/1000,c=theta*180/np.pi,s=1)
+    plt.colorbar()
+    plt.title('theta')
+    if savefig: plt.savefig(f'{savedir}/{saveheader}_theta.png', dpi=250)
+    
+    # draw
+    fig = plt.figure()
+    bounds = np.arange(-5, 5.1, 1)
+    
+    cmap   = plt.cm.jet
+    cmap = plt.cm.RdYlBu
+    
+    norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=256, extend='both')
+    
+    c = plt.pcolormesh(xc/1000, yc/1000, rawdata, norm=norm, cmap=cmap)
+    cb = plt.colorbar(c)
+    plt.scatter(cx/1000, cy/1000,s=10,c=['k'])
+    plt.ylabel('x [km]')
+    plt.ylabel('y [km]')
+    plt.title(varname)
+    plt.title('cartesian',loc='left')
+    if savefig: plt.savefig(f'{savedir}/{saveheader}_cartesian.png', dpi=250)
+    
+    plt.figure()
+    plt.scatter(x_polar/1000, y_polar/1000, c=data_polar, s=1, cmap=cmap, norm=norm)
+    plt.colorbar()
+    plt.scatter(cx/1000, cy/1000,s=10,c=['k'])
+    plt.ylabel('x [km]')
+    plt.ylabel('y [km]')
+    plt.title(varname)
+    plt.title('polar',loc='left')
+    if savefig: plt.savefig(f'{savedir}/{saveheader}_polarxy.png', dpi=250)
+    
+    plt.figure()
+    plt.pcolormesh(radius/1000,theta,data_polar,norm=norm,cmap=cmap)
+    plt.ylabel('theta [rad]')
+    plt.ylabel('radius[km]')
+    plt.colorbar()
+    plt.title(varname)
+    if savefig: plt.savefig(f'{savedir}/{saveheader}_polar.png', dpi=250)
+    if not savefig: plt.show()
+    plt.close('all')
 

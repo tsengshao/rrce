@@ -1,5 +1,3 @@
-#import matplotlib.pyplot as plt
-#import matplotlib as mpl
 import numpy as np
 import sys, os
 sys.path.insert(1,'../')
@@ -62,7 +60,8 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 print(cpuid, it_start, it_end, it_end-it_start)
 comm.Barrier()
 
-for it in np.arange(it_start, it_end):
+#for it in np.arange(it_start, it_end):
+for it in [216]:
     # calculate corespond x/y from r/theta
     cx = center_loc['center_x'].iloc[it]*dx
     cy = center_loc['center_y'].iloc[it]*dy
@@ -73,7 +72,8 @@ for it in np.arange(it_start, it_end):
                          )
     sdis, stheta = axisy.compute_shortest_distances_vectorized(xc, yc, cx, cy)
     
-    fname  = f'{outdir}/axisy-{it:06d}.nc'
+    #fname  = f'{outdir}/axisy-{it:06d}.nc'
+    fname  = f'./test.nc'
     axisyWriter = axisy.ncWriter(fname)
     axisyWriter.create_coordinate(t_min = it*dtime,\
                                 z_zc_m = zc,\
@@ -89,6 +89,7 @@ for it in np.arange(it_start, it_end):
     
     # regrid 2d datasets
     for varname in dataCollector.var2dlist:
+    #for varname in []:
       data_dict = dataCollector.get_variable(varname)
       rawdata   = data_dict.pop('data')
       positive  = data_dict.pop('positive')
@@ -104,6 +105,7 @@ for it in np.arange(it_start, it_end):
     # regrid 3d datasets
     radial_dict, tangential_dict = dataCollector.get_radial_and_tangential_wind(stheta)
     for varname in dataCollector.var3dlist + ['radi_wind', 'tang_wind']:
+    #for varname in ['radi_wind', 'tang_wind']:
       data_polar = np.zeros((nz, theta_1d.size, radius_1d.size))
     
       if varname=='radi_wind':
@@ -123,6 +125,12 @@ for it in np.arange(it_start, it_end):
                                    y_polar = y_polar,\
                                    always_positive = positive, \
                                   )
+   
+      if varname in ['tang_wind', 'radi_wind']:
+        iz = 8
+        axisy.axisy_quick_view(x_polar, y_polar, radius, theta, data_polar[iz],\
+                               xc, yc, rawdata[iz], cx, cy, varname,\
+                               savefig=True, savedir='./fig_example/', saveheader=f'{varname}_{zc[iz]:.0f}_{it:06d}')
       axisyWriter.put_variables(varname, data_polar, data_dict)
     axisyWriter.close_ncfile()
 
@@ -136,45 +144,4 @@ for it in np.arange(it_start, it_end):
                                   nt = nt,\
                                   dt = dtime\
                              )
-
-sys.exit()
-
-############ quick view
-plt.figure()
-plt.scatter(x_polar/1000,y_polar/1000,c=radius/1000,s=1)
-plt.colorbar()
-plt.title('radius')
-plt.figure()
-plt.scatter(x_polar/1000,y_polar/1000,c=theta*180/np.pi,s=1)
-plt.colorbar()
-plt.title('theta')
-
-# draw
-fig = plt.figure()
-bounds = np.arange(20, 60, 2)
-bounds = np.linspace(-20, 20, 21)
-bounds = np.arange(0, 300, 20)
-bounds = np.arange(-250, 251, 10)
-bounds = np.arange(-5, 5.1, 1)
-
-cmap   = plt.cm.jet
-cmap = plt.cm.RdYlBu
-
-norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=256, extend='both')
-
-c = plt.pcolormesh(xc/1000, yc/1000, rawdata, norm=norm, cmap=cmap)
-cb = plt.colorbar(c)
-plt.scatter(cx/1000, cy/1000,s=10,c=['k'])
-
-plt.figure()
-plt.scatter(x_polar/1000, y_polar/1000, c=data_polar, s=1, cmap=cmap, norm=norm)
-plt.colorbar()
-plt.scatter(cx/1000, cy/1000,s=10,c=['k'])
-
-plt.figure()
-plt.pcolormesh(radius/1000,theta,data_polar,norm=norm,cmap=cmap)
-plt.colorbar()
-plt.show()
-
-
 
