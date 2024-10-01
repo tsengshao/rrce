@@ -62,8 +62,8 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 print(cpuid, it_start, it_end, it_end-it_start)
 comm.Barrier()
 
-#for it in np.arange(it_start, it_end):
-for it in [216]:
+for it in np.arange(it_start, it_end):
+#for it in [216]:
     # calculate corespond x/y from r/theta
     cx = center_loc['center_x'].iloc[it]*dx
     cy = center_loc['center_y'].iloc[it]*dy
@@ -74,8 +74,7 @@ for it in [216]:
                          )
     sdis, stheta = axisy.compute_shortest_distances_vectorized(xc, yc, cx, cy)
     
-    #fname  = f'{outdir}/axisy-{it:06d}.nc'
-    fname  = f'./test.nc'
+    fname  = f'{outdir}/axisy-{it:06d}.nc'
     os.system(f'rm -rf {fname}')
     axisyWriter = axisy.ncWriter(fname)
     axisyWriter.create_coordinate(t_min = it*dtime,\
@@ -94,23 +93,25 @@ for it in [216]:
         )
     
     # regrid 2d datasets
-    # for varname in dataCollector.var2dlist:
-    for varname in []:
+    for varname in dataCollector.var2dlist:
+    #for varname in []:
       data_dict = dataCollector.get_variable(varname)
       rawdata   = data_dict.pop('data')
       positive  = data_dict.pop('positive')
+      data_dict['ens'] = 9
       data_polar = axisy.regrid_data_c2p(xc_1d = xc,\
                                  yc_1d = yc,\
                                  rawdata = rawdata,\
                                  x_polar = x_polar,\
                                  y_polar = y_polar,\
                                  always_positive = positive, \
+                                 ens     = data_dict['ens'], \
                                 )
       axisyWriter.put_variables(varname, data_polar, data_dict)
     
     # regrid 3d datasets
-    #for varname in dataCollector.var3dlist + ['radi_wind', 'tang_wind']:
-    for varname in ['zeta']:
+    for varname in dataCollector.var3dlist + ['radi_wind', 'tang_wind']:
+    #for varname in ['radi_wind', 'tang_wind']:
       data_polar = np.zeros((nz, theta_1d.size, radius_1d.size))
     
       if varname=='radi_wind':
@@ -121,7 +122,8 @@ for it in [216]:
         data_dict = dataCollector.get_variable(varname)
       rawdata = data_dict.pop('data')
       positive  = data_dict.pop('positive')
-    
+      data_dict['ens'] = 9
+
       for iz in range(nz):
         data_polar[iz] = axisy.regrid_data_c2p(xc_1d = xc,\
                                    yc_1d = yc,\
@@ -129,9 +131,10 @@ for it in [216]:
                                    x_polar = x_polar,\
                                    y_polar = y_polar,\
                                    always_positive = positive, \
+                                   ens     = data_dict['ens'], \
                                   )
    
-      if varname in ['zeta']:
+      if varname in []:
         iz = 8
         axisy.axisy_quick_view(x_polar, y_polar, radius, theta, data_polar[iz],\
                                xc, yc, rawdata[iz], cx, cy, varname,\

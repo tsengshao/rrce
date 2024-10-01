@@ -367,12 +367,37 @@ def read_center_file(fname, colname=None):
       output = table
     return center_info, output
 
-def regrid_data_c2p(xc_1d, yc_1d, rawdata, x_polar, y_polar, always_positive=False):
-  fun = RectBivariateSpline(xc_1d, yc_1d, rawdata.T)
-  data_polar = fun(x_polar.flatten(), y_polar.flatten(), grid=False)
-  data_polar = data_polar.reshape(x_polar.shape)
-  if always_positive: data_polar = np.where(data_polar<0, 0, data_polar)
-  return data_polar
+def regrid_data_c2p(xc_1d, yc_1d, rawdata, x_polar, y_polar, always_positive=False, ens=-1):
+  if ens>0:
+    data_polar = np.zeros(x_polar.shape)
+    ne = ens; nex=int(np.sqrt(ne)); ney=int(np.sqrt(ne))
+    if (nex!=ney or type(ens)!=int): 
+      print('error, regrid_data_c2p: please input squart available and interger number(ens)')
+      return 
+    dx = xc_1d[1]-xc_1d[0]
+    dy = yc_1d[1]-yc_1d[0]
+    L_x = xc_1d.size*dx
+    L_y = yc_1d.size*dy
+
+    for i in range(ne):
+      ix_shift = (i//nex-nex//2)*dx
+      iy_shift = (i%ney-ney//2)*dy
+      x_p = (x_polar + ix_shift)%(L_x)
+      y_p = (y_polar + iy_shift)%(L_y)
+      fun = RectBivariateSpline(xc_1d, yc_1d, rawdata.T)
+      data_member = fun(x_p.flatten(), y_p.flatten(), grid=False)
+      data_member = data_member.reshape(x_polar.shape)
+      if always_positive: data_member = np.where(data_member<0, 0, data_member)
+      data_polar  += data_member
+    data_polar /= ne
+    return data_polar
+
+  elif ens<=0:
+    fun = RectBivariateSpline(xc_1d, yc_1d, rawdata.T)
+    data_polar = fun(x_polar.flatten(), y_polar.flatten(), grid=False)
+    data_polar = data_polar.reshape(x_polar.shape)
+    if always_positive: data_polar = np.where(data_polar<0, 0, data_polar)
+    return data_polar
 
 def create_nc_copy_dims(fname, src, kick_out_members):
   # src is the netCDF.Dataset
@@ -457,7 +482,7 @@ def axisy_quick_view(x_polar, y_polar, radius, theta, data_polar,\
     # draw
     fig = plt.figure()
     bounds = np.arange(-5, 5.1, 1)
-    bounds = np.arange(-5, 5.1, 1)*1e-4
+    #bounds = np.arange(-5, 5.1, 1)*1e-4
     
     cmap   = plt.cm.jet
     cmap = plt.cm.RdYlBu_r
@@ -490,6 +515,6 @@ def axisy_quick_view(x_polar, y_polar, radius, theta, data_polar,\
     plt.colorbar()
     plt.title(varname)
     if savefig: plt.savefig(f'{savedir}/{saveheader}_polar.png', dpi=250)
-    if not savefig: plt.show()
+    if not savefig: plt.show(block=True)
     plt.close('all')
 
