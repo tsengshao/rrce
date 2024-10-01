@@ -70,9 +70,9 @@ class data_collector:
         self.wpNC.close()
         self.radNC.close()
 
-    def get_radial_and_tangential_wind(self, theta_2d):
-        u_3d = self.get_variable('u')['data']
-        v_3d = self.get_variable('v')['data']
+    def get_radial_and_tangential_wind(self, theta_2d, speed_x, speed_y):
+        u_3d = self.get_variable('u')['data'] - speed_x
+        v_3d = self.get_variable('v')['data'] - speed_y
         radial, tangential = convert_uv2rt(u_3d,v_3d,theta_2d[np.newaxis,:,:])
         radial_dict = {'data':radial, 'long_name':'radial wind', 'units':'m/s', 'dim_type':'3d', 'positive':False}
         tangential_dict = {'data':tangential, 'long_name':'tangential wind', 'units':'m/s', 'dim_type':'3d', 'positive':False}
@@ -432,15 +432,24 @@ def axisy_quick_view(x_polar, y_polar, radius, theta, data_polar,\
             print('please input argument of savedir and saveheader')
             return
         os.system(f'mkdir -p {savedir}')
+
+    x_polar = (x_polar)/1000.
+    y_polar = (y_polar)/1000.
+    xc      = (xc)/1000.
+    yc      = (yc)/1000.
+    radius  /= 1000.
+    cx      /= 1000.
+    cy      /= 1000.
+
             
     ############ quick view
     plt.figure()
-    plt.scatter(x_polar/1000,y_polar/1000,c=radius/1000,s=1)
+    plt.scatter(x_polar,y_polar,c=radius,s=1)
     plt.colorbar()
     plt.title('radius')
     if savefig: plt.savefig(f'{savedir}/{saveheader}_radius.png', dpi=250)
     plt.figure()
-    plt.scatter(x_polar/1000,y_polar/1000,c=theta*180/np.pi,s=1)
+    plt.scatter(x_polar,y_polar,c=theta*180/np.pi,s=1)
     plt.colorbar()
     plt.title('theta')
     if savefig: plt.savefig(f'{savedir}/{saveheader}_theta.png', dpi=250)
@@ -448,35 +457,36 @@ def axisy_quick_view(x_polar, y_polar, radius, theta, data_polar,\
     # draw
     fig = plt.figure()
     bounds = np.arange(-5, 5.1, 1)
+    bounds = np.arange(-5, 5.1, 1)*1e-4
     
     cmap   = plt.cm.jet
-    cmap = plt.cm.RdYlBu
+    cmap = plt.cm.RdYlBu_r
     
     norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=256, extend='both')
     
-    c = plt.pcolormesh(xc/1000, yc/1000, rawdata, norm=norm, cmap=cmap)
+    c = plt.pcolormesh(xc, yc, rawdata, norm=norm, cmap=cmap)
     cb = plt.colorbar(c)
-    plt.scatter(cx/1000, cy/1000,s=10,c=['k'])
-    plt.ylabel('x [km]')
+    plt.scatter(cx, cy,s=10,c=['k'])
+    plt.xlabel('x [km]')
     plt.ylabel('y [km]')
     plt.title(varname)
     plt.title('cartesian',loc='left')
     if savefig: plt.savefig(f'{savedir}/{saveheader}_cartesian.png', dpi=250)
     
     plt.figure()
-    plt.scatter(x_polar/1000, y_polar/1000, c=data_polar, s=1, cmap=cmap, norm=norm)
+    plt.scatter(x_polar, y_polar, c=data_polar, s=1, cmap=cmap, norm=norm)
     plt.colorbar()
-    plt.scatter(cx/1000, cy/1000,s=10,c=['k'])
-    plt.ylabel('x [km]')
+    plt.scatter(cx, cy,s=10,c=['k'])
+    plt.xlabel('x [km]')
     plt.ylabel('y [km]')
     plt.title(varname)
     plt.title('polar',loc='left')
     if savefig: plt.savefig(f'{savedir}/{saveheader}_polarxy.png', dpi=250)
     
     plt.figure()
-    plt.pcolormesh(radius/1000,theta,data_polar,norm=norm,cmap=cmap)
+    plt.pcolormesh(radius,theta,data_polar,norm=norm,cmap=cmap)
     plt.ylabel('theta [rad]')
-    plt.ylabel('radius[km]')
+    plt.xlabel('radius[km]')
     plt.colorbar()
     plt.title(varname)
     if savefig: plt.savefig(f'{savedir}/{saveheader}_polar.png', dpi=250)

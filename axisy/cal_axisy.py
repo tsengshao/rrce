@@ -53,6 +53,8 @@ radius, theta = np.meshgrid(radius_1d, theta_1d)
 fname = f'{config.dataPath}/find_center/{center_flag}/{exp}.txt'
 center_info, center_loc = axisy.read_center_file(fname, \
                             colname=['center_x','center_y'])
+speed_x = np.gradient(center_loc['center_x'])*dx/(dtime*60) # m/s
+speed_y = np.gradient(center_loc['center_y'])*dy/(dtime*60) # m/s
 
 
 it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
@@ -60,8 +62,8 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 print(cpuid, it_start, it_end, it_end-it_start)
 comm.Barrier()
 
-for it in np.arange(it_start, it_end):
-#for it in [216]:
+#for it in np.arange(it_start, it_end):
+for it in [216]:
     # calculate corespond x/y from r/theta
     cx = center_loc['center_x'].iloc[it]*dx
     cy = center_loc['center_y'].iloc[it]*dy
@@ -74,6 +76,7 @@ for it in np.arange(it_start, it_end):
     
     #fname  = f'{outdir}/axisy-{it:06d}.nc'
     fname  = f'./test.nc'
+    os.system(f'rm -rf {fname}')
     axisyWriter = axisy.ncWriter(fname)
     axisyWriter.create_coordinate(t_min = it*dtime,\
                                 z_zc_m = zc,\
@@ -85,11 +88,14 @@ for it in np.arange(it_start, it_end):
     
     # read data
     dataCollector = axisy.data_collector(exp, it, idztop=idxTOP+1)
-    radial_dict, tangential_dict = dataCollector.get_radial_and_tangential_wind(stheta)
+    radial_dict, tangential_dict = \
+        dataCollector.get_radial_and_tangential_wind(\
+            stheta, speed_x[it], speed_y[it]\
+        )
     
     # regrid 2d datasets
-    for varname in dataCollector.var2dlist:
-    #for varname in []:
+    # for varname in dataCollector.var2dlist:
+    for varname in []:
       data_dict = dataCollector.get_variable(varname)
       rawdata   = data_dict.pop('data')
       positive  = data_dict.pop('positive')
@@ -103,9 +109,8 @@ for it in np.arange(it_start, it_end):
       axisyWriter.put_variables(varname, data_polar, data_dict)
     
     # regrid 3d datasets
-    radial_dict, tangential_dict = dataCollector.get_radial_and_tangential_wind(stheta)
-    for varname in dataCollector.var3dlist + ['radi_wind', 'tang_wind']:
-    #for varname in ['radi_wind', 'tang_wind']:
+    #for varname in dataCollector.var3dlist + ['radi_wind', 'tang_wind']:
+    for varname in ['zeta']:
       data_polar = np.zeros((nz, theta_1d.size, radius_1d.size))
     
       if varname=='radi_wind':
@@ -126,11 +131,14 @@ for it in np.arange(it_start, it_end):
                                    always_positive = positive, \
                                   )
    
-      if varname in []:
+      if varname in ['zeta']:
         iz = 8
         axisy.axisy_quick_view(x_polar, y_polar, radius, theta, data_polar[iz],\
                                xc, yc, rawdata[iz], cx, cy, varname,\
-                               savefig=True, savedir='./fig_example/', saveheader=f'{varname}_{zc[iz]:.0f}_{it:06d}')
+                               savefig=False, \
+                               savedir='./fig_example/', \
+                               saveheader=f'{varname}_{zc[iz]:.0f}_{it:06d}',\
+                              )
       axisyWriter.put_variables(varname, data_polar, data_dict)
     axisyWriter.close_ncfile()
 
