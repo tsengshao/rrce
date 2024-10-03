@@ -87,9 +87,11 @@ for it in np.arange(it_start, it_end):
     
     # read data
     dataCollector = axisy.data_collector(exp, it, idztop=idxTOP+1)
+    print(speed_x[it], speed_y[it])
     radial_dict, tangential_dict = \
         dataCollector.get_radial_and_tangential_wind(\
-            stheta, speed_x[it], speed_y[it]\
+#            stheta, speed_x[it], speed_y[it]\
+            stheta, 0,0,\
         )
     
     # regrid 2d datasets
@@ -140,7 +142,7 @@ for it in np.arange(it_start, it_end):
                                xc, yc, rawdata[iz], cx, cy, varname,\
                                savefig=False, \
                                savedir='./fig_example/', \
-                               saveheader=f'{varname}_{zc[iz]:.0f}_{it:06d}',\
+                               saveheader=f'en{data_dict["ens"]}_{varname}_{zc[iz]:.0f}_{it:06d}',\
                               )
       axisyWriter.put_variables(varname, data_polar, data_dict)
     axisyWriter.close_ncfile()
