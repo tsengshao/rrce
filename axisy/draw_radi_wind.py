@@ -36,8 +36,8 @@ udraw.set_black_background()
 
 it=216
 it=72*3
-#for it in range(nt):
-for it in [72*3]:
+for it in range(nt):
+#for it in [72*3]:
   print(it)
   fname = f'{datdir}/axmean-{it:06d}.nc'
   nc = Dataset(fname, 'r')
