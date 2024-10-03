@@ -115,13 +115,13 @@ def draw_upper_contour(ax, radius_1d, zc_1d, \
     return C
 
 def draw_upper_hatch(ax, radius_1d, zc_1d, \
-                     data, levels, lws=[1], \
-                     inline=False):
+                     data, levels, hat=['/'], \
+                    ):
     plt.sca(ax)
     plt.rcParams['hatch.linewidth'] = 0.1
     C=plt.contourf(radius_1d, zc_1d, data, \
                   levels=levels, colors='none', \
-                  hatches=['/'])
+                  hatches=hat)
     plt.text(0.985,0.98,\
              f'hatch: '+\
              f'axisymmetric > {levels[0]:.1f} \n'+\

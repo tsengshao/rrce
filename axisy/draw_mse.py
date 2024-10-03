@@ -36,8 +36,8 @@ udraw.set_black_background()
 
 it=216
 it=72*3
-for it in range(nt):
-#for it in [72*3]:
+#for it in range(nt):
+for it in [72*3]:
   print(it)
   fname = f'{datdir}/axmean-{it:06d}.nc'
   nc = Dataset(fname, 'r')
@@ -68,8 +68,7 @@ for it in range(nt):
   C = udraw.draw_upper_hatch(ax_top,radius_1d, zc_1d,\
                          data   = data_a, \
                          levels = [0.5,100],\
-                         lws    = [1],\
-                         inline = True
+                         hat    = ['/'],\
                         )
   
   plt.sca(ax_lower)
@@ -80,8 +79,8 @@ for it in range(nt):
   _ = udraw.draw_lower(ax_lower, ax_top, radius_1d, \
                   data   = data, \
                   data_a = data_a, \
-                  ylim   = (0, 300), \
-                  yticks = [0,100,200,], \
+                  ylim   = (50, 200), \
+                  yticks = [50,100,150,], \
                   ylabel = f'Latent Heat\n[{varunit}]',\
                   color  = 'C0',\
                  )
@@ -93,8 +92,8 @@ for it in range(nt):
   _ = udraw.draw_lower(ax_lower_right, ax_top, radius_1d, \
                   data   = data, \
                   data_a = data_a, \
-                  ylim   = (0, 60), \
-                  yticks = [0, 20, 40], \
+                  ylim   = (0, 30), \
+                  yticks = [0, 10, 20, 30], \
                   ylabel = f'Sensible Heat\n [{varunit}]',\
                   color  = 'C1',\
                  )
