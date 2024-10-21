@@ -429,11 +429,11 @@ def add_dims_into_nc(dst, varn, var, dims, attrs):
     x.setncatts(attrs)
     return x
 
-def create_axmean_ctl_from_axisy_ctl(outdir, exp):
+def create_axmean_ctl_from_axisy_ctl(outdir, exp, append_text=''):
     f=open(f'{outdir}/../axisy_{exp}.ctl','r')
     c0 = f.read()
     f.close()
-    c0 = c0.replace('axisy','axmean')
+    c0 = c0.replace('axisy',f'axmean{append_text}')
     c0 = c0.replace('t,y,x','t,e,x')
     c0 = c0.replace('t,z,y,x','t,e,z,x')
     c1 = c0.split('\n')
@@ -443,7 +443,7 @@ def create_axmean_ctl_from_axisy_ctl(outdir, exp):
         break
     c1[idx_ydef] = ' YDEF 1 LINEAR 0 1'
     c1.insert(idx_ydef+1, ' EDEF 2 NAMES mean gamma')
-    f=open(f'{outdir}/../axmean_{exp}.ctl','w')
+    f=open(f'{outdir}/../axmean{append_text}_{exp}.ctl','w')
     f.write('\n'.join(c1))
     f.close()
     return
