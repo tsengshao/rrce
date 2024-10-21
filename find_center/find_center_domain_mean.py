@@ -135,11 +135,11 @@ str_kernel = sys.argv[2]
 exp = config.expList[iexp]
 nt = config.totalT[iexp]
 dtime = config.getExpDeltaT(exp)
-print(exp, nt)
 if exp=='RRCE_3km_f00':
   nt = int(35*72+1)
 else:
   nt = int(3*72+1)
+print(exp, nt)
 
 if str_kernel=='0km':
   vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
@@ -238,7 +238,6 @@ for it in range(nt):
 
   hori_size = np.sum(czeta>0)/nx/ny*100
 
-  """
   plt.close('all')
   set_black_background()
   levels = [-100,-50,-20,-10,-5,-0.1,0.1,5,10,20,50,100]
@@ -267,11 +266,10 @@ for it in range(nt):
     plt.title(f'{it*dtime/60/24:.1f}day ({it:06d})', fontweight='bold', loc='right', fontsize=12)
   else:
     plt.title(f'{it*dtime/60:.1f}hr ({it:06d})', fontweight='bold', loc='right', fontsize=12)
-  figPath = f'./fig_example_method2/{exp}/'
-  #os.system(f'mkdir -p {figPath}')
-  #plt.savefig(f'{figPath}/{str_kernel}_{it:06d}.png',dpi=250)
+  figPath = f'./ani_ens_center/{exp}/'
+  os.system(f'mkdir -p {figPath}')
+  plt.savefig(f'{figPath}/{str_kernel}_{it:06d}.png',dpi=250)
   #plt.show(block=True)
-  """
 
   fout.write(f"{it:{width}d} {mean_value:{width}.4e} {max_value:{width}.4e} {hori_size:{width}.4f} {mean_ix:{width}.4e} {mean_iy:{width}.4e} {max_ix:{width}d} {max_iy:{width}d} {posi_mean_value:{width}.4e}\n")
 fout.close()
