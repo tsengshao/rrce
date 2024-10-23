@@ -7,13 +7,14 @@
 ##SBATCH -w node01  # nodelist
 #SBATCH -w mogamd  # nodelist
 #SBATCH -o out2.%j.out  # output file
-#SBATCH --dependency=afterok:5464
+##SBATCH --dependency=afterok:5464
 
 source ~/.bashrc
 conda activate py311
 
 py='cal_axisymmetricity.py'
 py='cal_axisymmetricity_ano.py'
+py='cal_process_axisymmetricity.py'
 
 for i in $(seq 18 -1 1);do
   echo ${i}

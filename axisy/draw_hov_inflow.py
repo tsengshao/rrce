@@ -1,0 +1,117 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import sys, os
+sys.path.insert(1,'../')
+import config
+from netCDF4 import Dataset
+import matplotlib as mpl
+from mpi4py import MPI
+import util_draw as udraw
+from util.vvmLoader import VVMLoader, VVMGeoLoader
+import util.tools as tools
+
+comm = MPI.COMM_WORLD
+nproc = comm.Get_size()
+cpuid = comm.Get_rank()
+
+nexp = len(config.expList)
+iexp = int(sys.argv[1])
+
+nt = config.totalT[iexp]
+exp = config.expList[iexp]
+if exp=='RRCE_3km_f00':
+  nt=2521
+else:
+  nt=217
+if (cpuid==0): print(exp, nt)
+dtime = 20
+
+center_flag='czeta0km_positivemean'
+fig_flag   ='hov_inflow'
+datdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
+figdir=f'./{center_flag}/{fig_flag}/'
+os.system(f'mkdir -p {figdir}')
+
+vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
+zz_raw = vvmLoader.loadZZ()[:-1]
+
+fname = f'{datdir}/axmean_process-{0:06d}.nc'
+nc = Dataset(fname, 'r')
+radius_1d = nc.variables['radius'][:]/1.e3
+zc_1d     = nc.variables['zc'][:]/1.e3
+ens_1d    = np.array(['mean', 'axisym'])
+time_hr_1d  = np.arange(nt)*dtime/60 #hours
+
+dims = (ens_1d.size, nt, radius_1d.size)
+rwind_lower = np.zeros(dims)
+twind_lower = np.zeros(dims)
+conv_lower  = np.zeros(dims)
+
+for it in range(nt):
+  fname = f'{datdir}/axmean_process-{it:06d}.nc'
+  nc    = Dataset(fname, 'r')
+  rwind_lower[:,it,:] = nc.variables['radi_wind_lower'][0, :]
+  twind_lower[:,it,:] = nc.variables['tang_wind_lower'][0, :]
+  conv_lower[:,it,:]  = nc.variables['conv_lower'][0, :]
+
+if exp == 'RRCE_3km_f00':
+  time_1d = time_hr_1d/24.
+  time_units = 'days'
+  time_int   = 5
+  conv_lw    = 0.5
+  figsize    = (6.5, 20)
+else:
+  time_1d = time_hr_1d.copy()
+  time_units = 'hrs'
+  time_int   = 12
+  conv_lw    = 2
+  figsize    = (6.5, 10)
+
+udraw.set_figure_defalut() 
+udraw.set_black_background()
+
+varname = 'tang_wind'
+varunits = 'm/s'
+var     = rwind_lower[0]
+var_ax  = rwind_lower[1]
+inner_length = 10 #km
+indxinner = np.argmin(np.abs(radius_1d-inner_length))
+loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
+
+
+fig, ax = plt.subplots(figsize=figsize)
+cmap = udraw.get_cmap('pwo')
+levels = np.arange(-2, 2.01, 0.2)
+norm = mpl.colors.BoundaryNorm(boundaries=levels, \
+          ncolors=256, extend='both')
+P  = plt.pcolormesh(radius_1d, time_1d, var, cmap=cmap, norm=norm)
+if exp!='RRCE_3km_f00':
+  CB = plt.colorbar(P, orientation='vertical')
+cs = plt.contourf(radius_1d, time_1d, var_ax, \
+                  levels  = [0.5, 0.9, 10000], \
+                  hatches = ['/', '//////'], \
+                  colors  = 'none', \
+                 )
+plt.plot(loc_maxconv, time_1d, ls='-', lw=conv_lw, c='0',alpha=0.5)
+text = f'{varname} [{varunits}, 0-500m]\n'+\
+       f'hatch: axisymmetric > 0.5/0.9\n'+\
+       f'maximum convergence away from {inner_length:.0f}km'
+plt.text(0.99, 0.99, text, \
+                     fontsize = 8, \
+                     va='top', ha='right', \
+                     transform = ax.transAxes,\
+                     color='k',\
+                     bbox=dict(boxstyle="square",\
+                               ec='0',\
+                               fc=(1,1,1,0.3)),\
+        )
+plt.yticks(np.arange(0, time_1d.max()+0.0001, time_int))
+plt.xticks(np.arange(0,    radius_1d.max()+1, 100))
+plt.ylim(0, time_1d.max())
+plt.xlabel('radius [km]')
+plt.ylabel(f'simulation time [{time_units}]')
+plt.title(f'{exp}', loc='left', fontweight='bold', fontsize=20)
+plt.savefig(f'{figdir}/{varname}_{exp}.png', dpi=200)
+plt.close('all')
+
+
