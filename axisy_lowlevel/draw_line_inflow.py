@@ -43,7 +43,7 @@ method_dict = {'inflow_daily':{'imet':1,\
               }
 
 tag = 'inflow_daily'
-tag = 'inflow_snapshot'
+#tag = 'inflow_snapshot'
 mdict = method_dict[tag]
 figdir = f'./{center_flag}/{tag}/'
 os.system(f'mkdir -p {figdir}')
@@ -128,7 +128,7 @@ x_data = []
 for i in range(1,nexp):
   idx = np.where( (rwind_init[mdict['imet'],i,1,:]-0.5) > 0)[0]
   if len(idx)==0:
-    x_data.append(0)
+    x_data.append(radius_1d[-1])
   else:
     x_data.append(radius_1d[idx[0]])
 y_data = np.max(twind_last[1,1:,0,:], axis=1)
@@ -147,7 +147,7 @@ CB.ax.set_title('restart\nday')
 #CB.ax.set_yticks([5,12.5,15.5,20.5,25.5,30.5],['0','10','15','20','25','30'])
 CB.ax.set_yticks([0,10,15,20,25,30])
 plt.sca(ax)
-plt.xlim(-50, 500)
+plt.xlim(-60, 600)
 plt.ylim(-1, 10)
 plt.grid(True)
 plt.title(f'axisymetric > {thld:.2f}', loc='right', fontsize=15)
