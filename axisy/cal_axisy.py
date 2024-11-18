@@ -22,8 +22,12 @@ if exp!='RRCE_3km_f00':
   nt=217
 else:
   nt=2521
+
+exp = 'rcemip_mg_square_diag2'
+nt  = 217
 if (cpuid==0): print(exp, nt)
 
+# ------ start 
 center_flag='czeta0km_positivemean'
 outdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
 os.system(f'mkdir -p {outdir}')

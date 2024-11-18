@@ -19,11 +19,14 @@ class data_collector:
         self.dyNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Dynamic-{self.tIdx:06d}.nc','r')
         self.sfNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.C.Surface-{self.tIdx:06d}.nc','r')
         self.radNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Radiation-{self.tIdx:06d}.nc','r')
+        self.trNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Tracer-{self.tIdx:06d}.nc','r')
+        self.diagNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Diag-{self.tIdx:06d}.nc','r')
         self.wpNC = Dataset(f'{config.dataPath}/wp/{exp}/wp-{self.tIdx:06d}.nc','r')
         
         self.var2dlist = ['cwv','iwp','lwp','rain','olr','netLW','netSW', 'sh', 'lh']
         self.var3dlist = ['u', 'v', 'w', 'zeta', 'eta', 'xi', 'divg',\
                           'th', 'qv', 'qc', 'qi', 'qr', 'qvs', 'mse',\
+                          'pv',\
                          ]
 
         self.setGRIDinfo()
@@ -68,6 +71,8 @@ class data_collector:
         self.dyNC.close()
         self.sfNC.close()
         self.wpNC.close()
+        self.trNC.close()
+        self.diagNC.close()
         self.radNC.close()
 
     def get_radial_and_tangential_wind(self, theta_2d, speed_x, speed_y):
@@ -131,6 +136,12 @@ class data_collector:
                       np.gradient(v_pad, axis=1)/self.dy
           divg  = divg_pad[:,1:-1,1:-1]
           return {'data':divg, 'long_name':'horizontial divergence', 'units':'1/s2', 'dim_type':'3d', 'positive':False}
+
+      ## Tracer / Diag
+      elif varn_check == 'pv':
+          data = self.trNC.variables['tr01'][0,:self.idztop].data
+          return {'data':data, 'long_name':'potential vorticity', 'units':'K*m2/s/kg', 'dim_type':'3d', 'positive':False}
+   
       ## Thermodynamics 
       elif varn_check == 'th':
           data = self.thNC.variables['th'][0,:self.idztop].data
@@ -278,7 +289,7 @@ class ncWriter:
  YDEF {y.size} LINEAR {y[0]} {y[1]-y[0]}
  ZDEF {z.size} levels {str_z}
  TDEF {nt} LINEAR 01JAN1998 {dt}mn
- VARS 25
+ VARS 26
    cwv=>cwv     0 t,y,x column_water_vapor
    iwp=>iwp     0 t,y,x ice
    lwp=>lwp     0 t,y,x liquid
@@ -295,6 +306,7 @@ class ncWriter:
    eta=>eta    44 t,z,y,x  eta
    xi=>xi      44 t,z,y,x  xi
    divg=>divg  44 t,z,y,x  divg
+   pv=>pv      44 t,z,y,x  pv
    th=>th      44 t,z,y,x  th
    qv=>qv      44 t,z,y,x  qv
    qc=>qc      44 t,z,y,x  qc
@@ -482,10 +494,10 @@ def axisy_quick_view(x_polar, y_polar, radius, theta, data_polar,\
     # draw
     fig = plt.figure()
     bounds = np.arange(-5, 5.1, 1)
-    #bounds = np.arange(-5, 5.1, 1)*1e-4
+    bounds = np.arange(-5, 5.1, 1)*1e-6
     
     cmap   = plt.cm.jet
-    cmap = plt.cm.RdYlBu_r
+    cmap   = plt.cm.RdYlBu_r
     
     norm = mpl.colors.BoundaryNorm(boundaries=bounds, ncolors=256, extend='both')
     
