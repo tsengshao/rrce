@@ -5,9 +5,10 @@ vvmPath="/data/mog/VVM/DATA/"
 
 outVvmPath="/data/C.shaoyu/rrce/vvm/"
 
-typeList="C.Surface L.Diag L.Dynamic L.Radiation L.Thermodynamic"
+typeList="C.Surface L.Diag L.Dynamic L.Radiation L.Thermodynamic L.Tracer"
 expList="RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_30"
 expList="RRCE_3km_f00"
+expList="rcemip_mg_square_diag2"
 
 for exp in ${expList};do
   echo "----- ${exp} -----"
