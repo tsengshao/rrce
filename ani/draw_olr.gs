@@ -37,7 +37,8 @@ tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
 exp = 'RRCE_3km_'subwrd(expList, iexp)
 dt  = 20
 tlast = subwrd(tlastList, iexp)
-tlast = 217
+if( exp != 'RRCE_3km_f00' ); tlast = 217; endif
+
 sfctl = subwrd(sfCtlList, iexp)
 sfen  = subwrd(enList, iexp)
 say exp', 'dt', 'tlast', 'type
@@ -153,8 +154,12 @@ endwhile
 
 'set string 1 br 10 0'
 'set strsiz 0.2'
-*'draw string 8.3125 8 'dy'days'
-'draw string 8.3125 8 'hr'hours'
+if(exp='RRCE_3km_f00')
+  rtitle = dy' days'
+else
+  rtitle = hr' hours'
+endif
+'draw string 8.3125 8 'rtitle
 
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
