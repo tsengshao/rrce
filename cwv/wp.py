@@ -18,6 +18,11 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
+
+exp = 'rcemip_mg_square_diag2'
+nt  = 217
+str_kernel = '0km'
+dtime = 20 #min
 if (cpuid==0): print(exp, nt)
 
 outdir=config.dataPath+"/wp/"+exp+'/'

@@ -139,8 +139,13 @@ if exp=='RRCE_3km_f00':
   nt = int(35*72+1)
 else:
   nt = int(3*72+1)
-print(exp, nt)
 
+exp = 'rcemip_mg_square_diag2'
+nt  = 217
+str_kernel = '0km'
+dtime = 20 #min
+
+print(exp, nt)
 if str_kernel=='0km':
   vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
   nc = vvmLoader.loadDynamic(4)
@@ -175,7 +180,7 @@ plt.close('all')
 #for it in range(0,nt,int(3*60/dtime)):
 #for it in [int(30*72)]:
 for it in range(nt):
-  print(exp, it)
+  print('-----', exp, it, '-----')
   if str_kernel=='0km':
     vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
     nc = vvmLoader.loadDynamic(it)
@@ -230,6 +235,7 @@ for it in range(nt):
                          only_positive = True, \
                      )
   print(mean_value)
+  print(posi_mean_value)
   print(mean_ix, mean_iy)
   print('90th, 99th:', np.percentile(czeta*1e5, [90,99]))
 
