@@ -26,7 +26,7 @@ class data_collector:
         self.var2dlist = ['cwv','iwp','lwp','rain','olr','netLW','netSW', 'sh', 'lh']
         self.var3dlist = ['u', 'v', 'w', 'zeta', 'eta', 'xi', 'divg',\
                           'th', 'qv', 'qc', 'qi', 'qr', 'qvs', 'mse',\
-                          'pv',\
+                          'pv', 'verADV', 'totADV', 'zetaDIA', 'xiDIA', 'etaDIA',\
                          ]
 
         self.setGRIDinfo()
@@ -141,6 +141,38 @@ class data_collector:
       elif varn_check == 'pv':
           data = self.trNC.variables['tr01'][0,:self.idztop].data
           return {'data':data, 'long_name':'potential vorticity', 'units':'K*m2/s/kg', 'dim_type':'3d', 'positive':False}
+
+      ## Diag
+      elif varn_check == 'totADV'.lower():
+          data = self.diagNC.variables['dm01'][0,:self.idztop].data
+          return {'data':data, \
+                  'long_name':'total advection of vorticity for 10 sec', \
+                  'units':'K*m2/s/kg/s*10', \
+                  'dim_type':'3d', 'positive':False}
+      elif varn_check == 'verADV'.lower():
+          data = self.diagNC.variables['dm02'][0,:self.idztop].data
+          return {'data':data, \
+                  'long_name':'vertical advection of vorticity per 10 sec', \
+                  'units':'K*m2/s/kg/s*10', \
+                  'dim_type':'3d', 'positive':False}
+      elif varn_check == 'zetaDIA'.lower():
+          data = self.diagNC.variables['dm03'][0,:self.idztop].data
+          return {'data':data, \
+                  'long_name':'diabatic heating from z-component of vorticity', \
+                  'units':'K*m2/s/kg/s', \
+                  'dim_type':'3d', 'positive':False}
+      elif varn_check == 'xiDIA'.lower():
+          data = self.diagNC.variables['dm04'][0,:self.idztop].data
+          return {'data':data, \
+                  'long_name':'diabatic heating from x-component of vorticity', \
+                  'units':'K*m2/s/kg/s', \
+                  'dim_type':'3d', 'positive':False}
+      elif varn_check == 'etaDIA'.lower():
+          data = self.diagNC.variables['dm05'][0,:self.idztop].data
+          return {'data':data, \
+                  'long_name':'diabatic heating from y-direction vorticity', \
+                  'units':'K*m2/s/kg/s', \
+                  'dim_type':'3d', 'positive':False}
    
       ## Thermodynamics 
       elif varn_check == 'th':
@@ -187,6 +219,9 @@ class data_collector:
           # NetSW = SWtop - SWsfc
           data     = (down_toa-up_toa) - (down_suf-up_suf)
           return {'data':data, 'long_name':'column shortwave radiative flux convergence', 'units':'W/m2', 'dim_type':'2d', 'positive':False}
+      else:
+        print(f'can not found variables {varn_check}')
+        return 
 
 class ncWriter:
     def __init__(self, fname):
@@ -289,7 +324,7 @@ class ncWriter:
  YDEF {y.size} LINEAR {y[0]} {y[1]-y[0]}
  ZDEF {z.size} levels {str_z}
  TDEF {nt} LINEAR 01JAN1998 {dt}mn
- VARS 26
+ VARS 31
    cwv=>cwv     0 t,y,x column_water_vapor
    iwp=>iwp     0 t,y,x ice
    lwp=>lwp     0 t,y,x liquid
@@ -316,6 +351,11 @@ class ncWriter:
    mse=>mse    44 t,z,y,x  mse
    radi_wind=>rwind      44 t,z,y,x  radial wind
    tang_wind=>twind      44 t,z,y,x  tang wind
+   totADV=>totadv        44 t,z,y,x  totacv
+   verADV=>veradv        44 t,z,y,x  veracv
+   zetaDIA=>zetadia      44 t,z,y,x  zetadia
+   xiDIA=>xidia          44 t,z,y,x  xidia
+   etaDIA=>etadia        44 t,z,y,x  etadia
  ENDVARS
 """
         fout = open(fname,'w')
