@@ -123,8 +123,8 @@ rc=drawpoint(0,cx,cy,'mean')
 ***** draw text *****
 'set string 1 bl 10 0'
 'set strsiz 0.2'
-'draw string 8.55 8.0 CWV'
-'draw string 8.55 7.65 [mm]'
+'draw string 8.68 8.05 CWV'
+'draw string 8.68 7.7 [mm]'
 
 'set string 1 br 10 0'
 'set strsiz 0.10'

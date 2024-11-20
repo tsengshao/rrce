@@ -63,6 +63,14 @@ say '**********'
 say ''
 ********************************
 
+** prepare center location **
+*../../data/find_center/czeta0km_positivemean/RRCE_3km_f00.txt
+kernel='0km'
+file = datPath'/find_center/czeta'kernel'_positivemean/'exp'.txt'
+meancx = readfile(file, 'mean_x')
+meancy = readfile(file, 'mean_y')
+
+
 'reinit'
 *'set background 1'
 'c'
@@ -74,6 +82,8 @@ while(it<=te)
 say 't='it''
 'c'
 'set t 'it
+iz=9; levstr='0.9km'
+'set z 'iz
 
 'set parea 2.58333 8.41667 0.8 7.55'
 'set xlopts 1 10 0.2'
@@ -92,7 +102,6 @@ say 't='it''
 
 ***** draw Wind *****
 'color 1 15 1 -kind grainbow'
-'set z 1'
 'set gxout stream'
 'set strmden -5 1 0.13 2'
 'set rgb 50 128 128 128'
@@ -101,12 +110,17 @@ say 't='it''
 'set cthick 50'
 'd u;v'
 
+***** draw center point *****
+cx=subwrd(meancx,it)
+cy=subwrd(meancy,it)
+rc=drawpoint(0,cx,cy,'mean')
+
 
 ***** draw text *****
 'set string 1 bl 10 0'
 'set strsiz 0.2'
-'draw string 8.55 8.0 Suf. WS'
-'draw string 8.55 7.65 [m/s]'
+'draw string 8.68 8.05 WS@'levstr
+'draw string 8.68 7.7 [m/s]'
 
 'set string 1 br 10 0'
 'set strsiz 0.10'
@@ -164,4 +178,92 @@ if ( mode="PAUSE")
 endif
 
 endwhile
+
+*end main function
+return
+
+function drawpoint(value, cx, cy, name)
+  'q gr2xy 'cx' 'cy''
+  x=subwrd(result,3)
+  y=subwrd(result,6)
+  c=math_format('%.2f', value)
+  'set rgb 40 255 255 255'
+  'set line 40'
+  'draw mark 9 'x' 'y' 0.26'
+  'set rgb 40 130 0 255'
+  'set line 40'
+  'draw mark 9 'x' 'y' 0.2'
+  'set string 40 bc 10'
+  'set strsiz 0.15'
+*  'draw string 'x' 'y+0.15' 'name'('c')'
+return 0
+
+function readfile(file,name)
+** read center file **
+*file = datPath'/find_center/conzeta'contype'_max_'exp'.txt'
+*say file
+** read center file **
+i=1
+while(i<=7)
+  res = read(file)
+  line1 = sublin(res,1)
+  line2 = sublin(res,2)
+  if (i=3)
+    sfidz = subwrd(line2,6)+1
+    sfhei = subwrd(line2,3)
+    sfhei = sfhei'm'
+    say 'draw 'sfhei'meter ( 'sfidz' )'
+  endif
+  i=i+1
+endwhile
+
+meanlist  = ''
+meanxlist = ''
+meanylist = ''
+
+maxlist  = ''
+maxxlist = ''
+maxylist = ''
+
+while (1)
+  res = read(file)
+  line1 = sublin(res,1)
+  line2 = sublin(res,2)
+  rc1 = subwrd(line1,1)
+  if (rc1); break; endif
+
+  cts = subwrd(line2,1)+1
+  carea = subwrd(line2,4)
+  if (carea>=0)
+    meanlist   = meanlist' 'subwrd(line2,2)
+    meanxlist   = meanxlist' 'subwrd(line2,5)+1
+    meanylist   = meanylist' 'subwrd(line2,6)+1
+    
+    maxlist    = maxlist' 'subwrd(line2,3)
+    maxxlist   = maxxlist' 'subwrd(line2,7)+1
+    maxylist   = maxylist' 'subwrd(line2,8)+1
+
+  else
+    meanlist    =  meanlist' NaN'
+    meanxlist   = meanxlist' NaN'
+    meanylist   = meanylist' NaN'
+    
+    maxlist    =  maxlist' NaN'
+    maxxlist   = maxxlist' NaN'
+    maxylist   = maxylist' NaN'
+  endif
+*  say cts', 'subwrd(line2,5)', 'subwrd(line2,6)
+endwhile
+rc = close(file)
+
+if (name='mean_value'); return meanlist; endif
+if (name='mean_x'); return meanxlist; endif
+if (name='mean_y'); return meanylist; endif
+
+if (name='max_value'); return maxlist; endif
+if (name='max_x'); return maxxlist; endif
+if (name='max_y'); return maxylist; endif
+
+return 
+
 
