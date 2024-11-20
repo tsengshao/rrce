@@ -26,17 +26,23 @@ else:
 if (cpuid==0): print(exp, nt)
 dtime = 20
 
+iswhite=True
+
 center_flag='czeta0km_positivemean'
 fig_flag   ='tang_wind'
 datdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
-figdir=f'./{center_flag}/{fig_flag}/{exp}/'
+if iswhite:
+  figdir=f'./{center_flag}_white/{fig_flag}/{exp}/'
+else:
+  figdir=f'./{center_flag}/{fig_flag}/{exp}/'
 os.system(f'mkdir -p {figdir}')
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 zz_raw = vvmLoader.loadZZ()[:]
 
 udraw.set_figure_defalut() 
-udraw.set_black_background()
+if not iswhite:
+  udraw.set_black_background()
 
 it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 
