@@ -127,7 +127,7 @@ lnum=(60-10)/2+2+15
 'draw string 5.5 0.2 [km]'
 
 'set string 1 c 10 90'
-'set strsiz 0.10'
+'set strsiz 0.17'
 'draw string 1.7 4.375 [km]'
 
 ***** draw  title (exp name and time) *****

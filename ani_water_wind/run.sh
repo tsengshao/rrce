@@ -9,9 +9,9 @@
 
 source ~/.bashrc
 mode="SAVEFIG"
-gs="draw.gs"
+gs="draw_water.gs"
 
-for iexp in $(seq 2 18);do
+for iexp in $(seq 2 19);do
   for ts in 1 217;do
     grads -blcx "run ${gs} ${iexp} -mode ${mode} -ts ${ts} -te ${ts}" &
   done
