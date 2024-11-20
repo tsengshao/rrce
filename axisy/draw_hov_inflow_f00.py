@@ -17,6 +17,8 @@ cpuid = comm.Get_rank()
 nexp = len(config.expList)
 iexp = int(sys.argv[1])
 
+iswhite = True
+
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
 nt = 217
@@ -36,7 +38,10 @@ nt = 217
 center_flag='czeta0km_positivemean'
 fig_flag   ='hov_inflow_f00'
 datdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
-figdir=f'./{center_flag}/{fig_flag}/'
+if iswhite:
+  figdir=f'./{center_flag}_white/{fig_flag}/'
+else:
+  figdir=f'./{center_flag}/{fig_flag}/'
 os.system(f'mkdir -p {figdir}')
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
@@ -70,7 +75,8 @@ time_int   = 1
 figsize    = (6.5, 10)
 
 udraw.set_figure_defalut() 
-udraw.set_black_background()
+if not iswhite:
+  udraw.set_black_background()
 
 varname = 'radi_wind'
 varunits = 'm/s'
@@ -81,14 +87,14 @@ inner_length = 10 #km
 indxinner = np.argmin(np.abs(radius_1d-inner_length))
 loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
-varname = 'tang_wind'
-varunits = 'm/s'
-var     = twind_lower[0]
-var_ax  = twind_lower[1]
-levels = np.arange(-5, 5.01, 0.5)
-inner_length = 10 #km
-indxinner = np.argmin(np.abs(radius_1d-inner_length))
-loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
+## varname = 'tang_wind'
+## varunits = 'm/s'
+## var     = twind_lower[0]
+## var_ax  = twind_lower[1]
+## levels = np.arange(-5, 5.01, 0.5)
+## inner_length = 10 #km
+## indxinner = np.argmin(np.abs(radius_1d-inner_length))
+## loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
 
 fig, ax = plt.subplots(figsize=figsize)
