@@ -32,6 +32,8 @@ rwind_last = data['rwind_last']
 twind_last = data['twind_last']
 nmet, nexp, nvar, nradius = data['rwind_init'].shape
 
+nexp = len(config.expList)
+
 method_dict = {'inflow_daily':{'imet':1,\
                          'ur_text':'RCE {txtstr}-{rday} day',\
                          'scatter_x_label':'restart day average'
@@ -41,15 +43,20 @@ method_dict = {'inflow_daily':{'imet':1,\
                          'scatter_x_label':'restart day snapshot',\
                         },\
               }
-
+iswhite = True
 tag = 'inflow_daily'
 #tag = 'inflow_snapshot'
 mdict = method_dict[tag]
-figdir = f'./{center_flag}/{tag}/'
+if iswhite:
+  figdir = f'./{center_flag}_white/{tag}/'
+else:
+  figdir = f'./{center_flag}/{tag}/'
 os.system(f'mkdir -p {figdir}')
 
 udraw.set_figure_defalut() 
-udraw.set_black_background()
+if not iswhite:
+  udraw.set_black_background()
+
 for iexp in range(1, nexp):
   exp = explist[iexp]
   rday = int(rday_1d[iexp])
@@ -57,7 +64,10 @@ for iexp in range(1, nexp):
   
   fig, axs = plt.subplots(2, 1, figsize=(10,6), sharex=True)
   plt.subplots_adjust(left=0.1)
-  bbox = dict(boxstyle='round', fc='k', ec='1')
+  if not iswhite:
+    bbox = dict(boxstyle='round', fc='k', ec='1')
+  else:
+    bbox = dict(boxstyle='round', fc='1', ec='k')
   
   plt.sca(axs[0])
   idx = mdict['imet']
@@ -97,9 +107,13 @@ norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 x_data = np.min(rwind_init[mdict['imet'],1:,0,:], axis=1)
 y_data = np.max(twind_last[1,1:,0,:], axis=1)
 c_data = rday_1d[1:]
+x_data = x_data[:nexp]
+y_data = y_data[:nexp]
+c_data = c_data[:nexp]
 
 udraw.set_figure_defalut() 
-udraw.set_black_background()
+if not iswhite:
+  udraw.set_black_background()
 fig = plt.figure(figsize=(10,8))
 ax  = fig.add_axes([0.13, 0.1, 0.8, 0.8])
 cax = fig.add_axes([0.83, 0.3, 0.03, 0.5])
@@ -125,7 +139,7 @@ plt.show()
 x_data = np.min(rwind_init[mdict['imet'],1:,0,:], axis=1)
 thld = 0.5
 x_data = []
-for i in range(1,nexp):
+for i in range(0,nexp):
   idx = np.where( (rwind_init[mdict['imet'],i,1,:]-0.5) > 0)[0]
   if len(idx)==0:
     x_data.append(radius_1d[-1])
@@ -133,9 +147,13 @@ for i in range(1,nexp):
     x_data.append(radius_1d[idx[0]])
 y_data = np.max(twind_last[1,1:,0,:], axis=1)
 c_data = rday_1d[1:]
+x_data = x_data[:nexp]
+y_data = y_data[:nexp]
+c_data = c_data[:nexp]
 
 udraw.set_figure_defalut() 
-udraw.set_black_background()
+if not iswhite:
+  udraw.set_black_background()
 fig = plt.figure(figsize=(10,8))
 ax  = fig.add_axes([0.13, 0.1, 0.8, 0.8])
 cax = fig.add_axes([0.83, 0.3, 0.03, 0.5])
@@ -161,7 +179,7 @@ plt.show()
 x_data = np.min(rwind_init[mdict['imet'],1:,0,:], axis=1)
 thld = 0.5
 x_data = []
-for i in range(1,nexp):
+for i in range(0,nexp):
   condi = rwind_init[mdict['imet'],i,1,:]-0.5 > 0
   idx = np.where( condi )[0]
   if len(idx)==0:
@@ -175,9 +193,13 @@ for i in range(1,nexp):
     x_data.append(length)
 y_data = np.max(twind_last[1,1:,0,:], axis=1)
 c_data = rday_1d[1:]
+x_data = x_data[:nexp]
+y_data = y_data[:nexp]
+c_data = c_data[:nexp]
 
 udraw.set_figure_defalut() 
-udraw.set_black_background()
+if not iswhite:
+  udraw.set_black_background()
 fig = plt.figure(figsize=(10,8))
 ax  = fig.add_axes([0.13, 0.1, 0.8, 0.8])
 cax = fig.add_axes([0.15, 0.8, 0.5, 0.03])
@@ -203,9 +225,13 @@ plt.show()
 x_data = np.mean(rwind_init[mdict['imet'],1:,0,:] * rwind_init[mdict['imet'],1:,1,:], axis=1)
 y_data = np.max(twind_last[1,1:,0,:], axis=1)
 c_data = rday_1d[1:]
+x_data = x_data[:nexp]
+y_data = y_data[:nexp]
+c_data = c_data[:nexp]
 
 udraw.set_figure_defalut() 
-udraw.set_black_background()
+if not iswhite:
+  udraw.set_black_background()
 fig = plt.figure(figsize=(10,8))
 ax  = fig.add_axes([0.13, 0.1, 0.8, 0.8])
 cax = fig.add_axes([0.83, 0.3, 0.03, 0.5])
