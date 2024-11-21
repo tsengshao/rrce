@@ -29,7 +29,7 @@ dtime = 20
 iswhite=True
 
 center_flag='czeta0km_positivemean'
-fig_flag   ='tang_wind_one'
+fig_flag   ='radi_wind_one'
 datdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
 if iswhite:
   figdir=f'./{center_flag}_white/{fig_flag}/{exp}/'
@@ -62,7 +62,7 @@ for it in range(it_start, it_end):
   fig, ax_top, ax_cbar, ax_lower, ax_lower_right = \
       udraw.create_figure_and_axes(lower_right=False)
   
-  varname = 'tang_wind'
+  varname = 'radi_wind'
   hei = 0.5
   idx_hei = np.argmin(np.abs(zz_1d-hei))
   hei = zz_1d[idx_hei]
