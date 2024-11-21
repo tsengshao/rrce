@@ -48,9 +48,9 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 
 it=216
 it=72*3
-for it in range(it_start, it_end):
+#for it in range(it_start, it_end):
 #for it in range(nt):
-#for it in [0, 72*3]:
+for it in [0, 72*3]:
   print(it)
   fname = f'{datdir}/axmean-{it:06d}.nc'
   nc = Dataset(fname, 'r')
@@ -71,7 +71,7 @@ for it in range(it_start, it_end):
   varunit = nc.variables[varname].units
   data = nc.variables[varname][0,0,:,:]
   data_a = nc.variables[varname][0,1,:,:]
-  levels  = [-15, -10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10, 15]
+  levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
   cmap    = udraw.get_cmap('pwo')
   
   timestr = f'{(dtime*it)/60:.1f}hr'
