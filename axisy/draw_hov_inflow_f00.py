@@ -82,19 +82,19 @@ varname = 'radi_wind'
 varunits = 'm/s'
 var     = rwind_lower[0]
 var_ax  = rwind_lower[1]
-levels = np.arange(-3, 3.01, 0.5)
+levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
 inner_length = 10 #km
 indxinner = np.argmin(np.abs(radius_1d-inner_length))
 loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
-## varname = 'tang_wind'
-## varunits = 'm/s'
-## var     = twind_lower[0]
-## var_ax  = twind_lower[1]
-## levels = np.arange(-5, 5.01, 0.5)
-## inner_length = 10 #km
-## indxinner = np.argmin(np.abs(radius_1d-inner_length))
-## loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
+varname = 'tang_wind'
+varunits = 'm/s'
+var     = twind_lower[0]
+var_ax  = twind_lower[1]
+levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
+inner_length = 10 #km
+indxinner = np.argmin(np.abs(radius_1d-inner_length))
+loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
 
 fig, ax = plt.subplots(figsize=figsize)
@@ -103,6 +103,7 @@ norm = mpl.colors.BoundaryNorm(boundaries=levels, \
           ncolors=256, extend='both')
 P  = plt.pcolormesh(radius_1d, time_1d, var, cmap=cmap, norm=norm)
 CB = plt.colorbar(P, orientation='vertical')
+CB.ax.set_yticks(levels, list(map(str, levels)))
 cs = plt.contourf(radius_1d, time_1d, var_ax, \
                   levels  = [0.9, 10000], \
                   hatches = ['/'], \
@@ -132,9 +133,9 @@ plt.xticks(np.arange(0, radius_1d.max()+1, 100))
 plt.ylim(time_1d.min(), time_1d.max())
 plt.xlabel('radius [km]')
 plt.ylabel(f'simulation time [{time_units}]')
-plt.title(f'{exp}', loc='left', fontweight='bold', fontsize=20)
-plt.savefig(f'{figdir}/{varname}_{exp}_{reday:d}.png', dpi=200)
-#plt.show()
+plt.title(f'{config.expdict[exp]}', loc='left', fontweight='bold', fontsize=20)
+plt.title(f'{time_1d.min():.0f} - {time_1d.max():.0f} days', loc='right', fontweight='bold', fontsize=15)
+plt.savefig(f'{figdir}/{varname}_{exp}_{reday:d}.png', dpi=200, transparent=True)
 plt.close('all')
 
 
