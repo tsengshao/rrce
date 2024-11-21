@@ -38,9 +38,9 @@ def get_cmap(name='colorful'):
 
 def create_figure_and_axes(lower_right=True):
   fig = plt.figure(figsize=(8,8))
-  ax_top   = plt.axes([0.15,0.27,0.7,0.6])
-  ax_cbar  = plt.axes([0.88, 0.27, 0.025, 0.6])
-  ax_lower = plt.axes([0.15,0.1,0.7,0.15])
+  ax_top   = plt.axes([0.135,0.27,0.7,0.6])
+  ax_cbar  = plt.axes([0.855, 0.27, 0.025, 0.6])
+  ax_lower = plt.axes([0.135,0.1,0.7,0.15])
   if lower_right:
     ax_lower_right = ax_lower.twinx()
   else: 
@@ -60,7 +60,7 @@ def draw_upper_pcolor(ax, cax, radius_1d, zc_1d, \
     plt.xlim(0,550)
     plt.ylim(0,16)  #0km - 15km
     plt.xticks(np.arange(0,551,100), ['']*6)
-    plt.ylabel('height [km]', fontsize=15)
+    plt.ylabel('height [km]')#, fontsize=15)
     plt.grid(True)
     plt.title(f'{title}', loc='left', fontweight='bold')
     plt.title(f'{title_right}', loc='right', fontweight='bold', fontsize=15)
