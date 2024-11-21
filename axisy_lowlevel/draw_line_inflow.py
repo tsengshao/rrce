@@ -33,13 +33,14 @@ twind_last = data['twind_last']
 nmet, nexp, nvar, nradius = data['rwind_init'].shape
 
 nexp = len(config.expList)
+exp0 = config.expdict[config.expList[0]]
 
 method_dict = {'inflow_daily':{'imet':1,\
-                         'ur_text':'RCE {txtstr}-{rday} day',\
+                         'ur_text':'{exp0} {txtstr}-{rday} day',\
                          'scatter_x_label':'restart day average'
                         },\
                'inflow_snapshot':{'imet':0,\
-                         'ur_text':'RCE {rday} day (snapshot)',\
+                         'ur_text':'{exp0} {rday} day (snapshot)',\
                          'scatter_x_label':'restart day snapshot',\
                         },\
               }
@@ -73,18 +74,17 @@ for iexp in range(1, nexp):
   idx = mdict['imet']
   _ = udraw.draw_pannel(plt.gca(), radius_1d, twind_init[idx,iexp], rwind_init[idx,iexp])
 
-  plt.title(f'{exp}', loc='left', fontweight='bold')
+  plt.title(f'{config.expdict[exp]}', loc='left', fontweight='bold')
   txtstr = f'{rday-1}' if rday>1 else '0'
-  plt.text(0.98, 0.93, mdict['ur_text'].format(txtstr=txtstr,rday=rday), ha='right', va='top', transform=axs[0].transAxes, bbox=bbox)
+  plt.text(0.98, 0.93, mdict['ur_text'].format(exp0=exp0,txtstr=txtstr,rday=rday), ha='right', va='top', transform=axs[0].transAxes, bbox=bbox)
 
   plt.sca(axs[1])
   _ = udraw.draw_pannel(plt.gca(), radius_1d, twind_last[1,iexp], rwind_last[1,iexp])
-  plt.text(0.98, 0.93, 'RRCE last day (avg)', ha='right', va='top', transform=axs[1].transAxes, bbox=bbox)
+  plt.text(0.98, 0.93, '+48 ~ +72 hrs (avg)', ha='right', va='top', transform=axs[1].transAxes, bbox=bbox)
 
-  fig.text(0.03, 0.5, 'tang_wind [m/s]', va='center', color='C0', fontweight='bold', rotation='vertical')
-  fig.text(0.96, 0.5, 'radi_wind [m/s]', va='center', color='C1', fontweight='bold', rotation='vertical')
+  fig.text(0.03, 0.5, 'tang_wind [m/s]', va='center', color='#E25508', fontweight='bold', rotation='vertical')
+  fig.text(0.96, 0.5, 'radi_wind [m/s]', va='center', color='#7262AC', fontweight='bold', rotation='vertical')
   plt.savefig(f'{figdir}/{exp}.png')
-  #plt.show()
   plt.close('all')
 
 
