@@ -81,11 +81,12 @@ def get_contour_levels(C):
 
 
 def draw_upper_contour(ax, radius_1d, zc_1d, \
-                       data, levels, lws=[1], \
+                       data, levels, lws=[1], color=None,\
                        inline=False, annotation=''):
     plt.sca(ax)
+    co = color or 'k'
     C=plt.contour(radius_1d, zc_1d, data, \
-                  levels=levels, linewidths=lws, colors=['k'])
+                  levels=levels, linewidths=lws, colors=[co])
     ## plt.text(0.985,0.98,\
     ##          f'axisymmetric\n'+\
     ##          f'max:{data.max():.5f}\n'+\
@@ -101,33 +102,40 @@ def draw_upper_contour(ax, radius_1d, zc_1d, \
         plt.clabel(C, fontsize=12)
     elif not inline:
         minlev, maxlev, intlev = get_contour_levels(C)
-        plt.text(0.985,0.98,\
-                 f'{annotation}'+\
-                 #f'CONTOUR '+\
-                 f'FROM {minlev:.1f} '+\
-                 f'TO {maxlev:.1f} '+\
-                 f'BY {intlev:.1f}',\
-                 fontsize=12,\
-                 zorder=12,\
-                 ha="right", va="top",\
-                 transform=ax.transAxes,\
-                 color='0',\
-                 bbox=dict(boxstyle="square",
-                           ec='0',
-                           fc='1',
-                           ),\
-                 )
+        if len(annotation)>0:
+          plt.text(0.985,0.98,\
+                   f'{annotation}'+\
+                   #f'CONTOUR '+\
+                   f'FROM {minlev:.1f} '+\
+                   f'TO {maxlev:.1f} '+\
+                   f'BY {intlev:.1f}',\
+                   fontsize=12,\
+                   zorder=12,\
+                   ha="right", va="top",\
+                   transform=ax.transAxes,\
+                   color='0',\
+                   bbox=dict(boxstyle="square",
+                             ec='0',
+                             fc='1',
+                             ),\
+                   )
     return C
 
 def draw_upper_hatch(ax, radius_1d, zc_1d, \
-                     data, levels, hat=['/'], \
+                     data, levels, hat=['/'], edgecolor=None,\
                      annotation_y=0, annotation='',\
                     ):
     plt.sca(ax)
-    plt.rcParams['hatch.linewidth'] = 0.1
+    plt.rcParams['hatch.linewidth'] = 1
+    edge_co = edgecolor or 'k'
     C=plt.contourf(radius_1d, zc_1d, data, \
-                  levels=levels, colors='none', \
+                  levels=levels, colors='none',\
                   hatches=hat)
+    # For each level, we set the color of its hatch 
+    for i, collection in enumerate(C.collections):
+        collection.set_edgecolor(edge_co)
+        collection.set_edgecolor("face")
+        collection.set_linewidth(0.000000000001)
     plt.text(0.985,0.98+annotation_y,\
              f'hatch: '+\
              f'{annotation}'+\
