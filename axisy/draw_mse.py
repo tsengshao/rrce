@@ -76,15 +76,16 @@ for it in range(it_start, it_end):
   timestr = f'{(dtime*it)/60:.1f}hr'
   if exp=='RRCE_3km_f00': timestr = f'{(dtime*it)/60/24:.1f}day'
   
-  _ = udraw.draw_upper_pcolor(ax_top, ax_cbar, \
+  P, CB = udraw.draw_upper_pcolor(ax_top, ax_cbar, \
                         radius_1d, zc_1d, \
                         data   = data, \
                         levels = levels, \
                         cmap   = cmap, \
                         extend = 'both',\
-                        title  = f'{varname.upper()} [{varunit}]',\
-                        title_right  = f'{exp}\n{timestr}',\
+                        title  = f'{config.expdict[exp]}',\
+                        title_right  = f'{timestr}',\
                        )
+  CB.ax.set_title(f'[ {varunit} ]', fontsize=15, fontweight='bold', x=1.8)
   ## C = udraw.draw_upper_hatch(ax_top,radius_1d, zc_1d,\
   ##                        data   = data_a, \
   ##                        levels = [0.5,100],\
@@ -137,7 +138,7 @@ for it in range(it_start, it_end):
   C0 = udraw.draw_lower(plt.gca(), ax_top, radius_1d, \
                   data   = data, \
                   data_a = np.ones(data_a.shape), \
-                  ylim   = (10, 70), \
+                  ylim   = (10, 75), \
                   yticks = [10,30,50,70], \
                   ylabel = f'cwv\n[{varunit}]',\
                   color  = c,\
@@ -175,6 +176,6 @@ for it in range(it_start, it_end):
   #                 label_color = '1',\
   #                )
   # plt.legend(C0+C1, ['LH', 'SH'],fontsize=10,loc='upper right')
-  plt.savefig(f'{figdir}/{it:06d}.png',dpi=200)
+  plt.savefig(f'{figdir}/{it:06d}.png',dpi=200, transparent=True)
   
 plt.close('all')
