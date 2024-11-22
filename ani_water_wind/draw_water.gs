@@ -34,14 +34,16 @@ datPath="/data/C.shaoyu/rrce/data/"
 expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_26 f00_27 f00_28 f00_29 f00_30'
 *tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
 dt  = 20
+expNameList='D00_f00 D00_f10 D10_f10 D15_f10 D16_f10 D17_f10 D18_f10 D19_f10 D20_f10 D21_f10 D22_f10 D23_f10 D24_f10 D25_f10 D26_f10 D27_f10 D28_f10 D29_f10 D30_f10'
 
 exp = 'RRCE_3km_'subwrd(expList, iexp)
+explabel = subwrd(expNameList, iexp)
 if ( exp = 'RRCE_3km_f00' )
     tlast = subwrd(tlastList, iexp)
 else
     tlast = 217
 endif
-say exp', 'dt', 'tlast', 'type
+say explabel', 'exp', 'dt', 'tlast', 'type
 
 if (ts='none'); ts=1; endif
 if (te='none'); te=tlast; endif
@@ -96,7 +98,12 @@ say 't='it''
 'color 10 60 2 -kind white->wheat->darkcyan->darkblue->(4,130,191) -gxout grfill'
 lnum=(60-10)/2+2+15
 'set rgb 'lnum' 0 250 250'
+if (exp='RRCE_3km_f00' & it=1)
+'d cwv.1(z=1)+lon*1e-10'
+else
 'd cwv.1(z=1)'
+endif
+
 *'xcbar 8.7 9.0 0.8 2.8 -ft 10 -fs 5'
 *'xcbar 8.7 9.0 0.8 4.0 -ft 10 -fs 2'
 'xcbar 8.7 9.0 0.8 7.55 -ft 10 -fs 5'
@@ -153,7 +160,7 @@ hr=math_format('%.1f', hour)
 'set string 1 bl 10 0'
 'set strsiz 0.2'
 *'draw string 2.6875 8 'title
-'draw string 2.6875 7.65 'exp
+'draw string 2.6875 7.65 'explabel
 
 'set string 1 br 10 0'
 'set strsiz 0.2'
@@ -193,7 +200,7 @@ function drawpoint(value, cx, cy, name)
   c=math_format('%.2f', value)
   'set rgb 40 255 255 255'
   'set line 40'
-  'draw mark 9 'x' 'y' 0.26'
+  'draw mark 9 'x' 'y' 0.3'
   'set rgb 40 130 0 255'
   'set line 40'
   'draw mark 9 'x' 'y' 0.2'
