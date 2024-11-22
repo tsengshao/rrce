@@ -49,8 +49,8 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 
 it=216
 it=72*3
-for it in range(it_start, it_end):
-#for it in [72*3]:
+#for it in range(it_start, it_end):
+for it in [72*3]:
 #for it in[1]:
   print(it)
   fname = f'{datdir}/axmean-{it:06d}.nc'
@@ -96,10 +96,11 @@ for it in range(it_start, it_end):
   varunit = nc.variables[varname].units
   data    = nc.variables[varname][0,0,:,:]
   data_a  = nc.variables[varname][0,1,:,:]
-  levels  = [0.1,0.3,0.5,1,5,10,20,30,40,50]
+  #levels  = [0.1,0.3,0.5,1,5,10,20,30,40,50]
+  levels  = np.arange(1,101,2)*1e-4
 
   _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
-                       data=data*1e4, levels=levels, lws=[2], \
+                       data=data, levels=levels, lws=[2], \
                        color='1',\
                        inline=False)
 
@@ -107,15 +108,18 @@ for it in range(it_start, it_end):
   varunit = nc.variables[varname].units
   data    = nc.variables[varname][0,0,:,:]
   data_a  = nc.variables[varname][0,1,:,:]
-  levels  = [0.1,0.3,0.5,1,5,10,20,30,40,50]
+  #levels  = [0.1,0.3,0.5,1,5,10,20,30,40,50]
+  levels  = np.arange(1,101,2)*1e-5
 
   _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
-                       data=data*1e4, levels=levels, lws=[2], \
+                       data=data, levels=levels, lws=[2], \
                        inline=False)
 
+  str4=r'$10^{-4}$'
+  str5=r'$10^{-5}$'
   plt.text(0.985,0.98,\
-           'qc(black), qi(white) ['+r'$10^{-4}$'+' kg/kg]\n'+\
-           'levels: '+','.join(list(map(str,levels))), \
+           'qi (white) : FROM '+str4+' BY 2x'+str4+' kg/kg\n'+\
+           'qc (black) : FROM '+str5+' BY 2x'+str5+' kg/kg',\
            fontsize=12,\
            zorder=12,\
            ha="right", va="top",\
@@ -177,5 +181,6 @@ for it in range(it_start, it_end):
   #                )
   # plt.legend(C0+C1, ['LH', 'SH'],fontsize=10,loc='upper right')
   plt.savefig(f'{figdir}/{it:06d}.png',dpi=200, transparent=True)
+  #plt.show()
   
 plt.close('all')

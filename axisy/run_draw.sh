@@ -7,7 +7,7 @@ py='draw_hov_inflow_f00.py'
 py='draw_hov_inflow.py'
 # py='draw_tang_wind_one.py'
 # py='draw_radi_wind_one.py'
-# py='draw_mse.py'
+py='draw_mse.py'
 
 # python -u ${py} 0
 # exit
