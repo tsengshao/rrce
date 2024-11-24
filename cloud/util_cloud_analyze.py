@@ -194,59 +194,36 @@ class CloudRetriever:
         # Initial labeling of connected regions
         labeled, num_features = ndimage.label(mask, structure=struct)
     
-        # Handle periodic boundary conditions and merge labels
-        def merge_labels(label_array, nz, ny, nx):
-            """Handle periodic boundary conditions and merge labels using union-find with path compression."""
-            parent = {}
+        parent = np.arange(num_features+1)  # assume label_array is contious
    
-            @cache
-            def find_root(label):
-                """Find the root of a label using path compression."""
-                if parent[label] != label:
-                    parent[label] = find_root(parent[label])  # Path compression
-                return parent[label]
+        def find_root(lbl):
+            while lbl != parent[lbl]:
+                parent[lbl] = parent[parent[lbl]]
+                lbl = parent[lbl]
+            return lbl
     
-            def union_labels(label1, label2):
-                """Union two sets of labels."""
-                root1 = find_root(label1)
-                root2 = find_root(label2)
-                if root1 != root2:
-                    parent[root2] = root1
+        def union_labels(label1, label2):
+            """Union two sets of labels."""
+            root1 = find_root(label1)
+            root2 = find_root(label2)
+            if root1 != root2:
+                parent[root2] = root1
    
-            # Initialize the union-find structure
-            unique_labels = np.unique(label_array)
-            for lbl in unique_labels:
-                if lbl > 0:  # Ignore background labels
-                    parent[lbl] = lbl
+        # check and merge periodic boundary labels
+        # --> modify the parent array
+        active_x = np.nonzero(mask[:, :, 0] | mask[:, :, -1])
+        active_y = np.nonzero(mask[:, 0, :] | mask[:, -1, :])
+        for z, y in zip(*active_x):
+            union_labels(labeled[z, y, 0], labeled[z, y, -1])
+        for z, x in zip(*active_y):
+            union_labels(labeled[z, 0, x], labeled[z, -1, x])
 
-            # Check and merge periodic boundary labels
-            for z in range(nz):
-                if self._debug >= 2: print(f'check z {z} ...')
-                for y in range(ny):
-                    if label_array[z, y, 0] > 0 and label_array[z, y, nx - 1] > 0:
-                        union_labels(label_array[z, y, 0], label_array[z, y, nx - 1])
-                for x in range(nx):
-                    if label_array[z, 0, x] > 0 and label_array[z, ny - 1, x] > 0:
-                        union_labels(label_array[z, 0, x], label_array[z, ny - 1, x])
-    
-            # Replace labels with their root labels
-            for lbl in unique_labels:
-                if self._debug >= 2: print(f'replace_label lbl {lbl} ... ')
-                if lbl > 0:
-                    root = find_root(lbl)
-                    label_array[label_array == lbl] = root
-    
-            # Ensure labels are continuous and increasing
-            unique_labels = np.unique(label_array)
-            label_array_new = np.zeros(label_array.shape, dtype=int)
-            for ilbl in range(len(unique_labels)):
-                label_array_new[label_array == unique_labels[ilbl]] = ilbl
-    
-            return label_array_new
-    
-        # Merge periodic boundary labels and relabel to ensure continuity
-        labeled = merge_labels(labeled, nz, ny, nx)
-        num = np.unique(labeled).size-1
+
+        # create unique inverse parent_array
+        uni, new_parent = np.unique(parent, return_inverse=True)
+       
+        labeled = new_parent[labeled]
+        num = np.size(uni)-1
     
         return labeled, num
 
