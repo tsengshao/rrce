@@ -2,6 +2,7 @@ import numpy as np
 from scipy import ndimage
 from functools import cache
 import multiprocessing
+import os, sys
 
 class CloudRetriever:
     def __init__(self, data, threshold=1e-5, domain=None, cc_condi=None, cores=5, debug_level=0):
@@ -30,6 +31,10 @@ class CloudRetriever:
         if self._debug >= 1 : print('[feature] calculate object base/top and convective cloud ...')
         feature['base'], feature['top'] = \
             self._get_cloud_base_and_top(label, index)
+
+        if self._debug >= 1 : print('[feature] calculate center of object size ...')
+        feature['size'] = self._get_object_size(label, index, cores=self.cores)
+
         return feature
 
     def cal_convective_core_clouds(self, data_w):
@@ -45,6 +50,30 @@ class CloudRetriever:
 
         self.ccc_feat  = self._get_feature(self.cld_data, self.ccc_label, self.ccc_index)
         return
+
+    def _get_an_object_size(self, label, lbl, dx, dy, dz):
+        if self._debug >= 2: print(f'[feat, size]: calculate cloud size ... {lbl}')
+        idx = np.nonzero(label==lbl)
+        num  = np.size(idx[0])
+        size = np.sum(dx[idx[2]] * dy[idx[1]] * dz[idx[0]])
+        return num, size
+
+    def _get_object_size(self, label, index, cores):
+        # Use multiprocessing to fetch variable data in parallel
+        dx = np.gradient(self.domain['x'])
+        dy = np.gradient(self.domain['y'])
+        dz = np.diff(self.domain['zz'])
+
+        # obj_list = []
+        # for lbl in index:
+        #     obj_list.append( self._get_an_object_size(label, lbl, dx, dy, dz) )
+        
+        with multiprocessing.Pool(processes=cores) as pool:
+            obj_num_and_size = pool.starmap(self._get_an_object_size, [(label, lbl, dx, dy, dz) for lbl in index] )
+
+        obj_num_and_size = np.array(obj_num_and_size)
+
+        return obj_num_and_size
 
     def _get_an_object_centorid(self, label, weights, lbl):
         if self._debug >= 2: print(f'[feat, center]: calculate mass of center ... {lbl}')
@@ -78,7 +107,7 @@ class CloudRetriever:
         
 
 
-    def _get_object_center_of_mass(self, weights_positive, label, index, cores=5):
+    def _get_object_center_of_mass(self, weights_positive, label, index, cores):
         #calculate_weighted_centroid_periodic_zyx(self, weights_positive, label, index)
     
         ##------------------------------------------------
@@ -120,7 +149,8 @@ class CloudRetriever:
     def _default_domain(self, data):
         domain = {}
         shape  = data.shape
-        domain['z'] = np.arange(shape[0])
+        domain['z'] = np.arange(shape[0])+0.5
+        domain['zz'] = np.arange(shape[0]+1)
         domain['y'] = np.arange(shape[1])
         domain['x'] = np.arange(shape[2])
         return domain
@@ -223,7 +253,7 @@ class CloudRetriever:
 
 if __name__=='__main__':
     from netCDF4 import Dataset
-    it = 1440
+    it = 1800
     exp = 'RRCE_3km_f00'
     # it = 216
     # exp = 'RRCE_3km_f00_20'
@@ -231,42 +261,57 @@ if __name__=='__main__':
     thNC = Dataset(fname, 'r')
     fname = f'/data/C.shaoyu/rrce/vvm/{exp}/archive/{exp}.L.Dynamic-{it:06d}.nc'
     dyNC = Dataset(fname, 'r')
-    domain = {'x': thNC['xc'][:],\
-              'y': thNC['yc'][:],\
-              'z': thNC['zc'][:],\
+    domain = {'x': thNC['xc'][:]/1000.,\
+              'y': thNC['yc'][:]/1000.,\
+              'z': thNC['zc'][:]/1000.,\
              }
     data_cld = thNC['qc'][0] + thNC['qi'][0]
+    data_cld[0] = 0.
     data_w   = np.zeros(data_cld.shape)
     data_w[1:]  = (dyNC['w'][0,:-1] + dyNC['w'][0,1:]) / 2
     thNC.close()
     dyNC.close()
 
-    cloud = CloudRetriever(data_cld, threshold=1e-5, domain=domain, cc_condi={'base':2000}, debug_level=1, cores=10)
+    fname = f'../../vvm/{exp}/fort.98'
+    zz = np.loadtxt(fname, skiprows=188, max_rows=domain['z'].size, usecols=1)
+    zz = np.concatenate(([0], zz)) # zc bound
+    domain['zz'] = zz/1000.
+
+    cloud = CloudRetriever(data_cld, threshold=1e-5, domain=domain, cc_condi={'base':2}, debug_level=1, cores=5)
     cloud.cal_convective_core_clouds(data_w)
 
+
     import matplotlib.pyplot as plt
-    zyx = cloud.ccc_feat['center_zyx']/1000
-    plt.figure(); plt.hist(zyx[:,2],bins=np.arange(0, 1200, 50)); plt.title('xc')
-    plt.figure(); plt.hist(zyx[:,1],bins=np.arange(0, 1200, 50)); plt.title('yc')
-    plt.figure(); plt.hist(zyx[:,0],bins=np.arange(0, 16,0.5)); plt.title('zc')
+    fname = f'../../data/wp/{exp}/wp-{it:06d}.nc'
+    nc = Dataset(fname, 'r')
+    cwv = nc.variables['cwv'][0,:]
+    nc.close()
+    # zyx = cloud.ccc_feat['center_zyx']
+    # plt.figure(); plt.hist(zyx[:,2],bins=np.arange(0, 1200, 50)); plt.title('xc')
+    # plt.figure(); plt.hist(zyx[:,1],bins=np.arange(0, 1200, 50)); plt.title('yc')
+    # plt.figure(); plt.hist(zyx[:,0],bins=np.arange(0, 16,0.5)); plt.title('zc')
 
     plt.figure()
+    plt.contourf(domain['x'], domain['y'], cwv, levels=np.arange(10,61,5), cmap=plt.cm.Greens)
     zyx = cloud.cld_feat['center_zyx']
-    cc  = np.nonzero(cloud.cld_feat['cc_flag']>0.5)[0]
-    plt.scatter(zyx[:,2], zyx[:,1], c='k')
-    plt.scatter(zyx[cc,2], zyx[cc,1], c='b')
+    size = (cloud.cld_feat['size'][:,1])**(1/3)
+    for i in range(cloud.cld_n):
+        co = 'b' if cloud.cld_feat['cc_flag'][i] else 'k'
+        si = size[i]
+        plt.scatter(zyx[i,2], zyx[i,1], s=si, c=co)
 
     zyx_ccc = cloud.ccc_feat['center_zyx']
-    plt.scatter(zyx_ccc[:,2], zyx_ccc[:,1], c='r')
+    size_ccc = cloud.ccc_feat['size'][:,1]**(1/3)
+    for i in range(cloud.ccc_n):
+      co  = 'r'
+      si  = size_ccc[i]
+      plt.scatter(zyx_ccc[i,2], zyx_ccc[i,1], s=si, c=co)
     plt.xlim(domain['x'].min(), domain['x'].max())
     plt.ylim(domain['y'].min(), domain['y'].max())
     plt.xlabel('[m]')
     plt.ylabel('[m]')
     plt.title('location of ccc[red] / cc[blue] / cld[black]')
     plt.show()
-
-
-
 
 
     ## shape = (5, 10, 10)
