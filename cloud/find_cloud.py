@@ -63,10 +63,10 @@ for it in [2160]:
     w[1:] = (w_raw[1:] + w_raw[:-1]) / 2
     w[0]  = w[1].copy()
 
-    cloud = CloudRetriever(cld, threshold=1e-5, domain=domain, cc_condi={'base':2}, cores=10)
+    cloud = CloudRetriever(cld, threshold=1e-5, domain=domain, cc_condi={'base':2}, cores=10, debug_level=2)
     cloud.cal_convective_core_clouds(w)
 
-    if True:
+    if False:
         ### read cwv
         fname = f'../../data/wp/{exp}/wp-{it:06d}.nc'
         nc = Dataset(fname, 'r')

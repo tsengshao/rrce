@@ -197,9 +197,12 @@ class CloudRetriever:
         parent = np.arange(num_features+1)  # assume label_array is contious
    
         def find_root(lbl):
+            record=np.array([lbl])
             while lbl != parent[lbl]:
-                parent[lbl] = parent[parent[lbl]]
+                #parent[lbl] = parent[parent[lbl]]
                 lbl = parent[lbl]
+                record = np.append(lbl, record)
+            parent[record] = lbl
             return lbl
     
         def union_labels(label1, label2):
@@ -211,16 +214,30 @@ class CloudRetriever:
    
         # check and merge periodic boundary labels
         # --> modify the parent array
-        active_x = np.nonzero(mask[:, :, 0] | mask[:, :, -1])
-        active_y = np.nonzero(mask[:, 0, :] | mask[:, -1, :])
+        active_x = np.nonzero(mask[:, :, 0] * mask[:, :, -1])
+        active_y = np.nonzero(mask[:, 0, :] * mask[:, -1, :])
         for z, y in zip(*active_x):
             union_labels(labeled[z, y, 0], labeled[z, y, -1])
         for z, x in zip(*active_y):
             union_labels(labeled[z, 0, x], labeled[z, -1, x])
 
+        # redistribute and ensure boundary label is link to root object
+        check_label = np.array([0])
+        if len(active_x[0]) > 0:
+            check_label = np.concatenate((check_label,\
+                                         labeled[active_x[0], active_x[1], 0],\
+                                         labeled[active_x[0], active_x[1], -1]))
+        if len(active_y[0]) > 0:
+            check_label = np.concatenate((check_label,\
+                                         labeled[active_y[0], 0,  active_y[1]],\
+                                         labeled[active_y[0], -1, active_y[1]]))
+        for lbl in np.unique(check_label):
+            dum = find_root(lbl)
 
         # create unique inverse parent_array
+        if self._debug >= 2: print(f'[Label] origin parent ... {parent}')
         uni, new_parent = np.unique(parent, return_inverse=True)
+        if self._debug >= 2: print(f'[Label]    new parent ... {new_parent}')
        
         labeled = new_parent[labeled]
         num = np.size(uni)-1
@@ -290,23 +307,22 @@ if __name__=='__main__':
     plt.title('location of ccc[red] / cc[blue] / cld[black]')
     plt.show()
 
+    sys.exit()
+    shape = (5, 10, 10)
+    data = np.zeros(shape)
+    data[4, :2, 2:5] = 3
+    data[:4, :2, :2] = 10
+    data[:4, :2, -2:] = 13
+    data[:4, -1:, :2] = 15
+    data[3, 3:5, :5] = 22
+    #data[3,  :, -1] = 20
 
-    ## shape = (5, 10, 10)
-    ## data = np.zeros(shape)
-    ## data[4, :2, 2:5] = 3
-    ## data[:4, :2, :2] = 10
-    ## data[:4, :2, -2:] = 13
-    ## data[:4, -1:, :2] = 15
-    ## data[3, 3:5, :5] = 22
-    ## #data[3,  :, -1] = 20
+    data[2:5, 3:6, 5:7] = 18
+    data[0, 2:6, 5:8]  = 19
 
-    ## data[2:5, 3:6, 5:7] = 18
-    ## data[0, 2:6, 5:8]  = 19
+    cloud = CloudRetriever(data, threshold=0.5, debug_level=2, cores=5)
     
-    ## labeled_regions = label_regions_with_dynamic_periodic_boundary(data, threshold)
-    ## cloud = util_cloud(data_cld, threshold=1e-5)
-    
-    ## print("Original array:")
-    ## print(cloud.cld_data)
-    ## print("Labeled array:")
-    ## print(cloud.cld_label)
+    print("Original array:")
+    print(cloud.cld_data)
+    print("Labeled array:")
+    print(cloud.cld_label)
