@@ -49,7 +49,7 @@ domain = {'x':xc/1000.,\
 
 # find cloud and convective core cloud (w)
 #for it in [2160, 1800, 1440, 720]:
-for it in [216]:
+for it in [2160]:
     print(it)
     # --- prepare data / w in A-grid
     vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
@@ -63,7 +63,7 @@ for it in [216]:
     w[1:] = (w_raw[1:] + w_raw[:-1]) / 2
     w[0]  = w[1].copy()
 
-    cloud = CloudRetriever(cld, threshold=1e-5, domain=domain, cc_condi={'base':2}, cores=20)
+    cloud = CloudRetriever(cld, threshold=1e-5, domain=domain, cc_condi={'base':2}, cores=10)
     cloud.cal_convective_core_clouds(w)
 
     if True:
