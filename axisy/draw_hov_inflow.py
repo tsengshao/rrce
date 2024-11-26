@@ -77,7 +77,7 @@ udraw.set_figure_defalut()
 if not iswhite:
   udraw.set_black_background()
 
-varname = 'tang_wind'
+varname = 'radi_wind'
 varunits = 'm/s'
 var     = rwind_lower[0]
 var_ax  = rwind_lower[1]
@@ -86,14 +86,14 @@ inner_length = 10 #km
 indxinner = np.argmin(np.abs(radius_1d-inner_length))
 loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
-varname = 'radi_wind'
-varunits = 'm/s'
-var     = twind_lower[0]
-var_ax  = twind_lower[1]
-levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
-inner_length = 10 #km
-indxinner = np.argmin(np.abs(radius_1d-inner_length))
-loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
+## varname = 'tang_wind'
+## varunits = 'm/s'
+## var     = twind_lower[0]
+## var_ax  = twind_lower[1]
+## levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
+## inner_length = 10 #km
+## indxinner = np.argmin(np.abs(radius_1d-inner_length))
+## loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
 fig, ax = plt.subplots(figsize=figsize)
 cmap = udraw.get_cmap('pwo')
@@ -134,6 +134,18 @@ plt.xlabel('radius [km]')
 plt.ylabel(f'simulation time [{time_units}]')
 plt.title(f'{config.expdict[exp]}', loc='left', fontweight='bold', fontsize=20)
 plt.savefig(f'{figdir}/{varname}_{exp}.png', dpi=200, transparent=True)
+
+plt.figure(figsize=(20,8))
+plt.plot(time_1d, np.min(var, axis=1))
+plt.xticks(np.arange(0,time_1d.max()+0.0001,1))
+plt.xlim(0, time_1d.max())
+plt.grid(True)
+plt.title(f'{config.expdict[exp]}', loc='left', fontweight='bold', fontsize=20)
+plt.ylabel(f'minumn \n{varname} [m/s]')
+plt.xlabel('time [day]')
+plt.tight_layout()
+plt.savefig(f'{figdir}/series_{varname}_{exp}.png', dpi=200, transparent=True)
+
 plt.close('all')
 
 
