@@ -49,7 +49,7 @@ domain = {'x':xc/1000.,\
 
 # find cloud and convective core cloud (w)
 #for it in [2160, 1800, 1440, 720]:
-for it in [1800, 1440, 720]:
+for it in [2160, 1800, 1440, 720]:
     print(it)
     # --- prepare data / w in A-grid
     vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
@@ -106,9 +106,6 @@ for it in [1800, 1440, 720]:
         plt.xlim(domain['x'].min(), domain['x'].max())
         plt.ylim(domain['y'].min(), domain['y'].max())
         plt.xlabel('[m]')
-
-        plt.figure(figsize=(10,8))
-        
         plt.ylabel('[m]')
         plt.title('location of ccc[red] / cc[blue] / cld[black]')
         figdir = f'./fig_ccc/{exp}_{center_flag}/'
@@ -140,16 +137,16 @@ for it in [1800, 1440, 720]:
                                      domain['y'][-1] - domain['y'][0], \
                                      cx, cy,\
                                     )
+        plt.figure(figsize=(10,8))
         plt.title('distance of ccc[read] / cld[black]')
         plt.hist(sdis_cld, bins=np.arange(0,551, 3), color='0.5')
         plt.hist(sdis_ccc, bins=np.arange(0,551, 3), color='r', alpha=0.5)
+        plt.xlim(0, 550)
+        plt.ylim(0, 50)
         figdir = f'./fig_ccc/{exp}_{center_flag}/'
         os.system(f'mkdir -p {figdir}')
         plt.savefig(f'{figdir}/dis_{it:06d}.png', dpi=200)
         
-        plt.show()
-        
-
 
 
 

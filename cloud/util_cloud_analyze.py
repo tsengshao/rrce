@@ -25,15 +25,9 @@ class CloudRetriever:
 
     def _get_feature(self, data, label, index):
         feature = {}
-        if self._debug >= 1 : print('[feature] calculate center of object mass ...')
-        feature['center_zyx'] = self._get_object_center_of_mass(data, label, index, cores=self.cores)
-
-        if self._debug >= 1 : print('[feature] calculate object base/top and convective cloud ...')
-        feature['base'], feature['top'] = \
-            self._get_cloud_base_and_top(label, index)
-
-        if self._debug >= 1 : print('[feature] calculate center of object size ...')
-        feature['size'] = self._get_object_size(label, index, cores=self.cores)
+        if self._debug >= 1 : print('[feature] centroid, size, top, base ...')
+        feature['center_zyx'], feature['size'], feature['top'], feature['base'] = \
+            self._get_objects_feature_multicore(data, label, index, cores=self.cores)
 
         return feature
 
@@ -51,31 +45,7 @@ class CloudRetriever:
         self.ccc_feat  = self._get_feature(self.cld_data, self.ccc_label, self.ccc_index)
         return
 
-    def _get_an_object_size(self, label, lbl, dx, dy, dz):
-        if self._debug >= 2: print(f'[feat, size]: calculate cloud size ... {lbl}')
-        idx = np.nonzero(label==lbl)
-        num  = np.size(idx[0])
-        size = np.sum(dx[idx[2]] * dy[idx[1]] * dz[idx[0]])
-        return num, size
-
-    def _get_object_size(self, label, index, cores):
-        # Use multiprocessing to fetch variable data in parallel
-        dx = np.gradient(self.domain['x'])
-        dy = np.gradient(self.domain['y'])
-        dz = np.diff(self.domain['zz'])
-
-        # obj_list = []
-        # for lbl in index:
-        #     obj_list.append( self._get_an_object_size(label, lbl, dx, dy, dz) )
-        
-        with multiprocessing.Pool(processes=cores) as pool:
-            obj_num_and_size = pool.starmap(self._get_an_object_size, [(label, lbl, dx, dy, dz) for lbl in index] )
-
-        obj_num_and_size = np.array(obj_num_and_size)
-
-        return obj_num_and_size
-
-    def _get_an_object_centorid(self, label, weights, lbl):
+    def _get_an_object_feature(self, label, weights, dx, dy, dz, lbl):
         if self._debug >= 2: print(f'[feat, center]: calculate mass of center ... {lbl}')
 
         # Convert to angles
@@ -86,6 +56,15 @@ class CloudRetriever:
         lev_z   = np.copy(self.domain['z'])
 
         idx = np.nonzero(label==lbl)
+        # object size
+        num  = np.size(idx[0])
+        objsize = np.sum(dx[idx[2]] * dy[idx[1]] * dz[idx[0]])
+
+        # cloud_top_and_base
+        hei = self.domain['z'][idx[0]]
+        top, base = np.max(hei), np.min(hei)
+
+        # cloud centroid
         lbl_weights = weights[idx] # 1-d array
         lbl_z =   lev_z[idx[0]]
         lbl_y = theta_y[idx[1]]
@@ -97,33 +76,36 @@ class CloudRetriever:
         s_x = np.sum(lbl_weights * np.sin(lbl_x)) / sum_lbl_weights
         c_x = np.sum(lbl_weights * np.cos(lbl_x)) / sum_lbl_weights
         s_y = np.sum(lbl_weights * np.sin(lbl_y)) / sum_lbl_weights
-        c_y = np.sum(lbl_weights * np.cos(lbl_y)) / sum_lbl_weights
-            
+        c_y = np.sum(lbl_weights * np.cos(lbl_y)) / sum_lbl_weights 
         shift_theta_x = np.arctan2(s_x, c_x)
         shift_theta_y = np.arctan2(s_y, c_y)
         centroid_x = ( (shift_theta_x * L_x) / (2 * np.pi) ) % L_x
         centroid_y = ( (shift_theta_y * L_y) / (2 * np.pi) ) % L_y
-        return centeroid_z, centroid_y, centroid_x
+
+
+        return centeroid_z, centroid_y, centroid_x, num, objsize, top, base
         
 
 
-    def _get_object_center_of_mass(self, weights_positive, label, index, cores):
+    def _get_objects_feature_multicore(self, weights_positive, label, index, cores):
         #calculate_weighted_centroid_periodic_zyx(self, weights_positive, label, index)
-    
-        ##------------------------------------------------
-        ## find the positive value centeroid
-        ## ------
-        # obj_centorid = []
-        # for lbl in index:
-        #     centorid = self.__get_an_object_centorid(label, weights_positive, lbl)
-        #     obj_centorid.append( centorid )
+
+        # Use multiprocessing to fetch variable data in parallel
+        dx = np.gradient(self.domain['x'])
+        dy = np.gradient(self.domain['y'])
+        dz = np.diff(self.domain['zz'])
 
         # Use multiprocessing to fetch variable data in parallel
         with multiprocessing.Pool(processes=cores) as pool:
-            obj_centorid = pool.starmap(self._get_an_object_centorid, [(label, weights_positive, lbl) for lbl in index] )
-        obj_centorid = np.array(obj_centorid)
+            obj_feat = pool.starmap(self._get_an_object_feature, \
+                                    [(label, weights_positive, dx, dy, dz, lbl) for lbl in index] )
+        obj_feat = np.array(obj_feat)
+        obj_centorid = obj_feat[:,:3]
+        obj_size = obj_feat[:,3:5]
+        obj_top  = obj_feat[:, 5]
+        obj_base = obj_feat[:, 6]
 
-        return obj_centorid
+        return obj_centorid, obj_size, obj_top, obj_base
 
 
     def _examine_convective_cloud(self, feat, condiction):
