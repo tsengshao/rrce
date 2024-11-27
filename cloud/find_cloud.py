@@ -49,7 +49,7 @@ domain = {'x':xc/1000.,\
 
 # find cloud and convective core cloud (w)
 #for it in [2160, 1800, 1440, 720]:
-for it in [2160]:
+for it in [2160, 1800, 1440, 720]:
     print(it)
     # --- prepare data / w in A-grid
     vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
@@ -63,7 +63,7 @@ for it in [2160]:
     w[1:] = (w_raw[1:] + w_raw[:-1]) / 2
     w[0]  = w[1].copy()
 
-    cloud = CloudRetriever(cld, threshold=1e-5, domain=domain, cc_condi={'base':2}, cores=10)
+    cloud = CloudRetriever(cld, threshold=1e-5, domain=domain, cc_condi={'base':2}, cores=10, debug_level=1)
     cloud.cal_convective_core_clouds(w)
 
     if True:
@@ -85,7 +85,7 @@ for it in [2160]:
         sdis, stheta = axisy.compute_shortest_distances_vectorized(xc, yc, cx, cy)
         sdis /= 1000.
 
-        plt.close()
+        plt.close('all')
         plt.figure(figsize=(10,8))
         plt.contourf(domain['x'], domain['y'], cwv, levels=np.arange(10,61,10), cmap=plt.cm.Greens)
         plt.colorbar()
@@ -112,6 +112,41 @@ for it in [2160]:
         os.system(f'mkdir -p {figdir}')
         plt.savefig(f'{figdir}/{it:06d}.png', dpi=200)
 
+        
+        def r_theta_series(x_series, y_series, L_x, L_y, x0, y0):
+            # Apply periodic boundary conditions
+            dx = x_series - x0
+            dy = y_series - y0
+            dx = (dx + L_x / 2) % L_x - L_x / 2
+            dy = (dy + L_y / 2) % L_y - L_y / 2
+            distances = np.sqrt(dx**2 + dy**2)
+            theta = np.arctan2(dy, dx)
+            return distances, theta
+        # calculate corespond x/y from r/theta
+        cx = center_loc['center_x'].iloc[it]*dx/1000.
+        cy = center_loc['center_y'].iloc[it]*dy/1000.
+        sdis_ccc, _ = r_theta_series(cloud.ccc_feat['center_zyx'][:,2], \
+                                     cloud.ccc_feat['center_zyx'][:,1], \
+                                     domain['x'][-1] - domain['x'][0], \
+                                     domain['y'][-1] - domain['y'][0], \
+                                     cx, cy,\
+                                    )
+        sdis_cld, _ = r_theta_series(cloud.cld_feat['center_zyx'][:,2], \
+                                     cloud.cld_feat['center_zyx'][:,1], \
+                                     domain['x'][-1] - domain['x'][0], \
+                                     domain['y'][-1] - domain['y'][0], \
+                                     cx, cy,\
+                                    )
+        plt.figure(figsize=(10,8))
+        plt.title('distance of ccc[read] / cld[black]')
+        plt.hist(sdis_cld, bins=np.arange(0,551, 3), color='0.5')
+        plt.hist(sdis_ccc, bins=np.arange(0,551, 3), color='r', alpha=0.5)
+        plt.xlim(0, 550)
+        plt.ylim(0, 50)
+        figdir = f'./fig_ccc/{exp}_{center_flag}/'
+        os.system(f'mkdir -p {figdir}')
+        plt.savefig(f'{figdir}/dis_{it:06d}.png', dpi=200)
+        
 
 
 

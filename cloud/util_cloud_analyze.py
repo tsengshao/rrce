@@ -25,15 +25,9 @@ class CloudRetriever:
 
     def _get_feature(self, data, label, index):
         feature = {}
-        if self._debug >= 1 : print('[feature] calculate center of object mass ...')
-        feature['center_zyx'] = self._get_object_center_of_mass(data, label, index, cores=self.cores)
-
-        if self._debug >= 1 : print('[feature] calculate object base/top and convective cloud ...')
-        feature['base'], feature['top'] = \
-            self._get_cloud_base_and_top(label, index)
-
-        if self._debug >= 1 : print('[feature] calculate center of object size ...')
-        feature['size'] = self._get_object_size(label, index, cores=self.cores)
+        if self._debug >= 1 : print('[feature] centroid, size, top, base ...')
+        feature['center_zyx'], feature['size'], feature['top'], feature['base'] = \
+            self._get_objects_feature_multicore(data, label, index, cores=self.cores)
 
         return feature
 
@@ -51,31 +45,7 @@ class CloudRetriever:
         self.ccc_feat  = self._get_feature(self.cld_data, self.ccc_label, self.ccc_index)
         return
 
-    def _get_an_object_size(self, label, lbl, dx, dy, dz):
-        if self._debug >= 2: print(f'[feat, size]: calculate cloud size ... {lbl}')
-        idx = np.nonzero(label==lbl)
-        num  = np.size(idx[0])
-        size = np.sum(dx[idx[2]] * dy[idx[1]] * dz[idx[0]])
-        return num, size
-
-    def _get_object_size(self, label, index, cores):
-        # Use multiprocessing to fetch variable data in parallel
-        dx = np.gradient(self.domain['x'])
-        dy = np.gradient(self.domain['y'])
-        dz = np.diff(self.domain['zz'])
-
-        # obj_list = []
-        # for lbl in index:
-        #     obj_list.append( self._get_an_object_size(label, lbl, dx, dy, dz) )
-        
-        with multiprocessing.Pool(processes=cores) as pool:
-            obj_num_and_size = pool.starmap(self._get_an_object_size, [(label, lbl, dx, dy, dz) for lbl in index] )
-
-        obj_num_and_size = np.array(obj_num_and_size)
-
-        return obj_num_and_size
-
-    def _get_an_object_centorid(self, label, weights, lbl):
+    def _get_an_object_feature(self, label, weights, dx, dy, dz, lbl):
         if self._debug >= 2: print(f'[feat, center]: calculate mass of center ... {lbl}')
 
         # Convert to angles
@@ -86,6 +56,15 @@ class CloudRetriever:
         lev_z   = np.copy(self.domain['z'])
 
         idx = np.nonzero(label==lbl)
+        # object size
+        num  = np.size(idx[0])
+        objsize = np.sum(dx[idx[2]] * dy[idx[1]] * dz[idx[0]])
+
+        # cloud_top_and_base
+        hei = self.domain['z'][idx[0]]
+        top, base = np.max(hei), np.min(hei)
+
+        # cloud centroid
         lbl_weights = weights[idx] # 1-d array
         lbl_z =   lev_z[idx[0]]
         lbl_y = theta_y[idx[1]]
@@ -97,33 +76,36 @@ class CloudRetriever:
         s_x = np.sum(lbl_weights * np.sin(lbl_x)) / sum_lbl_weights
         c_x = np.sum(lbl_weights * np.cos(lbl_x)) / sum_lbl_weights
         s_y = np.sum(lbl_weights * np.sin(lbl_y)) / sum_lbl_weights
-        c_y = np.sum(lbl_weights * np.cos(lbl_y)) / sum_lbl_weights
-            
+        c_y = np.sum(lbl_weights * np.cos(lbl_y)) / sum_lbl_weights 
         shift_theta_x = np.arctan2(s_x, c_x)
         shift_theta_y = np.arctan2(s_y, c_y)
         centroid_x = ( (shift_theta_x * L_x) / (2 * np.pi) ) % L_x
         centroid_y = ( (shift_theta_y * L_y) / (2 * np.pi) ) % L_y
-        return centeroid_z, centroid_y, centroid_x
+
+
+        return centeroid_z, centroid_y, centroid_x, num, objsize, top, base
         
 
 
-    def _get_object_center_of_mass(self, weights_positive, label, index, cores):
+    def _get_objects_feature_multicore(self, weights_positive, label, index, cores):
         #calculate_weighted_centroid_periodic_zyx(self, weights_positive, label, index)
-    
-        ##------------------------------------------------
-        ## find the positive value centeroid
-        ## ------
-        # obj_centorid = []
-        # for lbl in index:
-        #     centorid = self.__get_an_object_centorid(label, weights_positive, lbl)
-        #     obj_centorid.append( centorid )
+
+        # Use multiprocessing to fetch variable data in parallel
+        dx = np.gradient(self.domain['x'])
+        dy = np.gradient(self.domain['y'])
+        dz = np.diff(self.domain['zz'])
 
         # Use multiprocessing to fetch variable data in parallel
         with multiprocessing.Pool(processes=cores) as pool:
-            obj_centorid = pool.starmap(self._get_an_object_centorid, [(label, weights_positive, lbl) for lbl in index] )
-        obj_centorid = np.array(obj_centorid)
+            obj_feat = pool.starmap(self._get_an_object_feature, \
+                                    [(label, weights_positive, dx, dy, dz, lbl) for lbl in index] )
+        obj_feat = np.array(obj_feat)
+        obj_centorid = obj_feat[:,:3]
+        obj_size = obj_feat[:,3:5]
+        obj_top  = obj_feat[:, 5]
+        obj_base = obj_feat[:, 6]
 
-        return obj_centorid
+        return obj_centorid, obj_size, obj_top, obj_base
 
 
     def _examine_convective_cloud(self, feat, condiction):
@@ -194,59 +176,53 @@ class CloudRetriever:
         # Initial labeling of connected regions
         labeled, num_features = ndimage.label(mask, structure=struct)
     
-        # Handle periodic boundary conditions and merge labels
-        def merge_labels(label_array, nz, ny, nx):
-            """Handle periodic boundary conditions and merge labels using union-find with path compression."""
-            parent = {}
+        parent = np.arange(num_features+1)  # assume label_array is contious
    
-            @cache
-            def find_root(label):
-                """Find the root of a label using path compression."""
-                if parent[label] != label:
-                    parent[label] = find_root(parent[label])  # Path compression
-                return parent[label]
+        def find_root(lbl):
+            record=np.array([lbl])
+            while lbl != parent[lbl]:
+                #parent[lbl] = parent[parent[lbl]]
+                lbl = parent[lbl]
+                record = np.append(lbl, record)
+            parent[record] = lbl
+            return lbl
     
-            def union_labels(label1, label2):
-                """Union two sets of labels."""
-                root1 = find_root(label1)
-                root2 = find_root(label2)
-                if root1 != root2:
-                    parent[root2] = root1
+        def union_labels(label1, label2):
+            """Union two sets of labels."""
+            root1 = find_root(label1)
+            root2 = find_root(label2)
+            if root1 != root2:
+                parent[root2] = root1
    
-            # Initialize the union-find structure
-            unique_labels = np.unique(label_array)
-            for lbl in unique_labels:
-                if lbl > 0:  # Ignore background labels
-                    parent[lbl] = lbl
+        # check and merge periodic boundary labels
+        # --> modify the parent array
+        active_x = np.nonzero(mask[:, :, 0] * mask[:, :, -1])
+        active_y = np.nonzero(mask[:, 0, :] * mask[:, -1, :])
+        for z, y in zip(*active_x):
+            union_labels(labeled[z, y, 0], labeled[z, y, -1])
+        for z, x in zip(*active_y):
+            union_labels(labeled[z, 0, x], labeled[z, -1, x])
 
-            # Check and merge periodic boundary labels
-            for z in range(nz):
-                if self._debug >= 2: print(f'check z {z} ...')
-                for y in range(ny):
-                    if label_array[z, y, 0] > 0 and label_array[z, y, nx - 1] > 0:
-                        union_labels(label_array[z, y, 0], label_array[z, y, nx - 1])
-                for x in range(nx):
-                    if label_array[z, 0, x] > 0 and label_array[z, ny - 1, x] > 0:
-                        union_labels(label_array[z, 0, x], label_array[z, ny - 1, x])
-    
-            # Replace labels with their root labels
-            for lbl in unique_labels:
-                if self._debug >= 2: print(f'replace_label lbl {lbl} ... ')
-                if lbl > 0:
-                    root = find_root(lbl)
-                    label_array[label_array == lbl] = root
-    
-            # Ensure labels are continuous and increasing
-            unique_labels = np.unique(label_array)
-            label_array_new = np.zeros(label_array.shape, dtype=int)
-            for ilbl in range(len(unique_labels)):
-                label_array_new[label_array == unique_labels[ilbl]] = ilbl
-    
-            return label_array_new
-    
-        # Merge periodic boundary labels and relabel to ensure continuity
-        labeled = merge_labels(labeled, nz, ny, nx)
-        num = np.unique(labeled).size-1
+        # redistribute and ensure boundary label is link to root object
+        check_label = np.array([0])
+        if len(active_x[0]) > 0:
+            check_label = np.concatenate((check_label,\
+                                         labeled[active_x[0], active_x[1], 0],\
+                                         labeled[active_x[0], active_x[1], -1]))
+        if len(active_y[0]) > 0:
+            check_label = np.concatenate((check_label,\
+                                         labeled[active_y[0], 0,  active_y[1]],\
+                                         labeled[active_y[0], -1, active_y[1]]))
+        for lbl in np.unique(check_label):
+            dum = find_root(lbl)
+
+        # create unique inverse parent_array
+        if self._debug >= 2: print(f'[Label] origin parent ... {parent}')
+        uni, new_parent = np.unique(parent, return_inverse=True)
+        if self._debug >= 2: print(f'[Label]    new parent ... {new_parent}')
+       
+        labeled = new_parent[labeled]
+        num = np.size(uni)-1
     
         return labeled, num
 
@@ -313,23 +289,22 @@ if __name__=='__main__':
     plt.title('location of ccc[red] / cc[blue] / cld[black]')
     plt.show()
 
+    sys.exit()
+    shape = (5, 10, 10)
+    data = np.zeros(shape)
+    data[4, :2, 2:5] = 3
+    data[:4, :2, :2] = 10
+    data[:4, :2, -2:] = 13
+    data[:4, -1:, :2] = 15
+    data[3, 3:5, :5] = 22
+    #data[3,  :, -1] = 20
 
-    ## shape = (5, 10, 10)
-    ## data = np.zeros(shape)
-    ## data[4, :2, 2:5] = 3
-    ## data[:4, :2, :2] = 10
-    ## data[:4, :2, -2:] = 13
-    ## data[:4, -1:, :2] = 15
-    ## data[3, 3:5, :5] = 22
-    ## #data[3,  :, -1] = 20
+    data[2:5, 3:6, 5:7] = 18
+    data[0, 2:6, 5:8]  = 19
 
-    ## data[2:5, 3:6, 5:7] = 18
-    ## data[0, 2:6, 5:8]  = 19
+    cloud = CloudRetriever(data, threshold=0.5, debug_level=2, cores=5)
     
-    ## labeled_regions = label_regions_with_dynamic_periodic_boundary(data, threshold)
-    ## cloud = util_cloud(data_cld, threshold=1e-5)
-    
-    ## print("Original array:")
-    ## print(cloud.cld_data)
-    ## print("Labeled array:")
-    ## print(cloud.cld_label)
+    print("Original array:")
+    print(cloud.cld_data)
+    print("Labeled array:")
+    print(cloud.cld_label)
