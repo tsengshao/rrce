@@ -60,7 +60,7 @@ if not iswhite:
 
 for iexp in range(1, nexp):
   exp = explist[iexp]
-  rday = int(rday_1d[iexp])
+  rday = rday_1d[iexp]
   print(exp, rday)
   
   fig, axs = plt.subplots(2, 1, figsize=(10,6), sharex=True)
@@ -105,7 +105,7 @@ norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
 ###### maximum radius ##########
 x_data = np.min(rwind_init[mdict['imet'],1:,0,:], axis=1)
-y_data = np.max(twind_last[1,1:,0,:], axis=1)
+y_data = np.max(twind_last[mdict['imet'],1:,0,:], axis=1)
 c_data = rday_1d[1:]
 x_data = x_data[:nexp]
 y_data = y_data[:nexp]
@@ -145,8 +145,8 @@ for i in range(0,nexp):
     x_data.append(radius_1d[-1])
   else:
     x_data.append(radius_1d[idx[0]])
-y_data = np.max(twind_last[1,1:,0,:], axis=1)
-c_data = rday_1d[1:]
+y_data = np.max(twind_last[mdict['imet'],:,0,:], axis=1)
+c_data = rday_1d[:]
 x_data = x_data[:nexp]
 y_data = y_data[:nexp]
 c_data = c_data[:nexp]
@@ -191,8 +191,8 @@ for i in range(0,nexp):
           length=radius_1d[ir] - radius_1d[idx0]
           break
     x_data.append(length)
-y_data = np.max(twind_last[1,1:,0,:], axis=1)
-c_data = rday_1d[1:]
+y_data = np.max(twind_last[mdict['imet'],:,0,:], axis=1)
+c_data = rday_1d[:]
 x_data = x_data[:nexp]
 y_data = y_data[:nexp]
 c_data = c_data[:nexp]
@@ -223,7 +223,7 @@ plt.show()
 
 ###### axisymetric inflow intensity ##########
 x_data = np.mean(rwind_init[mdict['imet'],1:,0,:] * rwind_init[mdict['imet'],1:,1,:], axis=1)
-y_data = np.max(twind_last[1,1:,0,:], axis=1)
+y_data = np.max(twind_last[mdict['imet'],1:,0,:], axis=1)
 c_data = rday_1d[1:]
 x_data = x_data[:nexp]
 y_data = y_data[:nexp]

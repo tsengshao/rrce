@@ -50,8 +50,8 @@ for iexp in range(nexp):
     rday = 0 
     rce_it0, rce_it1 = 0, 1
   else:
-    rday = int(exp.split('_')[-1])
-    rce_it0, rce_it1 = (rday-1)*72, (rday)*72
+    rday = float(exp.split('_')[-1].replace('p','.'))
+    rce_it0, rce_it1 = int((rday-1)*72), int((rday)*72)
   restart_day[iexp] = rday
    
   print(iexp, exp, restart_day[iexp])
