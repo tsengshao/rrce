@@ -7,7 +7,7 @@ outVvmPath="/data/C.shaoyu/rrce/vvm/"
 
 typeList="C.Surface L.Diag L.Dynamic L.Radiation L.Thermodynamic"
 expList="RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_30"
-expList="RRCE_3km_f00"
+expList="RRCE_3km_f00_30p27"
 
 for exp in ${expList};do
   echo "----- ${exp} -----"

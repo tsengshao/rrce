@@ -12,8 +12,8 @@ source ~/.bashrc
 conda activate py311
 
 #for i in $(seq 0 4);do
-for i in 14 15 16 17;do
-  mpirun -np 1 python -u wp.py ${i} &
+for i in 19;do
+  mpirun -np 5 python -u wp.py ${i}
 done
 
 wait
