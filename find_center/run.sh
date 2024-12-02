@@ -4,21 +4,22 @@
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
 #SBATCH -n 6       # Run a single task
-##SBATCH -w node01  # nodelist
+#SBATCH -w mogamd  # nodelist
 #SBATCH -o center.%j.out  # output file
 
 
 source ~/.bashrc
 conda activate py311
 py="find_center_domain_mean.py"
+py="find_center_domain_mean_sf.py"
 ncpu=5
 cpum=$(echo "${ncpu}-1"|bc)
-str_kernel='0km'
+str_kernel='150km'
 
 python -u ${py} 0 ${str_kernel} &
 echo $!
 
-for i in $(seq 1 18);do
+for i in $(seq 1 19);do
   pids=()
   a=$(echo "mod(${i},${ncpu})"|bc -l ~/.bcrc)
   echo ${i}...${a}

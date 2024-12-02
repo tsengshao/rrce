@@ -130,7 +130,7 @@ cpuid = comm.Get_rank()
 
 nexp = len(config.expList)
 iexp = int(sys.argv[1])
-str_kernel = sys.argv[2]
+#str_kernel = sys.argv[2]
 
 exp = config.expList[iexp]
 nt = config.totalT[iexp]
@@ -141,21 +141,16 @@ else:
   nt = int(3*72+1)
 print(exp, nt)
 
-if str_kernel=='0km':
-  vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
-  nc = vvmLoader.loadDynamic(4)
-  zz = vvmLoader.loadZZ()[:-1]
-else:
-  path=f"{config.dataPath}/convolve/RRCE_3km_f00_15/{str_kernel}/conv-000004.nc"
-  nc = Dataset(path, 'r')
-  zz = nc.variables['zz'][:]; nz=zz.size
+path=f"{config.dataPath}/horimsf/{exp}/horimsf-000000.nc"
+nc = Dataset(path, 'r')
+zz = nc.variables['zz'][:]; nz=zz.size
 xc = nc.variables['xc'][:]; nx=xc.size
 yc = nc.variables['yc'][:]; ny=yc.size
 dx, dy = np.diff(xc)[0], np.diff(yc)[0]
 
 iheit = np.argmin(np.abs(zz-1000))
 
-str_type = f'czeta{str_kernel}_positivemean'
+str_type = f'sf_positivemean'
 outdir=config.dataPath+f"/find_center/{str_type}/"
 os.system('mkdir -p '+outdir)
 
@@ -163,7 +158,7 @@ width=15
 fout = open(f'{outdir}/{exp}.txt','w')
 fout.write(\
 f"""********** center info **********
-variables: convolution zeta with {str_kernel} gaussion kernel
+variables: stream function
 level    : {zz[iheit]} meter ( {iheit} / surface 0 )
 threshold: domain mean
 center index start from: 0
@@ -176,13 +171,9 @@ plt.close('all')
 #for it in [int(30*72)]:
 for it in range(nt):
   print(exp, it)
-  if str_kernel=='0km':
-    vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
-    nc = vvmLoader.loadDynamic(it)
-  else:
-    path=f"{config.dataPath}/convolve/{exp}/{str_kernel}/conv-{it:06d}.nc"
-    nc = Dataset(path, 'r')
-  czeta = nc.variables['zeta'][0,iheit,:,:]
+  path=f"{config.dataPath}/horimsf/{exp}/horimsf-{it:06d}.nc"
+  nc = Dataset(path, 'r')
+  czeta = nc.variables['sf'][0,iheit,:,:]
 
 
   # **** idealized test **********
@@ -238,6 +229,7 @@ for it in range(nt):
 
   hori_size = np.sum(czeta>0)/nx/ny*100
 
+  """ the figure is not ready
   if False:
     plt.close('all')
     set_black_background()
@@ -271,6 +263,7 @@ for it in range(nt):
     os.system(f'mkdir -p {figPath}')
     plt.savefig(f'{figPath}/{str_kernel}_{it:06d}.png',dpi=250)
     #plt.show(block=True)
+  """
 
   fout.write(f"{it:{width}d} {mean_value:{width}.4e} {max_value:{width}.4e} {hori_size:{width}.4f} {mean_ix:{width}.4e} {mean_iy:{width}.4e} {max_ix:{width}d} {max_iy:{width}d} {posi_mean_value:{width}.4e}\n")
 fout.close()
