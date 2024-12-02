@@ -10,7 +10,7 @@ ts='none'
 mode='PAUSE'
 type='zeta'
 zidx=5
-kernel='0km'
+kernel='150km'
 **default
 
 i = 2
@@ -64,7 +64,7 @@ if (ts='none'); ts=1; endif
 if (te='none'); te=tlast; endif
 if (te>tlast);  te=tlast; endif
 
-outPath='./fig_zeta_with_center/'exp
+outPath='./whi_fig_conzeta/'exp
 '! mkdir -p 'outPath
 
 ******** write the status *******
@@ -84,14 +84,16 @@ say ''
 
 ** prepare center location **
 *../../data/find_center/czeta0km_positivemean/RRCE_3km_f00.txt
-kernel='0km'
-file = datPath'/find_center/czeta'kernel'_positivemean/'exp'.txt'
+file = datPath'/find_center/czeta0km_positivemean/'exp'.txt'
 meancx = readfile(file, 'mean_x')
 meancy = readfile(file, 'mean_y')
 maxcx = readfile(file, 'max_x')
 maxcy = readfile(file, 'max_y')
 
-kernel='150km'
+file = datPath'/find_center/czeta0km_allmean/'exp'.txt'
+allmeancx = readfile(file, 'mean_x')
+allmeancy = readfile(file, 'mean_y')
+
 file = datPath'/find_center/czeta'kernel'_positivemean/'exp'.txt'
 conmaxcx = readfile(file, 'max_x')
 conmaxcy = readfile(file, 'max_y')
@@ -128,45 +130,70 @@ say 't='it''
 'set z 'iz
 scale = 1e5
 'color -levs -100 -50 -30 -20 -10 -5 0 5 10 20 30 50 100 -gxout grfill'
-'define val=zeta.1'
+*'define val=zeta.1'
+'define val=zeta.3(ens='kernel')'
 'd val*'scale
 'xcbar 8.7 9.0 0.8 7.55 -ft 10 -fs 1'
 
+'set gxout contour'
+'set cmin -10'
+'set cint  1'
+'set clab off'
+'d msf.2/1e5'
+
+'set clab masked'
+'set cthick 5'
+'set clevs 0'
+'set ccolor 1'
+'d msf.2/1e5'
+
 ***** draw center point *****
-cx=subwrd(meancx,it)
-cy=subwrd(meancy,it)
-rc=drawpoint(0,cx,cy,'mean_zeta', 9)
+*green
+'set rgb 40 67 100 0'
+*orange
+'set rgb 41 230 140 0'
 
 cx=subwrd(maxcx,it)
 cy=subwrd(maxcy,it)
-rc=drawpoint(0,cx,cy,'max_zeta', 5)
+rc=drawpoint(0,cx,cy,'max_zeta', 5, 40)
 
 cx=subwrd(conmaxcx,it)
 cy=subwrd(conmaxcy,it)
-rc=drawpoint(0,cx,cy,'max_zetaCON150km', 12)
+rc=drawpoint(0,cx,cy,'max_zetaCON150km', 12, 40)
 
 cx=subwrd(sfmaxcx,it)
 cy=subwrd(sfmaxcy,it)
-rc=drawpoint(0,cx,cy,'max_sf', 3)
+rc=drawpoint(0,cx,cy,'max_sf', 3, 40)
+
+cx=subwrd(meancx,it)
+cy=subwrd(meancy,it)
+rc=drawpoint(0,cx,cy,'mean_zeta', 9, 40)
+
+cx=subwrd(allmeancx,it)
+cy=subwrd(allmeancy,it)
+rc=drawpoint(0,cx,cy,'mean_all_zeta', 8, 41)
 
 *rc=drawlegend(4,'a b c d', '9 5 3 12')
-style='1 1 1 1'
-name='positive_zeta_centorid zeta_max con'kernel'_zeta_max stream_func_max'
-'set rgb 40 67 100 0'
-color='40 40 40 40'
-mark='9 5 12 3'
-'legend_marker br 4 10 1 'name' 'color' 'style' 'mark''
+style='1 1 1 1 1'
+name='positive_zeta_centorid all_zeta_centroid zeta_max con'kernel'_zeta_max stream_func_max'
+color='40 41 40 40 40'
+mark='9 8 5 12 3'
+'legend_marker br 5 10 1 'name' 'color' 'style' 'mark''
 
 ***** draw text *****
 title='zeta ['scale'`ns`a-1`n]'
 'set string 1 bl 10 0'
-'set strsiz 0.2'
-'draw string 8.68 8.05 zeta'
+'set strsiz 0.15'
+'draw string 8.68 8.05 zeta-con'kernel
 'draw string 8.68 7.7 ['scale'`ns`a-1`n]'
 
 'set string 1 br 10 0'
 'set strsiz 0.17'
-'draw string 8.27 8 @'zname
+'draw string 8.27 7.95 @'zname
+
+'set string 1 br 10 0'
+'set strsiz 0.13'
+'draw string 8.27 8.3 horizontal sf. interval 10`a5`n [kg*m`a2`ns`a-2`n]'
 
 ***** draw x/y label *****
 'set string 1 c 10'
@@ -176,14 +203,6 @@ title='zeta ['scale'`ns`a-1`n]'
 'set string 1 c 10 90'
 'set strsiz 0.17'
 'draw string 1.7 4.375 [km]'
-
-** 'set lwid 80 2'
-** 'set strsiz 0.1'
-** 'set rgb 83 0 0 0'
-** 'set string 83 tl 80 0'
-** 'draw string 2.75 7.5 black  : zeta ( 100km / 25km )'
-** 'set rgb 83 100 100 100'
-** 'draw string 2.75 7.3 grey  : hori. sf. [10`a5`n kg*m`a2`ns`a-2`n]'
 
 ***** draw  title (exp name and time) *****
 day=(it-1)*dt/60/24
@@ -204,14 +223,9 @@ else
   'draw string 8.3125 7.65 'hr'hours'
 endif
 
-
-
-
-
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
-* 'gxprint 'outPath'/whi_olr'type'_'itt'.png x2400 y1800 white'
-  'gxprint 'outPath'/bla_'iz'_'kernel'_'itt'.png x2400 y1800'
+ 'gxprint 'outPath'/conzeta_'iz'_'kernel'_'itt'.png x2400 y1800'
   it = it+1
 endif
 
@@ -253,7 +267,7 @@ function drawlegend(n,name,style)
 * end drawlegend
 return
 
-function drawpoint(value, cx, cy, name, style)
+function drawpoint(value, cx, cy, name, style, color)
   'q gr2xy 'cx' 'cy''
   x=subwrd(result,3)
   y=subwrd(result,6)
@@ -263,18 +277,18 @@ function drawpoint(value, cx, cy, name, style)
   else
     size=0.2
   endif
-  'set rgb 40 255 255 255'
-  'set line 40'
-  'draw mark 'style' 'x' 'y' 'size*1.5
-*  'set rgb 40 130 0 255'
-  'set rgb 40 67 100 0'
-  'set line 40'
-  'draw mark 'style' 'x' 'y' 'size
-** * title
-**   'set rgb 40 0 0 0'
-**   'set string 40 bc 10'
-**   'set strsiz 0.1'
-**   'draw string 'x' 'y+0.15' 'name
+
+  if (style=8)
+    'set lwid 90 4'
+    'set line 'color' 1 90'
+    'draw mark 'style' 'x' 'y' 'size
+  else
+    'set rgb 105 255 255 255'
+    'set line 105'
+    'draw mark 'style' 'x' 'y' 'size*1.5
+    'set line 'color
+    'draw mark 'style' 'x' 'y' 'size
+  endif
 return 0
 
 function readfile(file,name)

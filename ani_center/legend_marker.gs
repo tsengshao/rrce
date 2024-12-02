@@ -56,7 +56,7 @@ if(pos=bc);xl=(xl+xr)/2-w/2;yb=yb+mg;xr=xl+w;yt=yb+num*h;endif
 if(pos=br);xr=xr-mg;yb=yb+mg;xl=xr-w;yt=yb+num*h;endif
 
 'set rgb 200 255 255 255 100'
-'set line 200'
+'set line 200 1 5'
 'draw recf 'xl' 'yb' 'xr' 'yt
 if(frame);'set line 1';'draw rec 'xl' 'yb' 'xr' 'yt;endif
 xr=xr-0.1
@@ -65,16 +65,19 @@ _ll=_wr+0.1
 n=1
 while(n<=num)
 _y.n=yt-h/2-(n-1)*h
-*say '_y.'n' = '_y.n
 
-'set rgb 201 255 255 255'
-'set line 201'
-'draw mark 'mark.n' '%(_ll+xr)/2%' '_y.n' '0.2*1.5
-
-
-*say 'set line 'color.n' 'style.n' 'lw
-'set line 'color.n' 'style.n' 'lw
-'draw mark 'mark.n' '%(_ll+xr)/2%' '_y.n' 0.2'
+if (mark.n=1 | mark.n=2 | mark.n=4 | mark.n=6 | mark.n=7 | mark.n=8)
+  'set lwid 90 4'
+  'set line 'color.n' 1 90'
+  'draw mark 'mark.n' '%(_ll+xr)/2%' '_y.n' 0.2'
+else
+* white edge
+  'set rgb 201 255 255 255'
+  'set line 201'
+  'draw mark 'mark.n' '%(_ll+xr)/2%' '_y.n' '0.2*1.5
+  'set line 'color.n' 'style.n' 'lw
+  'draw mark 'mark.n' '%(_ll+xr)/2%' '_y.n' 0.2'
+endif
 
 *'draw line '_ll' '_y.n' 'xr' '_y.n
 'set string 1 r 'fth
