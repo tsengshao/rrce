@@ -220,6 +220,9 @@ for it in range(nt):
                          L_y        = czeta.shape[0], \
                          only_positive = True, \
                      )
+  if np.isnan(mean_ix): mean_ix=0.
+  if np.isnan(mean_iy): mean_iy=0.
+
   print(mean_value)
   print(mean_ix, mean_iy)
   print('90th, 99th:', np.percentile(czeta*1e5, [90,99]))

@@ -11,10 +11,10 @@
 source ~/.bashrc
 conda activate py311
 py="find_center_domain_mean.py"
-py="find_center_domain_mean_sf.py"
+#py="find_center_domain_mean_sf.py"
 ncpu=5
 cpum=$(echo "${ncpu}-1"|bc)
-str_kernel='150km'
+str_kernel='0km'
 
 python -u ${py} 0 ${str_kernel} &
 echo $!
