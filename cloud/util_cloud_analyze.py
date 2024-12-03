@@ -11,6 +11,7 @@ class CloudRetriever:
         self.cld_th       = threshold
         self.domain       = domain or self._default_domain(self.cld_data)
         self.cores        = cores
+        self.cld_cc_condi     = cc_condi
 
         if self._debug >= 1 : print('===== Labeling cloud and find their feature -----')
         self.cld_label, self.cld_n    = \
@@ -20,8 +21,8 @@ class CloudRetriever:
             )
         self.cld_index = np.arange(1, self.cld_n+1)
         self.cld_feat  = self._get_feature(self.cld_data, self.cld_label, self.cld_index)
-        if type(None) != type(cc_condi):
-          self.cld_feat['cc_flag']  = self._examine_convective_cloud(self.cld_feat, cc_condi)
+        if type(None) != type(self.cld_cc_condi):
+          self.cld_feat['cc_flag']  = self._examine_convective_cloud(self.cld_feat, self.cld_cc_condi)
 
     def _get_feature(self, data, label, index):
         feature = {}
@@ -44,6 +45,48 @@ class CloudRetriever:
 
         self.ccc_feat  = self._get_feature(self.cld_data, self.ccc_label, self.ccc_index)
         return
+
+    def save_objects_info(self, fname, cldtype):
+        if cldtype=='cld':
+            number    = self.cld_n
+            feature   = self.cld_feat
+            info=f"""********** objects info **********
+variables        : cloud ( qc+qi >= {self.cld_th:.4e} kg/kg )
+number of cloud  : {self.cld_n:d}
+convective cloud : {self.cld_cc_condi}
+#
+#
+********** objects info **********\n"""
+        elif cldtype=='ccc':
+            number    = self.ccc_n
+            feature   = self.ccc_feat
+            info=f"""********** objects info **********
+variables        : convective core cloud ( ccc )
+ccc condiction   : convective cores ( w > 0.5m/s ) bound in convective cloud
+number of cloud  : {self.ccc_n:d}
+#
+#
+********** objects info **********\n"""
+        data  = np.empty((number,1))
+        width = 15
+        header = ''
+        for key, value in feature.items():
+            if len(np.shape(value))==1:
+                value=value[:,np.newaxis]
+                header += f'{key:>{width}s} '
+            else:
+                for i in range(np.shape(value)[1]):
+                    header += f'{key:>{width}s} '
+            data = np.concatenate([data, value], axis=1)
+        data = data[:,1:]
+        header += '\n'
+
+        fout = open(f'{fname}','w')
+        fout.write(info)
+        fout.write(header)
+        np.savetxt(fout, data, fmt=f'%{width}.4e')
+        fout.close()
+    
 
     def _get_an_object_feature(self, label, weights, dx, dy, dz, lbl):
         if self._debug >= 2: print(f'[feat, center]: calculate mass of center ... {lbl}')

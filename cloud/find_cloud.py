@@ -36,7 +36,7 @@ yc = nc.variables['yc'][:]; ny=yc.size
 zc = nc.variables['zc'][:]; ny=yc.size
 dx, dy = np.diff(xc)[0], np.diff(yc)[0]
 
-outdir=config.dataPath+f"/cloud/"
+outdir=config.dataPath+f"/cloud/{exp}/"
 os.system('mkdir -p '+outdir)
 
 # for CloudRetriever
@@ -46,11 +46,14 @@ domain = {'x':xc/1000.,\
           'zz':np.concatenate(([0],zz/1000.))
          }
 
+idxTS, idxTE = tools.get_mpi_time_span(0, nt, cpuid, nproc)
+print(cpuid, idxTS, idxTE, idxTE-idxTS)
 
 # find cloud and convective core cloud (w)
 #for it in [2160, 1800, 1440, 720]:
-for it in [2160, 1800, 1440, 720]:
-    print(it)
+#for it in range(nt):
+for it in range(idxTS, idxTE):
+    print(cpuid, it)
     # --- prepare data / w in A-grid
     vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
     nc = vvmLoader.loadThermoDynamic(it)
@@ -63,10 +66,18 @@ for it in [2160, 1800, 1440, 720]:
     w[1:] = (w_raw[1:] + w_raw[:-1]) / 2
     w[0]  = w[1].copy()
 
-    cloud = CloudRetriever(cld, threshold=1e-5, domain=domain, cc_condi={'base':2}, cores=10, debug_level=1)
+    cloud = CloudRetriever(cld, \
+                           threshold=1e-5, \
+                           domain=domain, \
+                           cc_condi={'base':2}, \
+                           cores=5, debug_level=0,\
+                          )
     cloud.cal_convective_core_clouds(w)
 
-    if True:
+    cloud.save_objects_info(f'{outdir}/cld_{it:06d}.txt', 'cld')
+    cloud.save_objects_info(f'{outdir}/ccc_{it:06d}.txt', 'ccc')
+
+    if False:
         ### read cwv
         fname = f'../../data/wp/{exp}/wp-{it:06d}.nc'
         nc = Dataset(fname, 'r')
@@ -153,15 +164,3 @@ for it in [2160, 1800, 1440, 720]:
 
 
 
-##  width=15
-##  fout = open(f'{outdir}/{exp}.txt','w')
-##  fout.write(\
-##  f"""********** center info **********
-##  variables: convolution zeta with {str_kernel} gaussion kernel
-##  level    : {zz[iheit]} meter ( {iheit} / surface 0 )
-##  threshold: domain mean
-##  center index start from: 0
-##  ********** center info **********
-##  """)
-##  fout.write(f"{'ts':>{width}s} {'mean':>{width}s} {'max':>{width}s} {'parea_ratio[%]':>{width}s} {'center_x':>{width}s} {'center_y':>{width}s} {'max_locx':>{width}s} {'max_locy':>{width}s} {'posi_mean':>{width}s}\n")
-##  
