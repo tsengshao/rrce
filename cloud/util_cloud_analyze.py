@@ -67,7 +67,7 @@ number of cloud  : {self.ccc_n:d}
 #
 #
 ********** objects info **********\n"""
-        data  = np.empty((number,1))
+        data  = np.empty((max([number,1]),1))
         width = 15
         header = ''
         for key, value in feature.items():
@@ -137,6 +137,12 @@ number of cloud  : {self.ccc_n:d}
         dx = np.gradient(self.domain['x'])
         dy = np.gradient(self.domain['y'])
         dz = np.diff(self.domain['zz'])
+        if len(index)==0:
+          obj_centorid = np.zeros([1,3])
+          obj_size     = np.zeros([1,2])
+          obj_top      = np.zeros([1])
+          obj_base     = np.zeros([1])
+          return obj_centorid, obj_size, obj_top, obj_base
 
         # Use multiprocessing to fetch variable data in parallel
         with multiprocessing.Pool(processes=cores) as pool:
@@ -153,7 +159,8 @@ number of cloud  : {self.ccc_n:d}
 
     def _examine_convective_cloud(self, feat, condiction):
         if self._debug >= 1: print('[feature] examine_convective_cloud')
-        condi = np.ones(feat['base'].shape, dtype=bool)
+        #condi = np.ones(feat['base'].shape, dtype=bool)
+        condi = feat['size'][:,0]>0
         if 'base' in condiction.keys():
           condi *= (feat['base'] <= condiction['base'])
         if 'top' in condiction.keys():
@@ -164,11 +171,14 @@ number of cloud  : {self.ccc_n:d}
     def _get_convective_core_cloud_mask(self, w):
         # intersection between vertical velocity(w) > 0.5 m/s
         # and convective cloud [qc+qi>0.5, base<2km]
-     
-        cc_index = self.cld_index[self.cld_feat['cc_flag'].astype(bool)]
-        cc_mask  = np.isin(self.cld_label, cc_index)
-        w_mask   = np.where(w>=0.5, True, False)
-        ccc_mask = cc_mask * w_mask
+    
+        if self.cld_n > 0:  
+          cc_index = self.cld_index[self.cld_feat['cc_flag'].astype(bool)]
+          cc_mask  = np.isin(self.cld_label, cc_index)
+          w_mask   = np.where(w>=0.5, True, False)
+          ccc_mask = cc_mask * w_mask
+        else:
+          ccc_mask  = np.zeros(self.cld_label.shape, dtype=bool)
         return ccc_mask
        
     def _default_domain(self, data):
