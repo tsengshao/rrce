@@ -81,8 +81,8 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 it=216
 it=72*3
 #for it in range(it_start, it_end):
-#for it in [72*3]:
-for it in[0, 720, 1400, 1800, 2160]:
+for it in [72*3]:
+#for it in[0, 720, 1400, 1800, 2160]:
   print(it)
   fname = f'{datdir}/axmean-{it:06d}.nc'
   nc = Dataset(fname, 'r')
@@ -193,12 +193,14 @@ for it in[0, 720, 1400, 1800, 2160]:
                                yc.size*dy, \
                                centerx.iloc[it], centery.iloc[it],\
                               )
-  plt.hist(sdis_ccc, bins=radius_1d, color='0.7')
+  co = '#FEB06F'
+  plt.hist(sdis_ccc, bins=radius_1d, color=co)
   plt.ylim(0, 32.5)
   plt.yticks([0,10,20,30])
-  plt.ylabel(r'$C^3$'+' [#]')
+  plt.ylabel(r'$C^3$'+' [#]', color=co)
+  plt.gca().tick_params(axis='y', labelcolor=co)
 
   plt.savefig(f'{figdir}/{it:06d}.png',dpi=200, transparent=True)
-  #plt.show()
+  plt.show()
   
 plt.close('all')
