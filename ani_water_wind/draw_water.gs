@@ -34,7 +34,7 @@ datPath="/data/C.shaoyu/rrce/data/"
 expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_26 f00_27 f00_28 f00_29 f00_30'
 *tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
 dt  = 20
-expNameList='D00_f00 D00_f10 D10_f10 D15_f10 D16_f10 D17_f10 D18_f10 D19_f10 D20_f10 D21_f10 D22_f10 D23_f10 D24_f10 D25_f10 D26_f10 D27_f10 D28_f10 D29_f10 D30_f10'
+expNameList='D00_close D00_open D10_open D15_open D16_open D17_open D18_open D19_open D20_open D21_open D22_open D23_open D24_open D25_open D26_open D27_open D28_open D29_open D30_open'
 
 exp = 'RRCE_3km_'subwrd(expList, iexp)
 explabel = subwrd(expNameList, iexp)
