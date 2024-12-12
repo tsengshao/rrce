@@ -81,8 +81,8 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 it=216
 it=72*3
 #for it in range(it_start, it_end):
-for it in [72*3]:
-#for it in[0, 720, 1400, 1800, 2160]:
+#for it in [72*3]:
+for it in[0, 720, 1440, 1800, 2160]:
   print(it)
   fname = f'{datdir}/axmean-{it:06d}.nc'
   nc = Dataset(fname, 'r')
