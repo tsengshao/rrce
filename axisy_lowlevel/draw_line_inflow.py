@@ -82,8 +82,8 @@ for iexp in range(1, nexp):
   _ = udraw.draw_pannel(plt.gca(), radius_1d, twind_last[1,iexp], rwind_last[1,iexp])
   plt.text(0.98, 0.93, '+48 ~ +72 hrs (avg)', ha='right', va='top', transform=axs[1].transAxes, bbox=bbox)
 
-  fig.text(0.03, 0.5, 'tang_wind [m/s]', va='center', color='#E25508', fontweight='bold', rotation='vertical')
-  fig.text(0.96, 0.5, 'radi_wind [m/s]', va='center', color='#7262AC', fontweight='bold', rotation='vertical')
+  fig.text(0.96, 0.5, 'tang_wind [m/s]', va='center', color='#E25508', fontweight='bold', rotation='vertical')
+  fig.text(0.03, 0.5, 'radi_wind [m/s]', va='center', color='#7262AC', fontweight='bold', rotation='vertical')
   plt.savefig(f'{figdir}/{exp}.png')
   plt.close('all')
 

@@ -80,17 +80,16 @@ def draw_twoline(ax, x, y2, c, method='max'):
 def draw_pannel(ax, x, twind, rwind):
   plt.sca(ax)
   xlim = (0, x.max())
-  L0 = draw_twoline(plt.gca(), x, twind, '#E25508', 'max')
-  plt.xlim(xlim)
-  plt.yticks(np.arange(0,10.1,2))
-  plt.ylim(-1, 9)
-  plt.grid(True)
-
-  ax_twinx = ax.twinx()
   L1 = draw_twoline(plt.gca(), x, rwind, '#7262AC', 'min')
   plt.xlim(xlim)
   plt.yticks(np.arange(-10,0.11, 1))
   plt.ylim(0.5, -4.5)
+  plt.grid(True)
 
+  ax_twinx = ax.twinx()
+  L0 = draw_twoline(plt.gca(), x, twind, '#E25508', 'max')
+  plt.xlim(xlim)
+  plt.yticks(np.arange(0,10.1,2))
+  plt.ylim(-1, 9)
   return 
 
