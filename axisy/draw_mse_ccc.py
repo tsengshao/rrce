@@ -50,7 +50,8 @@ else:
 os.system(f'mkdir -p {figdir}')
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
-zz_raw = vvmLoader.loadZZ()[:]
+zz_raw  = vvmLoader.loadZZ()[:]
+rho_raw = vvmLoader.loadRHO()[:]
 
 udraw.set_figure_defalut()
 if not iswhite:
@@ -81,16 +82,17 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 it=216
 it=72*3
 #for it in range(it_start, it_end):
-#for it in [72*3]:
-for it in[0, 720, 1440, 1800, 2160]:
+# for it in [72*3]:
+#for it in[0, 720, 1440, 1800, 2160]:
+for it in range(720, 2161, 72*1):
   print(it)
   fname = f'{datdir}/axmean-{it:06d}.nc'
   nc = Dataset(fname, 'r')
   radius_1d = nc.variables['radius'][:]/1000 #[km]
   zc_1d  = nc.variables['zc'][:]/1000 #[km]
   zz_1d  = zz_raw[:zc_1d.size]/1000.
-  
- 
+  rho_1d = rho_raw[:zc_1d.size]
+
   plt.close('all') 
   fig, ax_top, ax_cbar, ax_lower, ax_lower_right = \
       udraw.create_figure_and_axes(lower_right=True)
@@ -123,6 +125,34 @@ for it in[0, 720, 1440, 1800, 2160]:
   ##                        hat    = ['/'],\
   ##                       )
 
+  # calculate massflux and streamfunction
+  varname = 'sf'
+  varunit = 'kg/m/s'
+
+  # from left to right
+  data_mf = nc.variables['w'][0,0,:,:]*rho_1d[:,np.newaxis]
+  data_sf = np.cumsum(data_mf, axis=1) * np.diff(radius_1d)[0]*1000
+
+  # from right(dry) to left(moist)
+  data_mf = nc.variables['w'][0,0,:,:]*rho_1d[:,np.newaxis]
+  data_sf = np.cumsum(data_mf[:,::-1], axis=1) * np.diff(radius_1d)[0]*1000 * -1
+  data_sf = data_sf[:,::-1]
+
+  # data_mf = nc.variables['radi_wind'][0,0,:,:]*rho_1d[:,np.newaxis]
+  # data_sf = np.cumsum(data_mf, axis=0) * np.gradient(zz_1d)[:,np.newaxis]*1000 * -1
+
+  levels  = np.arange(-100, 101,1)
+  _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
+                       data=data_sf/1000., levels=levels, lws=[2], \
+                       color='1',\
+                       inline=False)
+  # _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
+  #                      data=data_mf*100., levels=levels, lws=[2], \
+  #                      color='1',\
+  #                      inline=False)
+  
+
+  """
   varname = 'qi'
   varunit = nc.variables[varname].units
   data    = nc.variables[varname][0,0,:,:]
@@ -142,9 +172,9 @@ for it in[0, 720, 1440, 1800, 2160]:
   #levels  = [0.1,0.3,0.5,1,5,10,20,30,40,50]
   levels  = np.arange(1,101,2)*1e-5
 
-  _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
-                       data=data, levels=levels, lws=[2], \
-                       inline=False)
+  ## _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
+  ##                      data=data, levels=levels, lws=[2], \
+  ##                      inline=False)
 
   str4=r'$10^{-4}$'
   str5=r'$10^{-5}$'
@@ -161,6 +191,7 @@ for it in[0, 720, 1440, 1800, 2160]:
                      fc='1',
                      ),\
          )
+  """
 
 
 
@@ -200,7 +231,7 @@ for it in[0, 720, 1440, 1800, 2160]:
   plt.ylabel(r'$C^3$'+' [#]', color=co)
   plt.gca().tick_params(axis='y', labelcolor=co)
 
-  plt.savefig(f'{figdir}/{it:06d}.png',dpi=200, transparent=True)
+  #plt.savefig(f'{figdir}/{it:06d}.png',dpi=200, transparent=True)
   plt.show()
   
 plt.close('all')
