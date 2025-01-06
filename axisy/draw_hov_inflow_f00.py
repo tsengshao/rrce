@@ -87,14 +87,14 @@ inner_length = 10 #km
 indxinner = np.argmin(np.abs(radius_1d-inner_length))
 loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
-varname = 'tang_wind'
-varunits = 'm/s'
-var     = twind_lower[0]
-var_ax  = twind_lower[1]
-levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
-inner_length = 10 #km
-indxinner = np.argmin(np.abs(radius_1d-inner_length))
-loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
+## varname = 'tang_wind'
+## varunits = 'm/s'
+## var     = twind_lower[0]
+## var_ax  = twind_lower[1]
+## levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
+## inner_length = 10 #km
+## indxinner = np.argmin(np.abs(radius_1d-inner_length))
+## loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
 
 fig, ax = plt.subplots(figsize=figsize)

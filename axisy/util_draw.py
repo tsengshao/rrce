@@ -63,7 +63,7 @@ def draw_upper_pcolor(ax, cax, radius_1d, zc_1d, \
     plt.ylabel('height [km]')#, fontsize=15)
     plt.grid(True)
     plt.title(f'{title}', loc='left', fontweight='bold')
-    plt.title(f'{title_right}', loc='right', fontweight='bold', fontsize=15)
+    plt.title(f'{title_right}', loc='right', fontweight='bold')
     return  P, CB
 
 def get_contour_levels(C):

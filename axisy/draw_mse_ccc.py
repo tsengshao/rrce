@@ -82,9 +82,9 @@ it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 it=216
 it=72*3
 #for it in range(it_start, it_end):
-# for it in [72*3]:
+for it in [0, 72*3]:
 #for it in[0, 720, 1440, 1800, 2160]:
-for it in range(720, 2161, 72*1):
+#for it in range(720, 2161, 72*1):
   print(it)
   fname = f'{datdir}/axmean-{it:06d}.nc'
   nc = Dataset(fname, 'r')
@@ -125,6 +125,7 @@ for it in range(720, 2161, 72*1):
   ##                        hat    = ['/'],\
   ##                       )
 
+  """
   # calculate massflux and streamfunction
   varname = 'sf'
   varunit = 'kg/m/s'
@@ -150,9 +151,8 @@ for it in range(720, 2161, 72*1):
   #                      data=data_mf*100., levels=levels, lws=[2], \
   #                      color='1',\
   #                      inline=False)
-  
-
   """
+
   varname = 'qi'
   varunit = nc.variables[varname].units
   data    = nc.variables[varname][0,0,:,:]
@@ -172,9 +172,9 @@ for it in range(720, 2161, 72*1):
   #levels  = [0.1,0.3,0.5,1,5,10,20,30,40,50]
   levels  = np.arange(1,101,2)*1e-5
 
-  ## _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
-  ##                      data=data, levels=levels, lws=[2], \
-  ##                      inline=False)
+  _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
+                       data=data, levels=levels, lws=[2], \
+                       inline=False)
 
   str4=r'$10^{-4}$'
   str5=r'$10^{-5}$'
@@ -191,8 +191,6 @@ for it in range(720, 2161, 72*1):
                      fc='1',
                      ),\
          )
-  """
-
 
 
   plt.sca(ax_lower)
@@ -231,7 +229,7 @@ for it in range(720, 2161, 72*1):
   plt.ylabel(r'$C^3$'+' [#]', color=co)
   plt.gca().tick_params(axis='y', labelcolor=co)
 
-  #plt.savefig(f'{figdir}/{it:06d}.png',dpi=200, transparent=True)
-  plt.show()
+  plt.savefig(f'{figdir}/{it:06d}.png',dpi=200, transparent=True)
+  #plt.show()
   
 plt.close('all')

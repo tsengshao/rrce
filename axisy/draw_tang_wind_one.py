@@ -50,7 +50,9 @@ it=216
 it=72*3
 #for it in range(it_start, it_end):
 #for it in range(nt):
-for it in [0, 72*3]:
+#for it in [0, 72*3]:
+for it in[0, 720, 1440, 1800, 2160]:
+
   print(it)
   fname = f'{datdir}/axmean-{it:06d}.nc'
   nc = Dataset(fname, 'r')
