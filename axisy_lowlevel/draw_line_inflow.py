@@ -91,14 +91,15 @@ for iexp in range(1, nexp):
 bounds=np.array('0 10 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30'.split()).astype(int)
 newcolors = np.vstack((
                        [[0.8,0.8,0.8,1]],\
-                       plt.cm.Greens(np.linspace(0.2,0.9,1)),
+                       [[0.5,0.5,0.5,1]],\
+                       #plt.cm.Reds(np.linspace(0.2,0.9,1)),
+                       plt.cm.Greens(np.linspace(0.2,0.9,5)),
                        plt.cm.Oranges(np.linspace(0.2,0.9,5)),
-                       plt.cm.Blues(np.linspace(0.2,0.9,5)),
-                       plt.cm.Purples(np.linspace(0.2,0.9,5))
+                       plt.cm.Blues(np.linspace(0.2,0.9,5))
                      ))
 cmap = mpl.colors.ListedColormap(newcolors, name='OrangeBlue')
 cmap.set_under((0.7,0.7,0.7))
-cmap.set_over(plt.cm.Purples(0.95))
+cmap.set_over(plt.cm.Purples(0.7))
 norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
 

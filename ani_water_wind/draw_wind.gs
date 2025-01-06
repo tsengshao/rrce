@@ -34,7 +34,7 @@ datPath="/data/C.shaoyu/rrce/data/"
 expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_26 f00_27 f00_28 f00_29 f00_30'
 *tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
 dt  = 20
-expNameList='D00_close D00_open D10_open D15_open D16_open D17_open D18_open D19_open D20_open D21_open D22_open D23_open D24_open D25_open D26_open D27_open D28_open D29_open D30_open'
+expNameList='D00_off D00_on D10_on D15_on D16_on D17_on D18_on D19_on D20_on D21_on D22_on D23_on D24_on D25_on D26_on D27_on D28_on D29_on D30_on'
 
 exp = 'RRCE_3km_'subwrd(expList, iexp)
 explabel = subwrd(expNameList, iexp)
@@ -148,17 +148,22 @@ rc=drawpoint(0,cx,cy,'mean')
 ***** draw  title (exp name and time) *****
 day=(it-1)*dt/60/24
 dy=math_format( '%.3f', day)
+dy00=math_format( '%.0f', day)
+if ( day = dy00 ); dy=dy00; endif
 
 hour=(it-1)*dt/60
 hr=math_format('%.1f', hour)
+hr00=math_format( '%.0f', hour)
+if ( hour = hr00 ); hr=hr00; endif
 
-'set string 1 bl 10 0'
-'set strsiz 0.2'
+'set lwid 30 3'
+'set string 1 bl 30 0'
+'set strsiz 0.25'
 *'draw string 2.6875 8 'title
 'draw string 2.6875 7.65 'explabel
 
-'set string 1 br 10 0'
-'set strsiz 0.2'
+'set string 1 br 30 0'
+'set strsiz 0.25'
 if ( exp = 'RRCE_3km_f00' )
   'draw string 8.3125 7.65 'dy'days'
 else
@@ -168,7 +173,7 @@ endif
 if ( mode="SAVEFIG" )
   itt=math_format( '%06.0f', it)
   'gxprint 'outPath'/whi_'type'_'itt'.png x2400 y1800 white'
-  'gxprint 'outPath'/bla_'type'_'itt'.png x2400 y1800'
+*  'gxprint 'outPath'/bla_'type'_'itt'.png x2400 y1800'
   it = it+1
 endif
 

@@ -47,26 +47,26 @@ totalT   = [
             217,  \
            ]
 expdict  = {
-            'RRCE_3km_f00':'D00_close',    \
-            'RRCE_3km_f10':'D00_open',    \
-            'RRCE_3km_f00_10':'D10_open', \
-            'RRCE_3km_f00_15':'D15_open', \
-            'RRCE_3km_f00_16':'D16_open', \
-            'RRCE_3km_f00_17':'D17_open', \
-            'RRCE_3km_f00_18':'D18_open', \
-            'RRCE_3km_f00_19':'D19_open', \
-            'RRCE_3km_f00_20':'D20_open', \
-            'RRCE_3km_f00_21':'D21_open', \
-            'RRCE_3km_f00_22':'D22_open', \
-            'RRCE_3km_f00_23':'D23_open', \
-            'RRCE_3km_f00_24':'D24_open', \
-            'RRCE_3km_f00_25':'D25_open', \
-            'RRCE_3km_f00_26':'D26_open', \
-            'RRCE_3km_f00_27':'D27_open', \
-            'RRCE_3km_f00_28':'D28_open', \
-            'RRCE_3km_f00_29':'D29_open', \
-            'RRCE_3km_f00_30':'D30_open', \
-            'RRCE_3km_f00_30p27':'D30p27_open', \
+            'RRCE_3km_f00':'D00_off',    \
+            'RRCE_3km_f10':'D00_on',    \
+            'RRCE_3km_f00_10':'D10_on', \
+            'RRCE_3km_f00_15':'D15_on', \
+            'RRCE_3km_f00_16':'D16_on', \
+            'RRCE_3km_f00_17':'D17_on', \
+            'RRCE_3km_f00_18':'D18_on', \
+            'RRCE_3km_f00_19':'D19_on', \
+            'RRCE_3km_f00_20':'D20_on', \
+            'RRCE_3km_f00_21':'D21_on', \
+            'RRCE_3km_f00_22':'D22_on', \
+            'RRCE_3km_f00_23':'D23_on', \
+            'RRCE_3km_f00_24':'D24_on', \
+            'RRCE_3km_f00_25':'D25_on', \
+            'RRCE_3km_f00_26':'D26_on', \
+            'RRCE_3km_f00_27':'D27_on', \
+            'RRCE_3km_f00_28':'D28_on', \
+            'RRCE_3km_f00_29':'D29_on', \
+            'RRCE_3km_f00_30':'D30_on', \
+            'RRCE_3km_f00_30p27':'D30p27_on', \
            }
 
 def getExpDeltaT(exp):

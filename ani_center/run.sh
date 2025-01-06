@@ -9,7 +9,7 @@
 
 source ~/.bashrc
 mode="SAVEFIG"
-gs="draw_conzeta.gs"
+gs="draw_zeta.gs"
 
 for iexp in $(seq 2 19);do
 #for iexp in 2;do
