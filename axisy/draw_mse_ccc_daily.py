@@ -38,6 +38,7 @@ else:
 if (cpuid==0): print(exp, nt)
 dtime = 20
 day2num = int(24*60/dtime)
+nt=(nt-1)//day2num
 
 iswhite = True
 
@@ -85,30 +86,14 @@ zc_1d  = nc.variables['zc'][:]/1000 #[km]
 zz_1d  = zz_raw[:zc_1d.size]/1000.
 rho_1d = rho_raw[:zc_1d.size]
 
-it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
+idy_start, idy_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 
-it=216
-it=72*3
-#for it in range(it_start, it_end):
-#for it in [0, 72*3, 2160]:
-for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
-#for it in range(720, 2161, 72*1):
-  print(it)
-  if it > nt: continue
-  data_mse = np.zeros((zz_1d.size, radius_1d.size))
-  data_qc  = np.zeros(data_mse.shape)
-  data_qi  = np.zeros(data_mse.shape)
-  data_w   = np.zeros(data_mse.shape)
-  data_cwv   = np.zeros(radius_1d.size)
-  for itt in np.arange(it, min([it+day2num,nt])):
-      print(it, itt)
-      fname = f'{datdir}/axmean-{itt:06d}.nc'
-      nc = Dataset(fname, 'r')
-      data_mse += nc.variables['mse'][0,0,:,:] / day2num
-      data_qc  += nc.variables['qc'][0,0,:,:] / day2num
-      data_qi  += nc.variables['qi'][0,0,:,:] / day2num
-      data_w   += nc.variables['w'][0,0,:,:] / day2num
-      data_cwv += nc.variables['cwv'][0,0,:] / day2num
+#for idy in range(idy_start, idy_end):
+for idy in [0, 2, 9, 19, 24, 29]:
+  print(idy)
+  if idy > nt: continue
+  fname = f'{datdir}/axmean_daily-{idy:06d}.nc'
+  nc = Dataset(fname, 'r')
 
   plt.close('all') 
   fig, ax_top, ax_cbar, ax_lower, ax_lower_right = \
@@ -118,13 +103,12 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
   
   varname = 'mse'
   varunit = nc.variables[varname].units
-  # data = nc.variables[varname][0,0,:,:]
-  # data_a = nc.variables[varname][0,1,:,:]
-  data = data_mse.copy()
+  data = nc.variables[varname][0,0,:,:]
+  data_a = nc.variables[varname][0,1,:,:]
   levels  = np.arange(305,350,2)
   cmap    = udraw.get_cmap('colorful')
 
-  t0, t1 = (dtime*it)/60, dtime*(it+day2num)/60
+  t0, t1 = idy*24, (idy+1)*24
   timestr = f'+{t0:.0f} ~ +{t1:.0f} hrs'
   if exp=='RRCE_3km_f00':
     timestr = f'{t0/24:.0f} ~ {t1/24:.0f} days'
@@ -151,7 +135,8 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
 
   varname = 'qi'
   varunit = nc.variables[varname].units
-  data    = data_qi.copy()
+  data = nc.variables[varname][0,0,:,:]
+  data_a = nc.variables[varname][0,1,:,:]
   #levels  = [0.1,0.3,0.5,1,5,10,20,30,40,50]
   levels  = np.arange(1,101,2)*1e-4
 
@@ -162,7 +147,8 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
 
   varname = 'qc'
   varunit = nc.variables[varname].units
-  data    = data_qc.copy()
+  data = nc.variables[varname][0,0,:,:]
+  data_a = nc.variables[varname][0,1,:,:]
   #levels  = [0.1,0.3,0.5,1,5,10,20,30,40,50]
   levels  = np.arange(1,101,2)*1e-5
 
@@ -172,7 +158,8 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
 
   varname = 'w'
   varunit = nc.variables[varname].units
-  data    = data_w.copy()
+  data = nc.variables[varname][0,0,:,:]
+  data_a = nc.variables[varname][0,1,:,:]
   plt.sca(ax_top)
   plt.contourf(radius_1d, zz_1d, data, levels=[0.05,10000],\
                colors=['#FF005E'], alpha=0.5, zorder=100)
@@ -200,7 +187,8 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
   varname = 'cwv'
   c = '1' if not iswhite else '0'
   varunit = nc.variables[varname].units
-  data   = data_cwv.copy()
+  data = nc.variables[varname][0,0,:]
+  data_a = nc.variables[varname][0,1,:]
   C0 = udraw.draw_lower(plt.gca(), ax_top, radius_1d, \
                   data   = data, \
                   data_a = np.ones(data.shape), \
@@ -215,8 +203,8 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
   ### read ccc center files
   # read file, units [km / km3]
   hist_all = np.zeros(radius_1d.size-1)
-  for itt in np.arange(it, min([it+day2num,nt])):
-    fname = f'{config.dataPath}/cloud/{exp}/ccc_{it:06d}.txt'
+  for itt in np.arange(idy*day2num, min([(idy+1)*day2num,nt*day2num])):
+    fname = f'{config.dataPath}/cloud/{exp}/ccc_{itt:06d}.txt'
     objz, objy, objx, size = \
         np.loadtxt(fname, skiprows=8, usecols=[0,1,2,4], unpack=True)
     nobj = np.sum(size>0)
@@ -224,7 +212,7 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
                                  objy, \
                                  xc.size*dx, \
                                  yc.size*dy, \
-                                 centerx.iloc[it], centery.iloc[it],\
+                                 centerx.iloc[itt], centery.iloc[itt],\
                                 )
     hist = np.histogram(sdis_ccc, bins=radius_1d)
     hist_all += hist[0]/day2num
@@ -233,8 +221,8 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
   x = (radius_1d[:-1]+radius_1d[1:])/2
   area = np.pi*(radius_1d[1:]**2-radius_1d[:-1]**2)
   plt.bar(x, hist_all/area*100, width=radius_1d[1]-radius_1d[0], color=co)
-  plt.ylim(0, 1.625)
-  plt.yticks([0, 0.5, 1, 1.5], fontsize=13)
+  plt.ylim(0, 0.8125)
+  plt.yticks([0, 0.25, 0.5, 0.75], fontsize=13)
   #plt.ylim(0, 0.325)
   #plt.yticks([0,0.1,0.2,0.3])
   # plt.ylim(0,32.5)
@@ -261,7 +249,7 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
   ##                 label_color = co,\
   ##                )
 
-  plt.savefig(f'{figdir}/{it:06d}.png',dpi=200, transparent=True)
-  plt.show()
+  plt.savefig(f'{figdir}/{idy:06d}.png',dpi=200, transparent=True)
+  #plt.show()
   
 plt.close('all')
