@@ -38,7 +38,7 @@ datPath="/data/C.shaoyu/rrce/data/"
 
 
 expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_26 f00_27 f00_28 f00_29 f00_30'
-expNameList='D00_off D00_on D10_on D15_on D16_on D17_on D18_on D19_on D20_on D21_on D22_on D23_on D24_on D25_on D26_on D27_on D28_on D29_on D30_on'
+expNameList='CTRL D00_on D10_on D15_on D16_on D17_on D18_on D19_on D20_on D21_on D22_on D23_on D24_on D25_on D26_on D27_on D28_on D29_on D30_on'
 
 exp = 'RRCE_3km_'subwrd(expList, iexp)
 explabel = subwrd(expNameList, iexp)
@@ -159,14 +159,21 @@ rc=drawpoint(0,cx,cy,'mean_zeta', 9, 40)
 
 cx=subwrd(allmeancx,it)
 cy=subwrd(allmeancy,it)
-rc=drawpoint(0,cx,cy,'mean_all_zeta', 8, 41)
+*rc=drawpoint(0,cx,cy,'mean_all_zeta', 8, 41)
 
-*rc=drawlegend(4,'a b c d', '9 5 3 12')
-style='1 1 1 1 1'
-name='positive_zeta_centorid all_zeta_centroid zeta_max con'kernel'_zeta_max stream_func_max'
-color='40 41 40 40 40'
-mark='9 8 5 12 3'
-'legend_marker br 5 10 1 'name' 'color' 'style' 'mark''
+***  *rc=drawlegend(4,'a b c d', '9 5 3 12')
+***  style='1 1 1 1 1'
+***  name='positive_zeta_centorid all_zeta_centroid zeta_max con'kernel'_zeta_max stream_func_max'
+***  color='40 41 40 40 40'
+***  mark='9 8 5 12 3'
+***  'legend_marker br 5 10 1 'name' 'color' 'style' 'mark''
+
+style='1 1 1 1'
+name='positive_zeta_centorid zeta_max con'kernel'_zeta_max stream_func_max'
+color='40 40 40 40'
+mark='9 5 12 3'
+'legend_marker br 4 10 1 'name' 'color' 'style' 'mark''
+
 
 ***** draw text *****
 title='zeta ['scale'`ns`a-1`n]'
