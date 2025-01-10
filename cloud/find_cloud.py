@@ -27,8 +27,6 @@ if exp=='RRCE_3km_f00':
 else:
   nt = int(3*72+1)
 
-misslist = np.loadtxt('missing2.log').astype(int)[::-1]
-nt = len(misslist)
 print(exp, nt)
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
@@ -55,9 +53,7 @@ print(cpuid, idxTS, idxTE, idxTE-idxTS)
 # find cloud and convective core cloud (w)
 #for it in [2160, 1800, 1440, 720]:
 #for it in range(nt):
-#for it in range(idxTS, idxTE):
-for imiss in range(idxTS, idxTE):
-    it = misslist[imiss]
+for it in range(idxTS, idxTE):
     print(cpuid, it)
     # --- prepare data / w in A-grid
     vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)

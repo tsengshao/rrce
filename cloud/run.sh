@@ -3,8 +3,8 @@
 #SBATCH -p all     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 15       # Run a single task
-#SBATCH -w mogamd  # nodelist
+#SBATCH -n 10       # Run a single task
+#SBATCH -w node01  # nodelist
 #SBATCH -o out.%j.out  # output file
 
 source ~/.bashrc
@@ -19,4 +19,4 @@ py='find_cloud.py'
 # done
 # 
 # wait
-mpirun -np 1 python -u ${py} 0
+mpirun -np 1 python -u ${py} 1
