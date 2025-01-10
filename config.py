@@ -47,7 +47,7 @@ totalT   = [
             217,  \
            ]
 expdict  = {
-            'RRCE_3km_f00':'D00_off',    \
+            'RRCE_3km_f00':'CTRL',    \
             'RRCE_3km_f10':'D00_on',    \
             'RRCE_3km_f00_10':'D10_on', \
             'RRCE_3km_f00_15':'D15_on', \

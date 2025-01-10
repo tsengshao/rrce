@@ -37,6 +37,7 @@ else:
   nt=217
 if (cpuid==0): print(exp, nt)
 dtime = 20
+day2num = int(24*60/dtime)
 
 iswhite = True
 
@@ -99,15 +100,15 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
   data_qi  = np.zeros(data_mse.shape)
   data_w   = np.zeros(data_mse.shape)
   data_cwv   = np.zeros(radius_1d.size)
-  for itt in np.arange(it, min([it+72,nt])):
+  for itt in np.arange(it, min([it+day2num,nt])):
       print(it, itt)
       fname = f'{datdir}/axmean-{itt:06d}.nc'
       nc = Dataset(fname, 'r')
-      data_mse += nc.variables['mse'][0,0,:,:] / 72
-      data_qc  += nc.variables['qc'][0,0,:,:] / 72
-      data_qi  += nc.variables['qi'][0,0,:,:] / 72
-      data_w   += nc.variables['w'][0,0,:,:] / 72
-      data_cwv += nc.variables['cwv'][0,0,:] / 72
+      data_mse += nc.variables['mse'][0,0,:,:] / day2num
+      data_qc  += nc.variables['qc'][0,0,:,:] / day2num
+      data_qi  += nc.variables['qi'][0,0,:,:] / day2num
+      data_w   += nc.variables['w'][0,0,:,:] / day2num
+      data_cwv += nc.variables['cwv'][0,0,:] / day2num
 
   plt.close('all') 
   fig, ax_top, ax_cbar, ax_lower, ax_lower_right = \
@@ -122,9 +123,11 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
   data = data_mse.copy()
   levels  = np.arange(305,350,2)
   cmap    = udraw.get_cmap('colorful')
-  
-  timestr = f'{(dtime*it)/60:.1f}hr'
-  if exp=='RRCE_3km_f00': timestr = f'{(dtime*it)/60/24:.1f}day'
+
+  t0, t1 = (dtime*it)/60, dtime*(it+day2num)/60
+  timestr = f'+{t0:.0f} ~ +{t1:.0f} hrs'
+  if exp=='RRCE_3km_f00':
+    timestr = f'{t0/24:.0f} ~ {t1/24:.0f} days'
   
   P, CB = udraw.draw_upper_pcolor(ax_top, ax_cbar, \
                         radius_1d, zc_1d, \
@@ -179,7 +182,7 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
   str6=r'0.05'
   plt.text(0.985,0.98,\
            'qi (white) : FROM '+str4+' BY 2x'+str4+' kg/kg\n'+\
-           'qc (black)  : FROM '+str5+' BY 2x'+str5+' kg/kg\n'+\
+           'qc (black) : FROM '+str5+' BY 2x'+str5+' kg/kg\n'+\
            'w  (red)     : >= '+str6+' m/s',\
            fontsize=12,\
            zorder=12,\
@@ -212,7 +215,7 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
   ### read ccc center files
   # read file, units [km / km3]
   hist_all = np.zeros(radius_1d.size-1)
-  for itt in np.arange(it, min([it+72,nt])):
+  for itt in np.arange(it, min([it+day2num,nt])):
     fname = f'{config.dataPath}/cloud/{exp}/ccc_{it:06d}.txt'
     objz, objy, objx, size = \
         np.loadtxt(fname, skiprows=8, usecols=[0,1,2,4], unpack=True)
@@ -224,19 +227,19 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
                                  centerx.iloc[it], centery.iloc[it],\
                                 )
     hist = np.histogram(sdis_ccc, bins=radius_1d)
-    hist_all += hist[0]/72
+    hist_all += hist[0]/day2num
   co = '#FEB06F'
   #plt.hist(sdis_ccc, bins=radius_1d, color=co)
   x = (radius_1d[:-1]+radius_1d[1:])/2
   area = np.pi*(radius_1d[1:]**2-radius_1d[:-1]**2)
-  plt.bar(x, hist_all/area, width=radius_1d[1]-radius_1d[0], color=co)
-  plt.ylim(0, 0.01625)
-  plt.yticks([0, 0.005, 0.010, 0.015])
+  plt.bar(x, hist_all/area*100, width=radius_1d[1]-radius_1d[0], color=co)
+  plt.ylim(0, 1.625)
+  plt.yticks([0, 0.5, 1, 1.5], fontsize=13)
   #plt.ylim(0, 0.325)
   #plt.yticks([0,0.1,0.2,0.3])
   # plt.ylim(0,32.5)
   # plt.yticks([0,10,20,30])
-  plt.ylabel(r'$C^3$'+' [#/km]', color=co)
+  plt.ylabel(r'$C^3$ density'+'\n'+r'$10^{-2}$ [#/$km^{2}$]', color=co, fontsize=15)
   plt.gca().tick_params(axis='y', labelcolor=co)
 
   ## plt.sca(ax_lower_right)
@@ -259,6 +262,6 @@ for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
   ##                )
 
   plt.savefig(f'{figdir}/{it:06d}.png',dpi=200, transparent=True)
-  #plt.show()
+  plt.show()
   
 plt.close('all')
