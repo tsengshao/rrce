@@ -41,7 +41,7 @@ dtime = 20
 iswhite = True
 
 center_flag='czeta0km_positivemean'
-fig_flag   ='mse_ccc'
+fig_flag   ='mse_ccc_daily'
 datdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
 if iswhite:
   figdir=f'./{center_flag}_white/{fig_flag}/{exp}/'
@@ -90,13 +90,24 @@ it=216
 it=72*3
 #for it in range(it_start, it_end):
 #for it in [0, 72*3, 2160]:
-#for it in [0, 72*3, 72*10, 72*20, 72*25, 72*30]:
-for it in[0, 216, 720, 1440, 1800, 2160]:
+for it in [0, 72*2, 72*9, 72*19, 72*24, 72*29]:
 #for it in range(720, 2161, 72*1):
-  if it >= nt: continue
   print(it)
-  fname = f'{datdir}/axmean-{it:06d}.nc'
-  nc = Dataset(fname, 'r')
+  if it > nt: continue
+  data_mse = np.zeros((zz_1d.size, radius_1d.size))
+  data_qc  = np.zeros(data_mse.shape)
+  data_qi  = np.zeros(data_mse.shape)
+  data_w   = np.zeros(data_mse.shape)
+  data_cwv   = np.zeros(radius_1d.size)
+  for itt in np.arange(it, min([it+72,nt])):
+      print(it, itt)
+      fname = f'{datdir}/axmean-{itt:06d}.nc'
+      nc = Dataset(fname, 'r')
+      data_mse += nc.variables['mse'][0,0,:,:] / 72
+      data_qc  += nc.variables['qc'][0,0,:,:] / 72
+      data_qi  += nc.variables['qi'][0,0,:,:] / 72
+      data_w   += nc.variables['w'][0,0,:,:] / 72
+      data_cwv += nc.variables['cwv'][0,0,:] / 72
 
   plt.close('all') 
   fig, ax_top, ax_cbar, ax_lower, ax_lower_right = \
@@ -106,8 +117,9 @@ for it in[0, 216, 720, 1440, 1800, 2160]:
   
   varname = 'mse'
   varunit = nc.variables[varname].units
-  data = nc.variables[varname][0,0,:,:]
-  data_a = nc.variables[varname][0,1,:,:]
+  # data = nc.variables[varname][0,0,:,:]
+  # data_a = nc.variables[varname][0,1,:,:]
+  data = data_mse.copy()
   levels  = np.arange(305,350,2)
   cmap    = udraw.get_cmap('colorful')
   
@@ -124,24 +136,19 @@ for it in[0, 216, 720, 1440, 1800, 2160]:
                         title_right  = f'{timestr}',\
                        )
   CB.ax.set_title(f'[ {varunit} ]', fontsize=15, fontweight='bold', x=1.8)
-  ## C = udraw.draw_upper_hatch(ax_top,radius_1d, zc_1d,\
-  ##                        data   = data_a, \
-  ##                        levels = [0.5,100],\
-  ##                        hat    = ['/'],\
-  ##                       )
 
   # varname = 'w'
   # varunit = nc.variables[varname].units
-  # data    = nc.variables[varname][0,0,:,:]
-  # levels  = [0.1 , 1000]
+  # #data    = nc.variables[varname][0,0,:,:]
+  # data    = data_w.copy()
+  # levels  = [0.05, 1000]
   # _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
   #                      data=data, levels=levels, lws=[4], \
   #                      color='r', inline=False)
 
   varname = 'qi'
   varunit = nc.variables[varname].units
-  data    = nc.variables[varname][0,0,:,:]
-  data_a  = nc.variables[varname][0,1,:,:]
+  data    = data_qi.copy()
   #levels  = [0.1,0.3,0.5,1,5,10,20,30,40,50]
   levels  = np.arange(1,101,2)*1e-4
 
@@ -152,8 +159,7 @@ for it in[0, 216, 720, 1440, 1800, 2160]:
 
   varname = 'qc'
   varunit = nc.variables[varname].units
-  data    = nc.variables[varname][0,0,:,:]
-  data_a  = nc.variables[varname][0,1,:,:]
+  data    = data_qc.copy()
   #levels  = [0.1,0.3,0.5,1,5,10,20,30,40,50]
   levels  = np.arange(1,101,2)*1e-5
 
@@ -163,11 +169,10 @@ for it in[0, 216, 720, 1440, 1800, 2160]:
 
   varname = 'w'
   varunit = nc.variables[varname].units
-  data    = nc.variables[varname][0,0,:,:]
+  data    = data_w.copy()
   plt.sca(ax_top)
   plt.contourf(radius_1d, zz_1d, data, levels=[0.05,10000],\
                colors=['#FF005E'], alpha=0.5, zorder=100)
-
 
   str4=r'$10^{-4}$'
   str5=r'$10^{-5}$'
@@ -192,11 +197,10 @@ for it in[0, 216, 720, 1440, 1800, 2160]:
   varname = 'cwv'
   c = '1' if not iswhite else '0'
   varunit = nc.variables[varname].units
-  data   = nc.variables[varname][0,0,:]
-  data_a = nc.variables[varname][0,1,:]
+  data   = data_cwv.copy()
   C0 = udraw.draw_lower(plt.gca(), ax_top, radius_1d, \
                   data   = data, \
-                  data_a = np.ones(data_a.shape), \
+                  data_a = np.ones(data.shape), \
                   ylim   = (10, 75), \
                   yticks = [10,30,50,70], \
                   ylabel = f'cwv\n[{varunit}]',\
@@ -204,52 +208,55 @@ for it in[0, 216, 720, 1440, 1800, 2160]:
                   label_color = c,\
                  )
 
-  # plt.sca(ax_lower_right)
-  # varname = 'w'
-  # c = '1' if not iswhite else '0'
-  # idxz=np.argmin(np.abs(zz_1d-5))
-  # varunit = nc.variables[varname].units
-  # data   = nc.variables[varname][0,0,idxz,:]
-  # data_a = nc.variables[varname][0,1,idxz,:]
-  # co = '#FEB06F'
-  # C0 = udraw.draw_lower(plt.gca(), ax_top, radius_1d, \
-  #                 data   = data, \
-  #                 data_a = np.ones(data_a.shape), \
-  #                 ylim   = (-0.1, 0.225), \
-  #                 yticks = [-0.1, 0, 0.1, 0.2], \
-  #                 ylabel = f'w\n[{varunit}]',\
-  #                 color  = co,\
-  #                 label_color = co,\
-  #                )
-
   plt.sca(ax_lower_right)
   ### read ccc center files
   # read file, units [km / km3]
   hist_all = np.zeros(radius_1d.size-1)
-  fname = f'{config.dataPath}/cloud/{exp}/ccc_{it:06d}.txt'
-  objz, objy, objx, size = np.loadtxt(fname, skiprows=8, usecols=[0,1,2,4], unpack=True)
-  nobj = np.sum(size>0)
-
-  sdis_ccc, _ = r_theta_series(objx, \
-                               objy, \
-                               xc.size*dx, \
-                               yc.size*dy, \
-                               centerx.iloc[it], centery.iloc[it],\
-                              )
-  hist = np.histogram(sdis_ccc, bins=radius_1d)
-  hist_all += hist[0]
-
+  for itt in np.arange(it, min([it+72,nt])):
+    fname = f'{config.dataPath}/cloud/{exp}/ccc_{it:06d}.txt'
+    objz, objy, objx, size = \
+        np.loadtxt(fname, skiprows=8, usecols=[0,1,2,4], unpack=True)
+    nobj = np.sum(size>0)
+    sdis_ccc, _ = r_theta_series(objx, \
+                                 objy, \
+                                 xc.size*dx, \
+                                 yc.size*dy, \
+                                 centerx.iloc[it], centery.iloc[it],\
+                                )
+    hist = np.histogram(sdis_ccc, bins=radius_1d)
+    hist_all += hist[0]/72
   co = '#FEB06F'
+  #plt.hist(sdis_ccc, bins=radius_1d, color=co)
   x = (radius_1d[:-1]+radius_1d[1:])/2
   area = np.pi*(radius_1d[1:]**2-radius_1d[:-1]**2)
   plt.bar(x, hist_all/area, width=radius_1d[1]-radius_1d[0], color=co)
-
   plt.ylim(0, 0.01625)
   plt.yticks([0, 0.005, 0.010, 0.015])
+  #plt.ylim(0, 0.325)
+  #plt.yticks([0,0.1,0.2,0.3])
   # plt.ylim(0,32.5)
   # plt.yticks([0,10,20,30])
-  plt.ylabel(r'$C^3$'+' [#/'+r'$km^2$'+']', color=co)
+  plt.ylabel(r'$C^3$'+' [#/km]', color=co)
   plt.gca().tick_params(axis='y', labelcolor=co)
+
+  ## plt.sca(ax_lower_right)
+  ## varname = 'w'
+  ## c = '1' if not iswhite else '0'
+  ## idxz=np.argmin(np.abs(zz_1d-5))
+  ## varunit = nc.variables[varname].units
+  ## #data   = nc.variables[varname][0,0,idxz,:]
+  ## #data_a = nc.variables[varname][0,1,idxz,:]
+  ## data   = data_w[idxz,:]
+  ## co = '#FEB06F'
+  ## C0 = udraw.draw_lower(plt.gca(), ax_top, radius_1d, \
+  ##                 data   = data, \
+  ##                 data_a = np.ones(data.shape), \
+  ##                 ylim   = (-0.05, 0.1125), \
+  ##                 yticks = [-0.05, 0, 0.05, 0.1], \
+  ##                 ylabel = f'w\n[{varunit}]',\
+  ##                 color  = co,\
+  ##                 label_color = co,\
+  ##                )
 
   plt.savefig(f'{figdir}/{it:06d}.png',dpi=200, transparent=True)
   #plt.show()
