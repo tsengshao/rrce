@@ -124,14 +124,13 @@ for idy in [0, 2, 9, 19, 24, 29]:
                        )
   CB.ax.set_title(f'[ {varunit} ]', fontsize=15, fontweight='bold', x=1.8)
 
-  # varname = 'w'
-  # varunit = nc.variables[varname].units
-  # #data    = nc.variables[varname][0,0,:,:]
-  # data    = data_w.copy()
-  # levels  = [0.05, 1000]
-  # _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
-  #                      data=data, levels=levels, lws=[4], \
-  #                      color='r', inline=False)
+  varname = 'w'
+  varunit = nc.variables[varname].units
+  data = nc.variables[varname][0,0,:,:]
+  data_a = nc.variables[varname][0,1,:,:]
+  plt.sca(ax_top)
+  plt.contourf(radius_1d, zz_1d, data, levels=[0.05,10000],\
+               colors=['#FF005E'], alpha=0.4, zorder=100)
 
   varname = 'qi'
   varunit = nc.variables[varname].units
@@ -155,14 +154,6 @@ for idy in [0, 2, 9, 19, 24, 29]:
   _ = udraw.draw_upper_contour(ax_top, radius_1d, zc_1d, \
                        data=data, levels=levels, lws=[2], \
                        inline=False)
-
-  varname = 'w'
-  varunit = nc.variables[varname].units
-  data = nc.variables[varname][0,0,:,:]
-  data_a = nc.variables[varname][0,1,:,:]
-  plt.sca(ax_top)
-  plt.contourf(radius_1d, zz_1d, data, levels=[0.05,10000],\
-               colors=['#FF005E'], alpha=0.5, zorder=100)
 
   str4=r'$10^{-4}$'
   str5=r'$10^{-5}$'
@@ -220,14 +211,14 @@ for idy in [0, 2, 9, 19, 24, 29]:
   #plt.hist(sdis_ccc, bins=radius_1d, color=co)
   x = (radius_1d[:-1]+radius_1d[1:])/2
   area = np.pi*(radius_1d[1:]**2-radius_1d[:-1]**2)
-  plt.bar(x, hist_all/area*100, width=radius_1d[1]-radius_1d[0], color=co)
-  plt.ylim(0, 0.8125)
-  plt.yticks([0, 0.25, 0.5, 0.75], fontsize=13)
+  plt.bar(x, hist_all/area*1000, width=radius_1d[1]-radius_1d[0], color=co)
+  plt.ylim(0, 8.125)
+  plt.yticks([0, 2.5, 5, 7.5], fontsize=13)
   #plt.ylim(0, 0.325)
   #plt.yticks([0,0.1,0.2,0.3])
   # plt.ylim(0,32.5)
   # plt.yticks([0,10,20,30])
-  plt.ylabel(r'$C^3$ density'+'\n'+r'$10^{-2}$ [#/$km^{2}$]', color=co, fontsize=15)
+  plt.ylabel(r'$C^3$ density'+'\n'+r'$10^{-3}$ [#/$km^{2}$]', color=co, fontsize=15)
   plt.gca().tick_params(axis='y', labelcolor=co)
 
   ## plt.sca(ax_lower_right)
@@ -250,6 +241,6 @@ for idy in [0, 2, 9, 19, 24, 29]:
   ##                )
 
   plt.savefig(f'{figdir}/{idy:06d}.png',dpi=200, transparent=True)
-  #plt.show()
+  # plt.show()
   
 plt.close('all')
