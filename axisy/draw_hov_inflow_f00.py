@@ -32,11 +32,13 @@ exp = 'RRCE_3km_f00'
 print(exp, reday)
 
 re_start_it = int(reday*3*24)
-
 nt = 217
 
+re_start_it = np.max([int((reday-1)*3*24), 0])
+nt = 217+72
+
 center_flag='czeta0km_positivemean'
-fig_flag   ='hov_inflow_f00'
+fig_flag   ='hov_inflow_f00_4dy'
 datdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
 if iswhite:
   figdir=f'./{center_flag}_white/{fig_flag}/'
@@ -73,6 +75,8 @@ time_1d = time_hr_1d/24.
 time_units = 'days'
 time_int   = 1
 figsize    = (6.5, 10)
+figsize    = (6.5, 13.3)
+figsize    = (8, 13.3)
 
 udraw.set_figure_defalut() 
 if not iswhite:
@@ -87,14 +91,14 @@ inner_length = 10 #km
 indxinner = np.argmin(np.abs(radius_1d-inner_length))
 loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
-## varname = 'tang_wind'
-## varunits = 'm/s'
-## var     = twind_lower[0]
-## var_ax  = twind_lower[1]
-## levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
-## inner_length = 10 #km
-## indxinner = np.argmin(np.abs(radius_1d-inner_length))
-## loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
+varname = 'tang_wind'
+varunits = 'm/s'
+var     = twind_lower[0]
+var_ax  = twind_lower[1]
+levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
+inner_length = 10 #km
+indxinner = np.argmin(np.abs(radius_1d-inner_length))
+loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
 
 fig, ax = plt.subplots(figsize=figsize)
@@ -138,4 +142,11 @@ plt.title(f'{time_1d.min():.0f} - {time_1d.max():.0f} days', loc='right', fontwe
 plt.savefig(f'{figdir}/{varname}_{exp}_{reday:d}.png', dpi=200, transparent=True)
 plt.close('all')
 
+### save colorbar
+fig, ax = plt.subplots(figsize=(12, 1), layout='constrained')
+CB=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+             cax=ax, orientation='horizontal')
+CB.ax.set_xticks(levels, list(map(str, levels)))
+plt.savefig(f'./{figdir}/hov_colorbar.png',dpi=200, transparent=True)
+plt.close('all')
 
