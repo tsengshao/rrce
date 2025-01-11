@@ -71,7 +71,8 @@ vvmload   = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 zz        = vvmload.loadZZ()[:zc.size]
 rhoz      = vvmload.loadRHOZ()[:zc.size]
 rho       = vvmload.loadRHO()[:zc.size]
-izz500    = np.argmin(np.abs(zz-500))
+izztarget = np.argmin(np.abs(zz-500))
+target_lev_str = '500m'
 
 vtype     = np.array([0,1])  #0: mean, 1:gamma
 def remove_theta_add_vtype_dims(in_ncvar):
@@ -128,28 +129,28 @@ for it in range(it_start, it_end):
 
         if varname == 'radi_wind_lower':
             in_ncvar     = nc_axsy.variables['radi_wind']
-            rhoz4d       = rhoz[np.newaxis, :izz500+1, np.newaxis, np.newaxis]
-            data         = np.trapz(in_ncvar[:,:izz500+1,:,:]*rhoz4d, 
+            rhoz4d       = rhoz[np.newaxis, :izztarget+1, np.newaxis, np.newaxis]
+            data         = np.trapz(in_ncvar[:,:izztarget+1,:,:]*rhoz4d, 
                                     axis=1, \
-                                    x=zz[:izz500+1],\
-                                   ) / np.trapz(rhoz4d, axis=1, x=zz[:izz500+1])
+                                    x=zz[:izztarget+1],\
+                                   ) / np.trapz(rhoz4d, axis=1, x=zz[:izztarget+1])
             dimtype      = '2d'
             attrs = {'units'       : 'm/s',\
-                     'lower_range' : '0 - 500m',\
+                     'lower_range' : f'0 - {target_lev_str}',\
                      'long_name'   : 'radial wind',\
                      'calculate_by_axisy': 'True',\
                     }
 
         if varname == 'tang_wind_lower':
             in_ncvar     = nc_axsy.variables['tang_wind']
-            rhoz4d       = rhoz[np.newaxis, :izz500+1, np.newaxis, np.newaxis]
-            data         = np.trapz(in_ncvar[:,:izz500+1,:,:]*rhoz4d, 
+            rhoz4d       = rhoz[np.newaxis, :izztarget+1, np.newaxis, np.newaxis]
+            data         = np.trapz(in_ncvar[:,:izztarget+1,:,:]*rhoz4d, 
                                     axis=1, \
-                                    x=zz[:izz500+1],\
-                                   ) / np.trapz(rhoz4d, axis=1, x=zz[:izz500+1])
+                                    x=zz[:izztarget+1],\
+                                   ) / np.trapz(rhoz4d, axis=1, x=zz[:izztarget+1])
             dimtype      = '2d'
             attrs = {'units'       : 'm/s',\
-                     'lower_range' : '0 - 500m',\
+                     'lower_range' : f'0 - {target_lev_str}',\
                      'long_name'   : 'tangential wind',\
                      'calculate_by_axisy': 'True',\
                     }
@@ -159,7 +160,7 @@ for it in range(it_start, it_end):
             data     = -1*np.gradient(data, radius_1d, axis=1)
             dimtype      = '2d'
             attrs = {'units'       : '1/s',\
-                     'lower_range' : '0 - 500m',\
+                     'lower_range' : f'0 - {target_lev_str}',\
                      'note'        : 'this variables is processed using radi_wind_lower so it does not have axisymmetricity (set 0)',\
                      'long_name'   : 'convergence of radial wind [-div]',\
                      'calculate_by_axisy': 'False',\
