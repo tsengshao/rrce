@@ -87,9 +87,12 @@ say 't='it''
 iz=9; levstr='0.9km'
 'set z 'iz
 
+'set lwid 77 10'
+'set lwid 75 5'
+
 'set parea 2.58333 8.41667 0.8 7.55'
-'set xlopts 1 10 0.2'
-'set ylopts 1 10 0.2'
+'set xlopts 1 75 0.2'
+'set ylopts 1 75 0.2'
 'set grads off'
 'set timelab off'
 'set mpdraw off'
@@ -104,7 +107,7 @@ if (exp='RRCE_3km_f00' & it=1)
 else
 'd mag(u,v)'
 endif
-'xcbar 8.7 9.0 0.8 7.55 -ft 10 -fs 5'
+'xcbar 8.7 9.0 0.8 7.55 -ft 75 -fs 5'
 
 ***** draw Wind *****
 'color 1 15 1 -kind grainbow'
@@ -123,25 +126,25 @@ rc=drawpoint(0,cx,cy,'mean')
 
 
 ***** draw text *****
-'set string 1 bl 10 0'
+'set string 1 bl 77 0'
 'set strsiz 0.2'
 'draw string 8.68 8.05 WS@'levstr
 'draw string 8.68 7.7 [m/s]'
 
-'set string 1 br 10 0'
+'set string 1 br 75 0'
 'set strsiz 0.10'
 *'draw string 8.27 8 transpart white is OLR (100 to 220 W/m2)'
 
-'set string 2 br 10 0'
+'set string 2 br 75 0'
 'set strsiz 0.10'
 *'draw string 8.27 8.2 red line is CWV = 40 mm'
 
 ***** draw x/y label *****
-'set string 1 c 10'
+'set string 1 c 75'
 'set strsiz 0.17'
 'draw string 5.5 0.2 [km]'
 
-'set string 1 c 10 90'
+'set string 1 c 75 90'
 'set strsiz 0.17'
 'draw string 1.7 4.375 [km]'
 
@@ -157,12 +160,12 @@ hr00=math_format( '%.0f', hour)
 if ( hour = hr00 ); hr=hr00; endif
 
 'set lwid 30 3'
-'set string 1 bl 30 0'
+'set string 1 bl 77 0'
 'set strsiz 0.25'
 *'draw string 2.6875 8 'title
 'draw string 2.6875 7.65 'explabel
 
-'set string 1 br 30 0'
+'set string 1 br 77 0'
 'set strsiz 0.25'
 if ( exp = 'RRCE_3km_f00' )
   'draw string 8.3125 7.65 'dy'days'
@@ -200,7 +203,7 @@ function drawpoint(value, cx, cy, name)
   c=math_format('%.2f', value)
   'set rgb 40 255 255 255'
   'set line 40'
-  'draw mark 9 'x' 'y' 0.30'
+  'draw mark 9 'x' 'y' 0.4'
   'set rgb 40 130 0 255'
   'set line 40'
   'draw mark 9 'x' 'y' 0.2'

@@ -118,9 +118,12 @@ while(it<=te)
 say 't='it''
 'c'
 
+'set lwid 77 10'
+'set lwid 75 5' 
+
 'set parea 2.58333 8.41667 0.8 7.55'
-'set xlopts 1 10 0.2'
-'set ylopts 1 10 0.2'
+'set xlopts 1 75 0.2'
+'set ylopts 1 75 0.2'
 'set grads off'
 'set timelab off'
 'set mpdraw off'
@@ -133,7 +136,7 @@ scale = 1e5
 'color -levs -100 -50 -30 -20 -10 -5 0 5 10 20 30 50 100 -gxout grfill'
 'define val=zeta.1'
 'd val*'scale
-'xcbar 8.7 9.0 0.8 7.55 -ft 10 -fs 1'
+'xcbar 8.7 9.0 0.8 7.55 -ft 75 -fs 1'
 
 ***** draw center point *****
 *green
@@ -177,21 +180,21 @@ mark='9 5 12 3'
 
 ***** draw text *****
 title='zeta ['scale'`ns`a-1`n]'
-'set string 1 bl 10 0'
+'set string 1 bl 75 0'
 'set strsiz 0.2'
 'draw string 8.68 8.05 zeta'
 'draw string 8.68 7.7 ['scale'`ns`a-1`n]'
 
-'set string 1 br 10 0'
+'set string 1 br 75 0'
 'set strsiz 0.17'
 'draw string 8.27 8 @'zname
 
 ***** draw x/y label *****
-'set string 1 c 10'
+'set string 1 c 75'
 'set strsiz 0.17'
 'draw string 5.5 0.2 [km]'
 
-'set string 1 c 10 90'
+'set string 1 c 75 90'
 'set strsiz 0.17'
 'draw string 1.7 4.375 [km]'
 
@@ -207,11 +210,11 @@ hr00=math_format( '%.0f', hour)
 if ( hour = hr00 ); hr=hr00; endif
 
 'set lwid 30 3'
-'set string 1 bl 30 0'
+'set string 1 bl 77 0'
 'set strsiz 0.25'
 'draw string 2.6875 7.65 'explabel
 
-'set string 1 br 30 0'
+'set string 1 br 77 0'
 'set strsiz 0.25'
 if ( exp = 'RRCE_3km_f00' )
   'draw string 8.3125 7.65 'dy'days'
