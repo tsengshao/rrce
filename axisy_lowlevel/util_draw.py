@@ -83,13 +83,15 @@ def draw_pannel(ax, x, twind, rwind):
   L1 = draw_twoline(plt.gca(), x, rwind, '#7262AC', 'min')
   plt.xlim(xlim)
   plt.yticks(np.arange(-10,0.11, 1))
-  plt.ylim(0.5, -4.5)
+  #plt.ylim(0.5, -4.5)
+  plt.ylim(0.5, -5.5)
   plt.grid(True)
 
   ax_twinx = ax.twinx()
   L0 = draw_twoline(plt.gca(), x, twind, '#E25508', 'max')
   plt.xlim(xlim)
   plt.yticks(np.arange(0,10.1,2))
-  plt.ylim(-1, 9)
+  #plt.ylim(-1, 9)
+  plt.ylim(-1, 11)
   return 
 

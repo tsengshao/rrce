@@ -61,6 +61,8 @@ if not iswhite:
 for iexp in range(1, nexp):
   exp = explist[iexp]
   rday = rday_1d[iexp]
+  func = float if rday%1 > 0 else int
+  rday = func(rday)
   print(exp, rday)
 
   # RRCE
@@ -69,24 +71,27 @@ for iexp in range(1, nexp):
   else:
     bbox = dict(boxstyle='round', fc='1', ec='k')
   
-  fig      = plt.figure(figsize=(10,4))
+  #fig      = plt.figure(figsize=(10,4))
+  fig      = plt.figure(figsize=(10,6))
   ax       = fig.add_axes([0.05,0.15,0.9,0.7])
   idx = mdict['imet']
   _ = udraw.draw_pannel(ax, radius_1d, twind_init[idx,iexp], rwind_init[idx,iexp])
   txtstr = f'{rday-1}' if rday>1 else '0'
   st = mdict['ur_text'].format(txtstr=txtstr,rday=rday)
-  plt.text(0.02, 0.93, \
-           st, ha='left', va='top', transform=ax.transAxes, bbox=bbox)
-  plt.title(exp0, loc='left', fontweight='bold')
+  #plt.text(0.02, 0.93, \
+  #         st, ha='left', va='top', transform=ax.transAxes, bbox=bbox)
+  plt.title(st, loc='right', fontweight='bold')
+  plt.title('    '+exp0, loc='left', fontweight='bold')
   #plt.tight_layout()
   plt.savefig(f'{figdir}/{exp0}_{rday}dy.png')
 
-  #fig, ax  = plt.subplots(1, 1, figsize=(10,4))
-  fig      = plt.figure(figsize=(10,4))
+  #fig      = plt.figure(figsize=(10,4))
+  fig      = plt.figure(figsize=(10,6))
   ax       = fig.add_axes([0.05,0.15,0.9,0.7])
   _ = udraw.draw_pannel(ax, radius_1d, twind_last[1,iexp], rwind_last[1,iexp])
-  plt.text(0.98, 0.93, '+48 ~ +72 hrs (avg)', ha='right', va='top', transform=ax.transAxes, bbox=bbox)
-  plt.title(f'{config.expdict[exp]}', loc='left', fontweight='bold')
+  plt.title('+48 ~ +72 hrs', loc='right', fontweight='bold')
+  plt.title(f'    {config.expdict[exp]}', loc='left', fontweight='bold')
+  #plt.text(0.98, 0.93, '+48 ~ +72 hrs (avg)', ha='right', va='top', transform=ax.transAxes, bbox=bbox)
   #plt.tight_layout()
   plt.savefig(f'{figdir}/{exp}_3dy.png')
   plt.close('all')
