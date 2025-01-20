@@ -4,7 +4,7 @@ import sys, os
 import matplotlib as mpl
 
 def set_figure_defalut():
-  plt.rcParams.update({'font.size':20,
+  plt.rcParams.update({'font.size':23,
                        'axes.linewidth':2,
                        'lines.linewidth':5})
 
@@ -80,18 +80,26 @@ def draw_twoline(ax, x, y2, c, method='max'):
 def draw_pannel(ax, x, twind, rwind):
   plt.sca(ax)
   xlim = (0, x.max())
-  L1 = draw_twoline(plt.gca(), x, rwind, '#7262AC', 'min')
+  co0 = '#7262AC'
+  L1 = draw_twoline(plt.gca(), x, rwind, co0, 'min')
   plt.xlim(xlim)
   plt.yticks(np.arange(-10,0.11, 1))
+  plt.gca().tick_params(axis='y', colors=co0)
   #plt.ylim(0.5, -4.5)
   plt.ylim(0.5, -5.5)
   plt.grid(True)
 
   ax_twinx = ax.twinx()
-  L0 = draw_twoline(plt.gca(), x, twind, '#E25508', 'max')
+  co1 = '#E25508'
+  L0 = draw_twoline(plt.gca(), x, twind, co1, 'max')
   plt.xlim(xlim)
   plt.yticks(np.arange(0,10.1,2))
-  #plt.ylim(-1, 9)
   plt.ylim(-1, 11)
+
+  plt.gca().tick_params(axis='y', colors=co1)
+  plt.gca().spines['right'].set_color(co1)
+  plt.gca().spines['left'].set_color(co0)
+  plt.setp(plt.gca().spines.values(), linewidth=4)
+  #plt.ylim(-1, 9)
   return 
 
