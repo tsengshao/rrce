@@ -1,6 +1,6 @@
 function main(args)
 iexp = subwrd(args,1)
-if (iexp = ''); iexp=4; endif
+if (iexp = ''); iexp=1; endif
 
 **default 
 te='none'
@@ -28,21 +28,18 @@ while( 1 )
   endwhile
 endwhile
 
-vvmPath="/data/C.shaoyu/rrce/vvm/"
-datPath="/data/C.shaoyu/rrce/data/"
+vvmPath="/data/C.shaoyu/rankine/vvm/"
+datPath="/data/C.shaoyu/rankine/data/"
 
-expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_26 f00_27 f00_28 f00_29 f00_30'
-*tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
+expList='rankine_mg_dterm_large_slab_10m '
+tlastList='720 '
 dt  = 20
-expNameList='CTRL D00_on D10_on D15_on D16_on D17_on D18_on D19_on D20_on D21_on D22_on D23_on D24_on D25_on D26_on D27_on D28_on D29_on D30_on'
+expNameList='slab_10m '
 
-exp = 'RRCE_3km_'subwrd(expList, iexp)
+exp = subwrd(expList, iexp)
 explabel = subwrd(expNameList, iexp)
-if ( exp = 'RRCE_3km_f00' )
-    tlast = subwrd(tlastList, iexp)
-else
-    tlast = 217
-endif
+tlast = subwrd(tlastList, iexp)
+
 say explabel', 'exp', 'dt', 'tlast', 'type
 
 if (ts='none'); ts=1; endif
@@ -66,17 +63,16 @@ say ''
 ********************************
 
 ** prepare center location **
-*../../data/find_center/czeta0km_positivemean/RRCE_3km_f00.txt
-kernel='0km'
-file = datPath'/find_center/czeta'kernel'_positivemean/'exp'.txt'
-meancx = readfile(file, 'mean_x')
-meancy = readfile(file, 'mean_y')
-
+*../../data/find_center/sf_maximum/rankine_mg_dterm_large_slab_10m.txt
+file = datPath'/find_center/sf_maximum/'exp'.txt'
+say file', 'exp
+meancx = readfile(file, 'max_x')
+meancy = readfile(file, 'max_y')
 
 'reinit'
-*'set background 1'
+'set background 1'
 'c'
-'open 'vvmPath'/'exp'/gs_ctl_files/Dynamic.ctl'
+'open 'vvmPath'/'exp'/gs_ctl_files/dynamic.ctl'
 'open 'datPath'/wp/'exp'.ctl'
 
 it = ts
@@ -96,18 +92,18 @@ iz=9; levstr='0.9km'
 'set grads off'
 'set timelab off'
 'set mpdraw off'
-'set xlabs 0|288|576|864|1152'
-'set ylabs 0|288|576|864|1152'
+'set xlabs 0|384|768|1152|1532'
+'set ylabs 0|384|768|1152|1532'
 
 
 ***** draw wind speed ****
-'color 0 15 1 -kind white->orange->green->blue -gxout grfill'
-if (exp='RRCE_3km_f00' & it=1)
+'color 0 36 2 -kind white->orange->green->blue -gxout grfill'
+if (it=1)
 'd mag(u,v)+lon*1e-10'
 else
 'd mag(u,v)'
 endif
-'xcbar 8.7 9.0 0.8 7.55 -ft 75 -fs 5'
+'xcbar 8.7 9.0 0.8 7.55 -ft 75 -fs 3'
 
 ***** draw Wind *****
 'color 1 15 1 -kind grainbow'
@@ -203,10 +199,10 @@ function drawpoint(value, cx, cy, name)
   c=math_format('%.2f', value)
   'set rgb 40 255 255 255'
   'set line 40'
-  'draw mark 9 'x' 'y' 0.4'
+  'draw mark 9 'x' 'y' 0.2'
   'set rgb 40 130 0 255'
   'set line 40'
-  'draw mark 9 'x' 'y' 0.2'
+  'draw mark 9 'x' 'y' 0.1'
   'set string 40 bc 10'
   'set strsiz 0.15'
 *  'draw string 'x' 'y+0.15' 'name'('c')'

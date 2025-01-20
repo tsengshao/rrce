@@ -1,6 +1,6 @@
 function main(args)
 iexp = subwrd(args,1)
-if (iexp = ''); iexp=4; endif
+if (iexp = ''); iexp=1; endif
 
 **default 
 te='none'
@@ -28,21 +28,18 @@ while( 1 )
   endwhile
 endwhile
 
-vvmPath="/data/C.shaoyu/rrce/vvm/"
-datPath="/data/C.shaoyu/rrce/data/"
+vvmPath="/data/C.shaoyu/rankine/vvm/"
+datPath="/data/C.shaoyu/rankine/data/"
 
-expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_26 f00_27 f00_28 f00_29 f00_30'
-*tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
+expList='rankine_mg_dterm_large_slab_10m'
+tlastList='720'
 dt  = 20
-expNameList='CTRL D00_on D10_on D15_on D16_on D17_on D18_on D19_on D20_on D21_on D22_on D23_on D24_on D25_on D26_on D27_on D28_on D29_on D30_on'
+expNameList='slab_10m'
 
-exp = 'RRCE_3km_'subwrd(expList, iexp)
+exp = subwrd(expList, iexp)
 explabel = subwrd(expNameList, iexp)
-if ( exp = 'RRCE_3km_f00' )
-    tlast = subwrd(tlastList, iexp)
-else
-    tlast = 217
-endif
+tlast = subwrd(tlastList, iexp)
+
 say explabel', 'exp', 'dt', 'tlast', 'type
 
 if (ts='none'); ts=1; endif
@@ -66,17 +63,17 @@ say ''
 ********************************
 
 ** prepare center location **
-*../../data/find_center/czeta0km_positivemean/RRCE_3km_f00.txt
-kernel='0km'
-file = datPath'/find_center/czeta'kernel'_positivemean/'exp'.txt'
-meancx = readfile(file, 'mean_x')
-meancy = readfile(file, 'mean_y')
+*../../data/find_center/sf_maximum/rankine_mg_dterm_large_slab_10m.txt
+file = datPath'/find_center/sf_maximum/'exp'.txt'
+say file', 'exp
+meancx = readfile(file, 'max_x')
+meancy = readfile(file, 'max_y')
 
 'reinit'
-*'set background 1'
+'set background 1'
 'c'
 'open 'datPath'/wp/'exp'.ctl'
-'open 'vvmPath'/'exp'/gs_ctl_files/Surface.ctl'
+'open 'vvmPath'/'exp'/gs_ctl_files/surface.ctl'
 
 it = ts
 while(it<=te)
@@ -93,15 +90,15 @@ say 't='it''
 'set grads off'
 'set timelab off'
 'set mpdraw off'
-'set xlabs 0|288|576|864|1152'
-'set ylabs 0|288|576|864|1152'
+'set xlabs 0|384|768|1152|1532'
+'set ylabs 0|384|768|1152|1532'
 
 
 ***** draw cwv *****
 'color 10 60 2 -kind white->wheat->darkcyan->darkblue->(4,130,191) -gxout grfill'
 lnum=(60-10)/2+2+15
 'set rgb 'lnum' 0 250 250'
-if (exp='RRCE_3km_f00' & it=1)
+if (it=1)
 'd cwv.1(z=1)+lon*1e-10'
 else
 'd cwv.1(z=1)'
@@ -127,7 +124,7 @@ endif
 ***** draw center point *****
 cx=subwrd(meancx,it)
 cy=subwrd(meancy,it)
-rc=drawpoint(0,cx,cy,'mean')
+rc=drawpoint(0,cx,cy,'max')
 
 
 ***** draw text *****
@@ -207,10 +204,10 @@ function drawpoint(value, cx, cy, name)
   c=math_format('%.2f', value)
   'set rgb 40 255 255 255'
   'set line 40'
-  'draw mark 9 'x' 'y' 0.4'
+  'draw mark 9 'x' 'y' 0.2'
   'set rgb 40 130 0 255'
   'set line 40'
-  'draw mark 9 'x' 'y' 0.2'
+  'draw mark 9 'x' 'y' 0.1'
   'set string 40 bc 10'
   'set strsiz 0.15'
 *  'draw string 'x' 'y+0.15' 'name'('c')'
