@@ -50,9 +50,8 @@ idy_start, idy_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 
 it=216
 it=72*3
-#for it in range(it_start, it_end):
-#for it in [0, 720, 1440, 1800, 2160]:
-for idy in [0, 2, 9, 19, 24, 29]:
+for idy in range(idy_start, idy_end):
+#for idy in [0, 2, 9, 19, 24, 29]:
   print(idy)
   if idy > nt: continue
 

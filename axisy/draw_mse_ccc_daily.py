@@ -88,8 +88,10 @@ rho_1d = rho_raw[:zc_1d.size]
 
 idy_start, idy_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 
-#for idy in range(idy_start, idy_end):
-for idy in [0, 2, 9, 19, 24, 29]:
+for idy in range(idy_start, idy_end):
+#for idy in [0, 2, 9, 19, 24, 29]:
+#for idy in range(0,30):
+#for idy in [29]:
   print(idy)
   if idy > nt: continue
   fname = f'{datdir}/axmean_daily-{idy:06d}.nc'
@@ -132,6 +134,17 @@ for idy in [0, 2, 9, 19, 24, 29]:
   plt.contourf(radius_1d, zz_1d, data, levels=[0.05,10000],\
                colors=['#FF005E'], alpha=0.4, zorder=100)
 
+  sx = slice(None,None,8)
+  sy = slice(None,None,3)
+  slic = (sy,sx)
+  data_v = np.where(data<=-0.003, -0.85, np.nan)
+  plt.quiver(radius_1d[sx], zz_1d[sy], \
+             np.zeros(data.shape)[slic], data_v[slic],\
+             units = 'xy', scale = 1, scale_units='xy',\
+             color='k', alpha=0.8, width=3, \
+             headwidth=3, headlength=3,headaxislength=2.5,\
+            )
+
   varname = 'qi'
   varunit = nc.variables[varname].units
   data = nc.variables[varname][0,0,:,:]
@@ -158,10 +171,11 @@ for idy in [0, 2, 9, 19, 24, 29]:
   str4=r'$10^{-4}$'
   str5=r'$10^{-5}$'
   str6=r'0.05'
+  str7=r'-0.003'
   plt.text(0.985,0.98,\
            'qi (white) : FROM '+str4+' BY 2x'+str4+' kg/kg\n'+\
            'qc (black) : FROM '+str5+' BY 2x'+str5+' kg/kg\n'+\
-           'w  (red)     : >= '+str6+' m/s',\
+           'w  (red/quiver) : >= '+str6+' m/s / <='+str7+' m/s',\
            fontsize=12,\
            zorder=12,\
            ha="right", va="top", ma='left',\
@@ -241,6 +255,6 @@ for idy in [0, 2, 9, 19, 24, 29]:
   ##                )
 
   plt.savefig(f'{figdir}/{idy:06d}.png',dpi=200, transparent=True)
-  # plt.show()
+  #plt.show()
   
 plt.close('all')
