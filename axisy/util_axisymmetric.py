@@ -19,11 +19,15 @@ class data_collector:
         self.dyNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Dynamic-{self.tIdx:06d}.nc','r')
         self.sfNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.C.Surface-{self.tIdx:06d}.nc','r')
         self.radNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Radiation-{self.tIdx:06d}.nc','r')
+        self.diagNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Diag-{self.tIdx:06d}.nc','r')
+        self.trNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Tracer-{self.tIdx:06d}.nc','r')
         self.wpNC = Dataset(f'{config.dataPath}/wp/{exp}/wp-{self.tIdx:06d}.nc','r')
         
         self.var2dlist = ['cwv','iwp','lwp','rain','olr','netLW','netSW', 'sh', 'lh']
         self.var3dlist = ['u', 'v', 'w', 'zeta', 'eta', 'xi', 'divg',\
                           'th', 'qv', 'qc', 'qi', 'qr', 'qvs', 'mse',\
+                          'pv', 'pvTADV', 'pvVADV', 'pvZVOR', 'pvXVOR', 'pvYVOR', \
+                          'buoy', 'bLA', 'dVDIV', 'dKE', 'dSHEAR', 'dVGRAD',\
                          ]
 
         self.setGRIDinfo()
@@ -176,6 +180,46 @@ class data_collector:
           # NetSW = SWtop - SWsfc
           data     = (down_toa-up_toa) - (down_suf-up_suf)
           return {'data':data, 'long_name':'column shortwave radiative flux convergence', 'units':'W/m2', 'dim_type':'2d', 'positive':False}
+      ## Tracer
+      elif varn_check == 'pv':
+          data = self.trNC.variables['tr01'][0,:self.idztop].data
+          return {'data':data, 'long_name':'potential vorticity', 'units':'K/m*1/s2', 'dim_type':'3d', 'positive':False}
+      ## Diag
+      elif varn_check == 'pvtadv':
+          data = self.diagNC.variables['dm01'][0,:self.idztop].data
+          return {'data':data, 'long_name':'pv tendency of total advection', 'units':'K/m*1/s3', 'dim_type':'3d', 'positive':False}
+      elif varn_check == 'pvvadv':
+          data = self.diagNC.variables['dm02'][0,:self.idztop].data
+          return {'data':data, 'long_name':'pv tendency of vertical advection', 'units':'K/m*1/s3', 'dim_type':'3d', 'positive':False}
+      elif varn_check == 'pvzvor':
+          data = self.diagNC.variables['dm03'][0,:self.idztop].data
+          return {'data':data, 'long_name':'diabatic pv tendency caused by  vertical vorticity ', 'units':'K/m*1/s3', 'dim_type':'3d', 'positive':False}
+      elif varn_check == 'pvxvor':
+          data = self.diagNC.variables['dm04'][0,:self.idztop].data
+          return {'data':data, 'long_name':'diabatic pv tendency caused by  x-component vorticity ', 'units':'K/m*1/s3', 'dim_type':'3d', 'positive':False}
+      elif varn_check == 'pvyvor':
+          data = self.diagNC.variables['dm05'][0,:self.idztop].data
+          return {'data':data, 'long_name':'diabatic pv tendency caused by  y-component vorticity ', 'units':'K/m*1/s3', 'dim_type':'3d', 'positive':False}
+      # diag - Dterm
+      elif varn_check == 'buoy':
+          data = self.diagNC.variables['dm06'][0,:self.idztop].data
+          return {'data':data, 'long_name':'buoyancy', 'units':'m/s2', 'dim_type':'3d', 'positive':False}
+      elif varn_check == 'bla':
+          data = self.diagNC.variables['dm07'][0,:self.idztop].data
+          return {'data':data, 'long_name':'laplacian buoyancy', 'units':'1/m/s2', 'dim_type':'3d', 'positive':False}
+      elif varn_check == 'dvdiv':
+          data = self.diagNC.variables['dm08'][0,:self.idztop].data
+          return {'data':data, 'long_name':'Dterm for vertical moment flux divergence', 'units':'1/m/s2', 'dim_type':'3d', 'positive':False}
+      elif varn_check == 'dke':
+          data = self.diagNC.variables['dm09'][0,:self.idztop].data
+          return {'data':data, 'long_name':'Dterm for kinetic energy', 'units':'1/m/s2', 'dim_type':'3d', 'positive':False}
+      elif varn_check == 'dshear':
+          data = self.diagNC.variables['dm10'][0,:self.idztop].data
+          return {'data':data, 'long_name':'Dterm for shear', 'units':'1/m/s2', 'dim_type':'3d', 'positive':False}
+      elif varn_check == 'dvgrad':
+          data = self.diagNC.variables['dm11'][0,:self.idztop].data
+          return {'data':data, 'long_name':'Dterm for vertical vorticity gradient', 'units':'1/m/s2', 'dim_type':'3d', 'positive':False}
+
 
 class ncWriter:
     def __init__(self, fname):
@@ -263,8 +307,11 @@ class ncWriter:
 
     def write_ctl(self,fname,exp,x,y,z,nt,dt):
         dset = f'^./{exp}/axisy-%tm6.nc'
-        str_z = ' '.join(z.astype(str))
-        dt = 20 #min
+        str_z = ''
+        for i in range(z.size):
+            str_z.append(f'{z[i]:.3f} ')
+        #str_z = ' '.join(z.astype(str))
+        #dt = 10 #min
         x  = np.arange(x.size)*2
         y  = np.linspace(0,1,y.size)*360
         fctl=f"""
@@ -278,7 +325,7 @@ class ncWriter:
  YDEF {y.size} LINEAR {y[0]} {y[1]-y[0]}
  ZDEF {z.size} levels {str_z}
  TDEF {nt} LINEAR 01JAN1998 {dt}mn
- VARS 25
+ VARS 37
    cwv=>cwv     0 t,y,x column_water_vapor
    iwp=>iwp     0 t,y,x ice
    lwp=>lwp     0 t,y,x liquid
@@ -288,22 +335,34 @@ class ncWriter:
    netSW=>netSW 0 t,y,x netSW
    sh=>sh       0 t,y,x sh
    lh=>lh       0 t,y,x lh
-   u=>u        44 t,z,y,x  u
-   v=>v        44 t,z,y,x  v
-   w=>w        44 t,z,y,x  w
-   zeta=>zeta  44 t,z,y,x  zeta
-   eta=>eta    44 t,z,y,x  eta
-   xi=>xi      44 t,z,y,x  xi
-   divg=>divg  44 t,z,y,x  divg
-   th=>th      44 t,z,y,x  th
-   qv=>qv      44 t,z,y,x  qv
-   qc=>qc      44 t,z,y,x  qc
-   qi=>qi      44 t,z,y,x  qi
-   qr=>qr      44 t,z,y,x  qr
-   qvs=>qvs    44 t,z,y,x  qvs
-   mse=>mse    44 t,z,y,x  mse
-   radi_wind=>rwind      44 t,z,y,x  radial wind
-   tang_wind=>twind      44 t,z,y,x  tang wind
+   u=>u        {z.size} t,z,y,x  u
+   v=>v        {z.size} t,z,y,x  v
+   w=>w        {z.size} t,z,y,x  w
+   zeta=>zeta  {z.size} t,z,y,x  zeta
+   eta=>eta    {z.size} t,z,y,x  eta
+   xi=>xi      {z.size} t,z,y,x  xi
+   divg=>divg  {z.size} t,z,y,x  divg
+   th=>th      {z.size} t,z,y,x  th
+   qv=>qv      {z.size} t,z,y,x  qv
+   qc=>qc      {z.size} t,z,y,x  qc
+   qi=>qi      {z.size} t,z,y,x  qi
+   qr=>qr      {z.size} t,z,y,x  qr
+   qvs=>qvs    {z.size} t,z,y,x  qvs
+   mse=>mse    {z.size} t,z,y,x  mse
+   radi_wind=>rwind      {z.size} t,z,y,x  radial wind
+   tang_wind=>twind      {z.size} t,z,y,x  tang wind
+   pv=>pv            {z.size} t,z,y,x  pv 
+   pvTADV=>pvTADV    {z.size} t,z,y,x  pvTADV
+   pvVADV=>pvVADV    {z.size} t,z,y,x  pvVADV
+   pvZVOR=>pvZVOR    {z.size} t,z,y,x  pvZVOR
+   pvXVOR=>pvXVOR    {z.size} t,z,y,x  pvXVOR
+   pvYVOR=>pvYVOR    {z.size} t,z,y,x  pvYVOR
+   buoy=>buoy        {z.size} t,z,y,x  buoy
+   bLA=>bla          {z.size} t,z,y,x  bla
+   dVDIV=>dvdiv      {z.size} t,z,y,x  dvdiv
+   dKE=>dke          {z.size} t,z,y,x  dke
+   dSHEAR=>dshear    {z.size} t,z,y,x  dshear
+   dVGRAD=>dvgrad    {z.size} t,z,y,x  dvgrad
  ENDVARS
 """
         fout = open(fname,'w')
