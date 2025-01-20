@@ -30,10 +30,11 @@ def write_amean_ctl(fname,exp,x,y,z,e,nt,dt):
  ZDEF {z.size} levels {str_z}
  EDEF {e.size} names {' '.join(e)}
  TDEF {nt} LINEAR 01JAN1998 {dt}mn
- VARS 3
+ VARS 4
    radi_wind_lower=>rwindlower   0  t,e,x radi_wind
    tang_wind_lower=>twindlower   0  t,e,x tang_wind
    conv_lower=>convlower         0  t,e,x convergence
+   w_lower=>wlower         0  t,e,x convergence
  ENDVARS
 """
     fout = open(fname,'w')
@@ -122,7 +123,7 @@ for it in range(it_start, it_end):
     _       = axisy.add_dims_into_nc(nc_out, 'vtype', vtype, ('vtype'), {'num0':'mean', 'num1':'axisymmetricity'})
     nc_out.history  = "Created " + datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    for varname in ['radi_wind_lower', 'tang_wind_lower', 'conv_lower']:
+    for varname in ['radi_wind_lower', 'tang_wind_lower', 'conv_lower', 'w_lower']:
         #if varname in nc_axsy.dimensions.keys(): continue
         #dimtype    = in_ncvar.dim_type
         #axis_theta = 2 if dimtype=='3d' else 1  #2d:1, 3d:2
@@ -152,6 +153,20 @@ for it in range(it_start, it_end):
             attrs = {'units'       : 'm/s',\
                      'lower_range' : f'0 - {target_lev_str}',\
                      'long_name'   : 'tangential wind',\
+                     'calculate_by_axisy': 'True',\
+                    }
+
+        if varname == 'w_lower':
+            in_ncvar     = nc_axsy.variables['w']
+            rhoz4d       = rhoz[np.newaxis, :izztarget+1, np.newaxis, np.newaxis]
+            data         = np.trapz(in_ncvar[:,:izztarget+1,:,:]*rhoz4d, 
+                                    axis=1, \
+                                    x=zz[:izztarget+1],\
+                                   ) / np.trapz(rhoz4d, axis=1, x=zz[:izztarget+1])
+            dimtype      = '2d'
+            attrs = {'units'       : 'm/s',\
+                     'lower_range' : f'0 - {target_lev_str}',\
+                     'long_name'   : 'vertical velocity',\
                      'calculate_by_axisy': 'True',\
                     }
 
