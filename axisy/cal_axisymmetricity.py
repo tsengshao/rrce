@@ -19,13 +19,9 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
-if exp=='RRCE_3km_f00':
-  nt=2521
-else:
-  nt=217
 if (cpuid==0): print(exp, nt)
 
-center_flag='czeta0km_positivemean'
+center_flag='sf_maximum'
 outdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
 
 nc        = Dataset(f'{outdir}/axisy-000000.nc', 'r')

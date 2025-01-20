@@ -18,13 +18,10 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
-if exp!='RRCE_3km_f00':
-  nt=217
-else:
-  nt=2521
 if (cpuid==0): print(exp, nt)
 
 center_flag='czeta0km_positivemean'
+center_flag='sf_maximum'
 outdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
 os.system(f'mkdir -p {outdir}')
 
@@ -34,7 +31,7 @@ thData = vvmLoader.loadThermoDynamic(0)
 nz, ny, nx = thData['qv'][0].shape
 xc, yc, zc = thData['xc'][:], thData['yc'][:], thData['zc'][:]
 dx, dy = np.diff(xc)[0], np.diff(yc)[0]
-dtime  = 20  #minutes
+dtime = config.getExpDeltaT(exp)
 rho = vvmLoader.loadRHO()[:-1]
 pibar = vvmLoader.loadPIBAR()[:-1]
 pbar = vvmLoader.loadPBAR()[:-1]
@@ -52,9 +49,9 @@ radius, theta = np.meshgrid(radius_1d, theta_1d)
 # read center file
 fname = f'{config.dataPath}/find_center/{center_flag}/{exp}.txt'
 center_info, center_loc = axisy.read_center_file(fname, \
-                            colname=['center_x','center_y'])
-speed_x = np.gradient(center_loc['center_x'])*dx/(dtime*60) # m/s
-speed_y = np.gradient(center_loc['center_y'])*dy/(dtime*60) # m/s
+                            colname=['max_locx', 'max_locy'])
+speed_x = np.gradient(center_loc['max_locx'])*dx/(dtime*60) # m/s
+speed_y = np.gradient(center_loc['max_locy'])*dy/(dtime*60) # m/s
 
 
 it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
@@ -65,8 +62,8 @@ comm.Barrier()
 for it in np.arange(it_start, it_end):
 #for it in [216]:
     # calculate corespond x/y from r/theta
-    cx = center_loc['center_x'].iloc[it]*dx
-    cy = center_loc['center_y'].iloc[it]*dy
+    cx = center_loc['max_locx'].iloc[it]*dx
+    cy = center_loc['max_locy'].iloc[it]*dy
     x_polar, y_polar  =  axisy.convert_rth2xy(\
                           radius, theta, \
                           cx, cy, \
@@ -100,7 +97,7 @@ for it in np.arange(it_start, it_end):
       data_dict = dataCollector.get_variable(varname)
       rawdata   = data_dict.pop('data')
       positive  = data_dict.pop('positive')
-      data_dict['ens'] = 9
+      data_dict['ens'] = 1
       data_polar = axisy.regrid_data_c2p(xc_1d = xc,\
                                  yc_1d = yc,\
                                  rawdata = rawdata,\
@@ -124,7 +121,7 @@ for it in np.arange(it_start, it_end):
         data_dict = dataCollector.get_variable(varname)
       rawdata = data_dict.pop('data')
       positive  = data_dict.pop('positive')
-      data_dict['ens'] = 9
+      data_dict['ens'] = 1
 
       for iz in range(nz):
         data_polar[iz] = axisy.regrid_data_c2p(xc_1d = xc,\
