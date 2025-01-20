@@ -135,10 +135,6 @@ iexp = int(sys.argv[1])
 exp = config.expList[iexp]
 nt = config.totalT[iexp]
 dtime = config.getExpDeltaT(exp)
-if exp=='RRCE_3km_f00':
-  nt = int(35*72+1)
-else:
-  nt = int(3*72+1)
 print(exp, nt)
 
 path=f"{config.dataPath}/horimsf/{exp}/horimsf-000000.nc"
@@ -150,7 +146,7 @@ dx, dy = np.diff(xc)[0], np.diff(yc)[0]
 
 iheit = np.argmin(np.abs(zz-1000))
 
-str_type = f'sf_positivemean'
+str_type = f'sf_maximum'
 outdir=config.dataPath+f"/find_center/{str_type}/"
 os.system('mkdir -p '+outdir)
 
@@ -160,7 +156,7 @@ fout.write(\
 f"""********** center info **********
 variables: stream function
 level    : {zz[iheit]} meter ( {iheit} / surface 0 )
-threshold: domain mean
+threshold: domain maximum
 center index start from: 0
 ********** center info **********
 """)

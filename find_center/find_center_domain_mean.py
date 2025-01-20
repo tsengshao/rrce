@@ -135,10 +135,6 @@ str_kernel = sys.argv[2]
 exp = config.expList[iexp]
 nt = config.totalT[iexp]
 dtime = config.getExpDeltaT(exp)
-if exp=='RRCE_3km_f00':
-  nt = int(35*72+1)
-else:
-  nt = int(3*72+1)
 print(exp, nt)
 
 if str_kernel=='0km':
@@ -241,7 +237,7 @@ for it in range(nt):
 
   hori_size = np.sum(czeta>0)/nx/ny*100
 
-  if False:
+  if True:
     plt.close('all')
     set_black_background()
     levels = [-100,-50,-20,-10,-5,-0.1,0.1,5,10,20,50,100]

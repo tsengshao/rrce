@@ -109,10 +109,6 @@ exp = config.expList[iexp]
 nt = config.totalT[iexp]
 dtime = config.getExpDeltaT(exp)
 print(exp, nt)
-#  if exp=='RRCE_3km_f00':
-#    nt = int(35*72+1)
-#  else:
-#    nt = int(3*72+1)
 
 #str_kernel = '25km'
 if str_kernel=='0km':
