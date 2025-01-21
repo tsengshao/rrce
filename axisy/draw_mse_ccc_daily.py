@@ -137,7 +137,7 @@ for idy in range(idy_start, idy_end):
   sx = slice(None,None,8)
   sy = slice(None,None,3)
   slic = (sy,sx)
-  data_v = np.where(data<=-0.003, -0.85, np.nan)
+  data_v = np.where(data<=-0.005, -0.85, np.nan)
   plt.quiver(radius_1d[sx], zz_1d[sy], \
              np.zeros(data.shape)[slic], data_v[slic],\
              units = 'xy', scale = 1, scale_units='xy',\
@@ -171,7 +171,7 @@ for idy in range(idy_start, idy_end):
   str4=r'$10^{-4}$'
   str5=r'$10^{-5}$'
   str6=r'0.05'
-  str7=r'-0.003'
+  str7=r'-0.005'
   plt.text(0.985,0.98,\
            'qi (white) : FROM '+str4+' BY 2x'+str4+' kg/kg\n'+\
            'qc (black) : FROM '+str5+' BY 2x'+str5+' kg/kg\n'+\
