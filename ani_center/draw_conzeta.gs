@@ -131,11 +131,11 @@ say 't='it''
 
 'set t 'it
 'set z 'iz
-scale = 1e5
+scale = 1e-5
 'color -levs -100 -50 -30 -20 -10 -5 0 5 10 20 30 50 100 -gxout grfill'
 *'define val=zeta.1'
 'define val=zeta.3(ens='kernel')'
-'d val*'scale
+'d val/'scale
 'xcbar 8.7 9.0 0.8 7.55 -ft 75 -fs 1'
 
 'set gxout contour'

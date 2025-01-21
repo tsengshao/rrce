@@ -48,9 +48,9 @@ if not iswhite:
 
 idy_start, idy_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 
-#for it in range(it_start, it_end):
+for idy in range(idy_start, idy_end):
 #for it in [0, 720, 1440, 1800, 2160]:
-for idy in [0, 2, 9, 19, 24, 29]:
+#for idy in [0, 2, 9, 19, 24, 29]:
   print(idy, nt)
   if idy > nt: continue
 
@@ -97,7 +97,7 @@ for idy in [0, 2, 9, 19, 24, 29]:
   CB.ax.set_title(f'[ {varunit} ]', fontsize=15, fontweight='bold', x=1.8)
   C = udraw.draw_upper_hatch(ax_top,radius_1d, zz_1d,\
                          data   = data_a, \
-                         levels = [0.5,100],\
+                         levels = [0.9,100],\
                          hat    = ['/'],\
                         )
   #plt.plot(radius_1d[[0,-1]], [hei, hei], '-', c='0.4', lw=2, zorder=100)

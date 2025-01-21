@@ -37,9 +37,10 @@ def get_cmap(name='colorful'):
   return newcmp
 
 def draw_twoline(ax, x, y2, c, method='max'):
-  _  = plt.plot(x, y2[0], c=c, alpha=1, ls=':', lw=10)
-  lc = plt.plot(x, np.where(y2[1]>0.5, y2[0], np.nan),\
-                 c=c, alpha=1, lw=10)
+  lc  = plt.plot(x, y2[0], c=c, alpha=1, ls='-', lw=10)
+  # _  = plt.plot(x, y2[0], c=c, alpha=1, ls=':', lw=10)
+  # lc = plt.plot(x, np.where(y2[1]>0.5, y2[0], np.nan),\
+  #                c=c, alpha=1, lw=10)
 
   # method 2 / fat line
   """

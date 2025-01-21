@@ -98,7 +98,7 @@ for idy in range(idy_start, idy_end):
   CB.ax.set_title(f'[ {varunit} ]', fontsize=15, fontweight='bold', x=1.8)
   C = udraw.draw_upper_hatch(ax_top,radius_1d, zz_1d,\
                          data   = data_a, \
-                         levels = [0.5,100],\
+                         levels = [0.9,100],\
                          hat    = ['/'],\
                         )
   #plt.plot(radius_1d[[0,-1]], [hei, hei], '-', c='0.4', lw=2, zorder=100)

@@ -86,14 +86,14 @@ inner_length = 10 #km
 indxinner = np.argmin(np.abs(radius_1d-inner_length))
 loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
-varname = 'tang_wind'
-varunits = 'm/s'
-var     = twind_lower[0]
-var_ax  = twind_lower[1]
-levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
-inner_length = 10 #km
-indxinner = np.argmin(np.abs(radius_1d-inner_length))
-loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
+# varname = 'tang_wind'
+# varunits = 'm/s'
+# var     = twind_lower[0]
+# var_ax  = twind_lower[1]
+# levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
+# inner_length = 10 #km
+# indxinner = np.argmin(np.abs(radius_1d-inner_length))
+# loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
 fig, ax = plt.subplots(figsize=figsize)
 cmap = udraw.get_cmap('pwo')
@@ -109,14 +109,14 @@ cs = plt.contourf(radius_1d, time_1d, var_ax, \
                   colors  = 'none', \
                  )
 cs = plt.contour(radius_1d, time_1d, var_ax, \
-                  levels  = [0.5, 0.9, 10000], \
+                  levels  = [0.9, 10000], \
                   colors  = ['k'], \
                   linewidths = [0.5],\
                 )
 #plt.plot(loc_maxconv, time_1d, ls='-', lw=conv_lw, c='0',alpha=0.5)
 plt.scatter(loc_maxconv, time_1d, s=psize, c='0')
 text = f'{varname} [{varunits}, 0-500m]\n'+\
-       f'hatch: axisymmetric > 0.5/0.9\n'+\
+       f'hatch: axisymmetric > 0.9\n'+\
        f'dot: maximum convergence away from {inner_length:.0f}km'
 plt.text(0.99, 0.99, text, \
                      fontsize = 8, \
