@@ -35,7 +35,7 @@ dtime = config.getExpDeltaT(exp)
 rho = vvmLoader.loadRHO()[:-1]
 pibar = vvmLoader.loadPIBAR()[:-1]
 pbar = vvmLoader.loadPBAR()[:-1]
-idxTOP = np.argmin(np.abs(zc-18000))
+idxTOP = np.argmin(np.abs(zc-20000))
 zc = zc[:idxTOP]
 nz = zc.size
 
@@ -83,7 +83,8 @@ for it in np.arange(it_start, it_end):
                                )
     
     # read data
-    dataCollector = axisy.data_collector(exp, it, idztop=idxTOP+1)
+    radiation=True if 'slab' in exp else False
+    dataCollector = axisy.data_collector(exp, it, idztop=idxTOP+1, radiation=radiation)
     print(speed_x[it], speed_y[it])
     radial_dict, tangential_dict = \
         dataCollector.get_radial_and_tangential_wind(\

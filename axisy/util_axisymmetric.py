@@ -12,18 +12,23 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 class data_collector:
-    def __init__(self, exp, tIdx, idztop=None):
+    def __init__(self, exp, tIdx, idztop=None, radiation=False):
         self.exp = exp
         self.tIdx  = tIdx 
         self.thNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Thermodynamic-{self.tIdx:06d}.nc','r')
         self.dyNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Dynamic-{self.tIdx:06d}.nc','r')
         self.sfNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.C.Surface-{self.tIdx:06d}.nc','r')
-        self.radNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Radiation-{self.tIdx:06d}.nc','r')
+        if radiation:
+            self.radNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Radiation-{self.tIdx:06d}.nc','r')
         self.diagNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Diag-{self.tIdx:06d}.nc','r')
         self.trNC = Dataset(f'{config.vvmPath}/{exp}/archive/{self.exp}.L.Tracer-{self.tIdx:06d}.nc','r')
         self.wpNC = Dataset(f'{config.dataPath}/wp/{exp}/wp-{self.tIdx:06d}.nc','r')
-        
-        self.var2dlist = ['cwv','iwp','lwp','rain','olr','netLW','netSW', 'sh', 'lh']
+       
+        if radiation: 
+            self.var2dlist = ['cwv','iwp','lwp','rain','olr','netLW','netSW', 'sh', 'lh']
+        else :
+            self.var2dlist = ['cwv','iwp','lwp','rain','olr', 'sh', 'lh']
+
         self.var3dlist = ['u', 'v', 'w', 'zeta', 'eta', 'xi', 'divg',\
                           'th', 'qv', 'qc', 'qi', 'qr', 'qvs', 'mse',\
                           'pv', 'pvTADV', 'pvVADV', 'pvZVOR', 'pvXVOR', 'pvYVOR', \
@@ -309,7 +314,7 @@ class ncWriter:
         dset = f'^./{exp}/axisy-%tm6.nc'
         str_z = ''
         for i in range(z.size):
-            str_z.append(f'{z[i]:.3f} ')
+            str_z += f'{z[i]:.3f} '
         #str_z = ' '.join(z.astype(str))
         #dt = 10 #min
         x  = np.arange(x.size)*2

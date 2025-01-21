@@ -41,7 +41,6 @@ def remove_theta_add_vtype_dims(in_ncvar):
   return vardims, chunks
 
 
-it = 216 
 it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 print(cpuid, it_start, it_end, it_end-it_start)
 comm.Barrier()
