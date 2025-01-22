@@ -27,8 +27,8 @@ nmet, nexp, nvar, nradius = data['rwind_init'].shape
 dry_twind_last = np.zeros((nexp, nradius))
 
 iexp = 1 # expnum
-for iexp in range(nexp):
-#for iexp in [18]:
+#for iexp in range(nexp):
+for iexp in [18]:
     print(iexp)
     idx  = 1 # daily mean
     time = np.arange(0, 24*3*60*60+0.0001, 10)
@@ -38,28 +38,29 @@ for iexp in range(nexp):
     coriolis     = 2 * (2*np.pi/86400) * np.sin(10*np.pi/180)
     
     rwind_0 = rwind_init[idx, iexp, 0]
-    dr = radius_1d[1]-radius_1d[0] * 1e3
+    dr = (radius_1d[1]-radius_1d[0]) * 1e3
     for i in range(time.size-1):
       vorticity_1d = twind_2d[i] / radius_1d / 1e3 + \
                      np.gradient(twind_2d[i]) / dr
-      #tandency = -1 * rwind_0 * (coriolis+vorticity_1d)
-      tandency = -1 * rwind_0 * (coriolis)
+      tandency = -1 * rwind_0 * (coriolis+vorticity_1d)
+      #tandency = -1 * rwind_0 * (coriolis)
       twind_2d[i+1] = twind_2d[i] + tandency * dt
-      #print(i, twind_2d[i+1].max(), tandency.max())
+      print(i, twind_2d[i+1].max(), tandency.max())
       if np.any(np.isnan(twind_2d)) or np.max(twind_2d)>80:
+      #if i==2:
           print('ERROR ! overflow !')
           print(i, twind_2d[i+1].max(), tandency.max())
           sys.exit()
-    dry_twind_last[iexp,:] = twind_2d[86400:,:].mean(axis=0)
-    if False:
+    dry_twind_last[iexp,:] = twind_2d[8640:,:].mean(axis=0)
+    if True:
         fig, ax = plt.subplots()
         x = radius_1d.copy()
         y = time.copy() / 86400
         C = plt.contour(x, y, twind_2d)
         plt.clabel(C)
         plt.title(explist[iexp])
-        plt.show()
-
+        plt.savefig(f'absvor_{explist[iexp]}.png',dpi=200)
+        plt.close('all')
 xpoint = rwind_init[idx, :, 0, :].min(axis=1)
 dry_point = dry_twind_last.max(axis=1)
 ypoint = twind_last[idx, :, 0, :].max(axis=1)
