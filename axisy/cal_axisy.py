@@ -151,7 +151,7 @@ for it in np.arange(it_start, it_end):
         print(f'cpuid={cpuid}, write ctl file ... ')
         axisyWriter.write_ctl(fname = f'{outdir}/../axisy_{exp}.ctl',\
                                 exp = exp,\
-                                  x = radius_1d,\
+                                  x = radius_1d*1e-3,\
                                   y = theta_1d,\
                                   z = zc,\
                                   nt = nt,\
