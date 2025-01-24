@@ -23,6 +23,7 @@ expList  = [
             'RRCE_3km_f00_29', \
             'RRCE_3km_f00_30', \
             'RRCE_3km_f00_30p27', \
+            'RRCE_3km_f00_25p07', \
            ]
 totalT   = [
             2881, \
@@ -44,6 +45,7 @@ totalT   = [
             217,  \
             217,  \
             1441, \
+            217,  \
             217,  \
            ]
 expdict  = {
@@ -67,6 +69,7 @@ expdict  = {
             'RRCE_3km_f00_29':'D29_on', \
             'RRCE_3km_f00_30':'D30_on', \
             'RRCE_3km_f00_30p27':'D30p27_on', \
+            'RRCE_3km_f00_25p07':'D25p07_on', \
            }
 
 def getExpDeltaT(exp):

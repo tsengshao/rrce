@@ -13,11 +13,12 @@ source ~/.bashrc
 conda activate py311
 
 py='cal_axisymmetricity.py'
-py='cal_axisymmetricity_ano.py'
+#py='cal_axisymmetricity_ano.py'
 py='cal_process_axisymmetricity.py'
 
-for i in $(seq 18 -1 1);do
-  echo ${i}
-  mpirun -np 20 python -u ${py} ${i}
-done
-mpirun -np 20 python -u ${py} 0
+# for i in $(seq 18 -1 1);do
+#   echo ${i}
+#   mpirun -np 20 python -u ${py} ${i}
+# done
+# mpirun -np 20 python -u ${py} 0
+mpirun -np 20 python -u ${py} 20

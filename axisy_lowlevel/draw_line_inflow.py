@@ -105,6 +105,7 @@ norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
 
 ###### maximum radius ##########
+nsen   = 2
 x_data = np.min(rwind_init[mdict['imet'],1:,0,:], axis=1)
 y_data = np.max(twind_last[mdict['imet'],1:,0,:], axis=1)
 c_data = rday_1d[1:]
@@ -123,8 +124,8 @@ cax = fig.add_axes([0.89, 0.15, 0.03, 0.7])
 plt.sca(ax)
 #plt.plot([-100,100],[100,-100],c='0.5',lw=3)
 #plt.scatter(x_data, y_data, s=300, c=c_data, norm=norm, cmap=cmap,zorder=10)
-plt.scatter(x_data[:-1], y_data[:-1], s=300, c=c_data[:-1], norm=norm, cmap=cmap,zorder=10)
-plt.scatter(x_data[-1], y_data[-1], s=300, c=c_data[-1], norm=norm, cmap=cmap,zorder=10, marker='X')
+plt.scatter(x_data[:-nsen], y_data[:-nsen], s=300, c=c_data[:-nsen], norm=norm, cmap=cmap,zorder=10)
+plt.scatter(x_data[-nsen:], y_data[-nsen:], s=300, c=c_data[-nsen:], norm=norm, cmap=cmap,zorder=10, marker='X')
 CB=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
        cax=cax, orientation='vertical', extend='max')
 CB.ax.set_title('restart\nday', loc='left', fontsize=20)
@@ -158,6 +159,7 @@ c_data = rday_1d[:]
 x_data = x_data[:nexp]
 y_data = y_data[:nexp]
 c_data = c_data[:nexp]
+nsen   = 2
 
 udraw.set_figure_defalut() 
 if not iswhite:
@@ -167,8 +169,8 @@ ax  = fig.add_axes([0.13, 0.1, 0.8, 0.8])
 cax = fig.add_axes([0.83, 0.3, 0.03, 0.5])
 plt.sca(ax)
 #plt.scatter(x_data, y_data, s=300, c=c_data, norm=norm, cmap=cmap,zorder=10)
-plt.scatter(x_data[:-1], y_data[:-1], s=300, c=c_data[:-1], norm=norm, cmap=cmap,zorder=10)
-plt.scatter(x_data[-1], y_data[-1], s=300, c=c_data[-1], norm=norm, cmap=cmap,zorder=10, marker='X')
+plt.scatter(x_data[:-nsen], y_data[:-nsen], s=300, c=c_data[:-nsen], norm=norm, cmap=cmap,zorder=10)
+plt.scatter(x_data[-nsen:], y_data[-nsen:], s=300, c=c_data[-nsen:], norm=norm, cmap=cmap,zorder=10, marker='X')
 CB=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
        cax=cax, orientation='vertical', extend='max')
 CB.ax.set_title('restart\nday')
@@ -206,6 +208,7 @@ c_data = rday_1d[:]
 x_data = x_data[:nexp]
 y_data = y_data[:nexp]
 c_data = c_data[:nexp]
+nsen = 2
 
 udraw.set_figure_defalut() 
 if not iswhite:
@@ -215,8 +218,8 @@ ax  = fig.add_axes([0.13, 0.1, 0.8, 0.8])
 cax = fig.add_axes([0.15, 0.8, 0.5, 0.03])
 plt.sca(ax)
 #plt.scatter(x_data, y_data, s=300, c=c_data, norm=norm, cmap=cmap,zorder=10)
-plt.scatter(x_data[:-1], y_data[:-1], s=300, c=c_data[:-1], norm=norm, cmap=cmap,zorder=10)
-plt.scatter(x_data[-1], y_data[-1], s=300, c=c_data[-1], norm=norm, cmap=cmap,zorder=10, marker='X')
+plt.scatter(x_data[:-nsen], y_data[:-nsen], s=300, c=c_data[:-nsen], norm=norm, cmap=cmap,zorder=10)
+plt.scatter(x_data[-nsen:], y_data[-nsen:], s=300, c=c_data[-nsen:], norm=norm, cmap=cmap,zorder=10, marker='X')
 CB=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
        cax=cax, orientation='horizontal', extend='max')
 CB.ax.set_title('restart day')
@@ -240,6 +243,7 @@ c_data = rday_1d[1:]
 x_data = x_data[:nexp]
 y_data = y_data[:nexp]
 c_data = c_data[:nexp]
+nsen = 2
 
 udraw.set_figure_defalut() 
 if not iswhite:
@@ -249,8 +253,8 @@ ax  = fig.add_axes([0.13, 0.1, 0.8, 0.8])
 cax = fig.add_axes([0.83, 0.3, 0.03, 0.5])
 plt.sca(ax)
 #plt.scatter(x_data, y_data, s=300, c=c_data, norm=norm, cmap=cmap,zorder=10)
-plt.scatter(x_data[:-1], y_data[:-1], s=300, c=c_data[:-1], norm=norm, cmap=cmap,zorder=10)
-plt.scatter(x_data[-1], y_data[-1], s=300, c=c_data[-1], norm=norm, cmap=cmap,zorder=10, marker='X')
+plt.scatter(x_data[:-nsen], y_data[:-nsen], s=300, c=c_data[:-nsen], norm=norm, cmap=cmap,zorder=10)
+plt.scatter(x_data[-nsen:], y_data[-nsen:], s=300, c=c_data[-nsen:], norm=norm, cmap=cmap,zorder=10, marker='X')
 CB=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
        cax=cax, orientation='vertical', extend='max')
 CB.ax.set_title('restart\nday')

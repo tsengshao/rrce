@@ -13,8 +13,10 @@ conda activate py311
 
 #for i in $(seq 7 9);do
 #for i in 0 1 2 3 4;do
-for i in $(seq 5 12);do
-for c in 100 50 25;do
+#for i in $(seq 5 12);do
+for i in 20;do
+#for c in 150 100 50 25;do
+for c in 150;do
 echo ${i}
 mpirun -np 64 python -u cal_convolve.py ${i} ${c}
 done

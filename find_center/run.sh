@@ -19,6 +19,7 @@ str_kernel='0km'
 python -u ${py} 0 ${str_kernel} &
 echo $!
 
+exit
 for i in $(seq 1 19);do
   pids=()
   a=$(echo "mod(${i},${ncpu})"|bc -l ~/.bcrc)

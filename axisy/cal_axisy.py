@@ -52,9 +52,9 @@ radius, theta = np.meshgrid(radius_1d, theta_1d)
 # read center file
 fname = f'{config.dataPath}/find_center/{center_flag}/{exp}.txt'
 center_info, center_loc = axisy.read_center_file(fname, \
-                            colname=['center_x','center_y'])
-speed_x = np.gradient(center_loc['center_x'])*dx/(dtime*60) # m/s
-speed_y = np.gradient(center_loc['center_y'])*dy/(dtime*60) # m/s
+                            colname=['center_locx','center_locy'])
+speed_x = np.gradient(center_loc['center_locx'])*dx/(dtime*60) # m/s
+speed_y = np.gradient(center_loc['center_locy'])*dy/(dtime*60) # m/s
 
 
 it_start, it_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
@@ -65,8 +65,8 @@ comm.Barrier()
 for it in np.arange(it_start, it_end):
 #for it in [216]:
     # calculate corespond x/y from r/theta
-    cx = center_loc['center_x'].iloc[it]*dx
-    cy = center_loc['center_y'].iloc[it]*dy
+    cx = center_loc['center_locx'].iloc[it]*dx
+    cy = center_loc['center_locy'].iloc[it]*dy
     x_polar, y_polar  =  axisy.convert_rth2xy(\
                           radius, theta, \
                           cx, cy, \
