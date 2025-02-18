@@ -69,7 +69,10 @@ def draw_twoline(ax, x, y2, c, method='max'):
       loc = np.argmin(y2[0])
       inc = -1*inc/2.
   plt.text(x[loc], y2[0][loc]+inc,\
-           f'{y2[0][loc]:.2f} m/s\n{x[loc]} km\n{y2[1][loc]:.2f}',\
+           f'{y2[0][loc]:.2f} m/s'+
+           f'\n{x[loc]} km'+
+           #f'\n{y2[1][loc]:.2f}'+
+            '',\
            color=c, zorder=12,\
            fontsize=15, fontweight='bold',\
            ha='center', va='bottom',\
@@ -87,7 +90,7 @@ def draw_pannel(ax, x, twind, rwind):
   plt.yticks(np.arange(-10,0.11, 1))
   plt.gca().tick_params(axis='y', colors=co0)
   #plt.ylim(0.5, -4.5)
-  plt.ylim(0.5, -5.5)
+  plt.ylim(0.5, -5)
   plt.grid(True)
 
   ax_twinx = ax.twinx()
@@ -95,7 +98,7 @@ def draw_pannel(ax, x, twind, rwind):
   L0 = draw_twoline(plt.gca(), x, twind, co1, 'max')
   plt.xlim(xlim)
   plt.yticks(np.arange(0,10.1,2))
-  plt.ylim(-1, 11)
+  plt.ylim(-1, 10)
 
   plt.gca().tick_params(axis='y', colors=co1)
   plt.gca().spines['right'].set_color(co1)
