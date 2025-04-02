@@ -39,7 +39,8 @@ expNameList='CTRL D00_on D10_on D15_on D16_on D17_on D18_on D19_on D20_on D21_on
 exp = 'RRCE_3km_'subwrd(expList, iexp)
 explabel = subwrd(expNameList, iexp)
 if ( exp = 'RRCE_3km_f00' )
-    tlast = subwrd(tlastList, iexp)
+*    tlast = subwrd(tlastList, iexp)
+    tlast = 2520
 else
     tlast = 217
 endif
