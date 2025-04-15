@@ -103,7 +103,29 @@ for idy in range(idy_start, idy_end):
   #plt.plot(radius_1d[[0,-1]], [hei, hei], '-', c='0.4', lw=2, zorder=100)
   plt.xticks(np.arange(0,551,100),np.arange(0,551,100))
   plt.xlabel('radius [km]')
-  
+
+
+  varname = 'w'
+  varunit = nc.variables[varname].units
+  data = nc.variables[varname][0,0,:,:]
+  data_a = nc.variables[varname][0,1,:,:]
+  plt.sca(ax_top)
+  # plt.contourf(radius_1d, zz_1d, data, levels=[0.05,10000],\
+  #              colors=['#FF005E'], alpha=0.4, zorder=100)
+  plt.contour(radius_1d, zz_1d, data, levels=[0.05],\
+               colors=['k'], linewidths=[4], zorder=3)
+
+  sx = slice(None,None,8)
+  sy = slice(None,None,3)
+  slic = (sy,sx)
+  data_v = np.where(data<=-0.005, -0.85, np.nan)
+  plt.quiver(radius_1d[sx], zz_1d[sy], \
+             np.zeros(data.shape)[slic], data_v[slic],\
+             units = 'xy', scale = 1, scale_units='xy',\
+             color='k', alpha=0.8, width=2, \
+             headwidth=3, headlength=3,headaxislength=2.5,\
+            )
+
   ax_lower.remove()
   plt.savefig(f'{figdir}/{idy:06d}.png', dpi=200, transparent=True)
 
