@@ -67,10 +67,24 @@ say ''
 
 ** prepare center location **
 *../../data/find_center/czeta0km_positivemean/RRCE_3km_f00.txt
-kernel='0km'
-file = datPath'/find_center/czeta'kernel'_positivemean/'exp'.txt'
+kernel='150km'
+file = datPath'/find_center/czeta0km_positivemean/'exp'.txt'
 meancx = readfile(file, 'mean_x')
 meancy = readfile(file, 'mean_y')
+maxcx = readfile(file, 'max_x')
+maxcy = readfile(file, 'max_y')
+
+file = datPath'/find_center/czeta0km_allmean/'exp'.txt'
+allmeancx = readfile(file, 'mean_x')
+allmeancy = readfile(file, 'mean_y')
+
+file = datPath'/find_center/czeta'kernel'_positivemean/'exp'.txt'
+conmaxcx = readfile(file, 'max_x')
+conmaxcy = readfile(file, 'max_y')
+
+file = datPath'/find_center/sf_positivemean/'exp'.txt'
+sfmaxcx = readfile(file, 'max_x')
+sfmaxcy = readfile(file, 'max_y')
 
 
 'reinit'
@@ -120,9 +134,35 @@ endif
 'd u;v'
 
 ***** draw center point *****
+*green
+'set rgb 40 67 100 0'
+*orange
+'set rgb 41 230 140 0'
+*purple
+'set rgb 40 130 0 255'
+
+
+cx=subwrd(maxcx,it)
+cy=subwrd(maxcy,it)
+rc=drawpoint(0,cx,cy,'max_zeta', 5, 40)
+
+cx=subwrd(conmaxcx,it)
+cy=subwrd(conmaxcy,it)
+rc=drawpoint(0,cx,cy,'max_zetaCON150km', 12, 40)
+
+cx=subwrd(sfmaxcx,it)
+cy=subwrd(sfmaxcy,it)
+rc=drawpoint(0,cx,cy,'max_sf', 3, 40)
+
 cx=subwrd(meancx,it)
 cy=subwrd(meancy,it)
-rc=drawpoint(0,cx,cy,'mean')
+rc=drawpoint(0,cx,cy,'mean_zeta', 9, 40)
+
+style='1 1 1 1'
+name='positive_zeta_centorid zeta_max con'kernel'_zeta_max stream_func_min'
+color='40 40 40 40'
+mark='9 5 12 3'
+*'legend_marker br 4 10 1 'name' 'color' 'style' 'mark''
 
 
 ***** draw text *****
@@ -196,20 +236,28 @@ endwhile
 *end main function
 return
 
-function drawpoint(value, cx, cy, name)
+function drawpoint(value, cx, cy, name, style, color)
   'q gr2xy 'cx' 'cy''
   x=subwrd(result,3)
   y=subwrd(result,6)
   c=math_format('%.2f', value)
-  'set rgb 40 255 255 255'
-  'set line 40'
-  'draw mark 9 'x' 'y' 0.4'
-  'set rgb 40 130 0 255'
-  'set line 40'
-  'draw mark 9 'x' 'y' 0.2'
-  'set string 40 bc 10'
-  'set strsiz 0.15'
-*  'draw string 'x' 'y+0.15' 'name'('c')'
+  if (style=5 | style=3)
+    size=0.15
+  else
+    size=0.2
+  endif
+
+  if (style=8)
+    'set lwid 90 4'
+    'set line 'color' 1 90'
+    'draw mark 'style' 'x' 'y' 'size
+  else
+    'set rgb 105 255 255 255'
+    'set line 105'
+    'draw mark 'style' 'x' 'y' 'size*1.5
+    'set line 'color
+    'draw mark 'style' 'x' 'y' 'size
+  endif
 return 0
 
 function readfile(file,name)

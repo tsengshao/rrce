@@ -166,13 +166,13 @@ cy=subwrd(allmeancy,it)
 
 ***  *rc=drawlegend(4,'a b c d', '9 5 3 12')
 ***  style='1 1 1 1 1'
-***  name='positive_zeta_centorid all_zeta_centroid zeta_max con'kernel'_zeta_max stream_func_max'
+***  name='positive_zeta_centorid all_zeta_centroid zeta_max con'kernel'_zeta_max stream_func_min'
 ***  color='40 41 40 40 40'
 ***  mark='9 8 5 12 3'
 ***  'legend_marker br 5 10 1 'name' 'color' 'style' 'mark''
 
 style='1 1 1 1'
-name='positive_zeta_centorid zeta_max con'kernel'_zeta_max stream_func_max'
+name='positive_zeta_centorid zeta_max con'kernel'_zeta_max stream_func_min'
 color='40 40 40 40'
 mark='9 5 12 3'
 'legend_marker br 4 10 1 'name' 'color' 'style' 'mark''

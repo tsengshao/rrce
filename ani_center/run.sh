@@ -9,18 +9,18 @@
 
 source ~/.bashrc
 mode="SAVEFIG"
-gs="draw_conzeta.gs"
+gs="draw_zeta.gs"
 
 for iexp in $(seq 2 19);do
 #for iexp in 2;do
   for ts in 1 217;do
     grads -blcx "run ${gs} ${iexp} -mode ${mode} -ts ${ts} -te ${ts}" &
   done
-  wait
 done
+wait
 
 for ts in $(seq 1 72 2161);do
     te=$(echo "{ts}+1"|bc)
     grads -blcx "run ${gs} 1 -mode ${mode} -ts ${ts} -te ${ts}" &
-    wait
 done
+wait
