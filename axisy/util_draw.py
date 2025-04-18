@@ -34,6 +34,17 @@ def get_cmap(name='colorful'):
     colors = ['w', '#00BFFF', '#3CB371', '#F0E68C', '#FFA500', '#FF6347']
     nodes = np.linspace(0,1,len(colors))
     newcmp = mpl.colors.LinearSegmentedColormap.from_list("cmap", list(zip(nodes, colors)))
+  elif name=='cwv':
+    # white->wheat->darkcyan->darkblue->(4,130,191)
+    colors = np.array([(255,255,255,255), \
+                       (241,223,184,255), \
+                       (60,137,138,255), \
+                       (0,0,133,255), \
+                       (4,130,191,255),\
+                     ])/255
+    nodes = np.linspace(0,1,colors.shape[0])
+    newcmp = mpl.colors.LinearSegmentedColormap.from_list("cmap", list(zip(nodes, colors)))
+    newcmp.set_over(np.array((0,250,250,255))/255)
   return newcmp
 
 def create_figure_and_axes(lower_right=True):
