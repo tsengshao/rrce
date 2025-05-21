@@ -134,7 +134,43 @@ plt.ylim(-0.3, 9)
 plt.grid(True)
 plt.xlabel(f'dry fraction')
 plt.ylabel('maximum tangential wind\nlast day average [m/s]')
-#plt.savefig(f'{figdir}/scatter_max_radi.png', dpi=200)
+plt.savefig(f'{figdir}/scatter_df_tang.png', dpi=200)
+
+
+###### inflow ##########
+nsen   = 2
+x_data = series_dryfrac
+#y_data = np.max(twind_last[mdict['imet'],1:,0,:], axis=1)
+y_data = np.min(rwind_init[mdict['imet'],1:,0,:], axis=1)
+c_data = rday_1d[1:]
+x_data = x_data[1:nexp]
+y_data = y_data[:nexp]
+c_data = c_data[:nexp]
+
+udraw.set_figure_defalut()
+if not iswhite:
+  udraw.set_black_background()
+fig = plt.figure(figsize=(10,8))
+ax  = fig.add_axes([0.2, 0.15, 0.67, 0.75])
+cax = fig.add_axes([0.89, 0.15, 0.03, 0.7])
+plt.sca(ax)
+plt.scatter(x_data[:-nsen], y_data[:-nsen], s=300, c=c_data[:-nsen], norm=norm, cmap=cmap,zorder=10)
+plt.scatter(x_data[-nsen:], y_data[-nsen:], s=300, c=c_data[-nsen:], norm=norm, cmap=cmap,zorder=10, marker='X')
+CB=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+       cax=cax, orientation='vertical', extend='max')
+CB.ax.set_title('restart\nday', loc='left', fontsize=20)
+CB.ax.set_yticks([0,10,15,20,25,30])
+plt.sca(ax)
+#plt.yticks(np.arange())
+plt.xticks(np.arange(0,0.81,0.1))
+plt.xlim(-0.05, 0.8)
+plt.ylim(0.3, -3)
+plt.grid(True)
+plt.xlabel(f'dry fraction')
+plt.ylabel('maximum radial wind\ninitial day average [m/s]')
+plt.savefig(f'{figdir}/scatter_df_radi.png', dpi=200)
+
+
 
 ###### maximum radius ##########
 x_data = series_cwvstd
@@ -162,6 +198,6 @@ plt.ylim(-1, 10)
 plt.grid(True)
 plt.xlabel(f'cwv std [mm]')
 plt.ylabel('maximum tangential wind\nlast day average [m/s]')
-#plt.savefig(f'{figdir}/scatter_max_radi.png', dpi=200)
+plt.savefig(f'{figdir}/scatter_cwvstd_tang.png', dpi=200)
 plt.show()
 
