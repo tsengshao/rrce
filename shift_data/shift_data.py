@@ -7,6 +7,33 @@ from datetime import datetime, timedelta
 import glob, itertools
 import multiprocessing
 
+# ------------------------------------------------------------------
+# A)  ───────────── helper: keep only wanted attrs ────────────────
+def keep_attrs(da, allowed=("long_name", "units", "axis")):
+    da.attrs = {k: v for k, v in da.attrs.items() if k in allowed}
+    return da
+
+# ------------------------------------------------------------------
+# B)  ───────────── helper: sanitise the encoding dict ─────────────
+ALLOWED_ENC = {
+    "chunksizes", "dtype", "zlib", "shuffle", "complevel"
+}  # drop _FillValue, szip, …
+
+def build_encoding(ds):
+    enc = {}
+    for v in ds.data_vars:
+        base = ds[v].encoding
+        enc[v] = {k: base[k] for k in ALLOWED_ENC if k in base}
+
+        # compression + chunking
+        enc[v].update(dict(zlib=True, shuffle=True, complevel=4))
+        suggested = {"time": 1, "zh": 1, "yh": 384, "xh": 384,
+                                 "zf": 1, "yf": 384, "xf": 384}
+        enc[v]["chunksizes"] = tuple(
+            suggested[d] for d in ds[v].dims if d in suggested
+        )
+    return enc
+
 nexp = len(config.expList)
 #iexp = int(sys.argv[1])
 #iexp = 0
@@ -17,7 +44,7 @@ iexp = 18
 nt = 217 if iexp!=0 else 2161
 exp = config.expList[iexp]
 dtime = config.getExpDeltaT(exp)    #minutes
-outdir=config.dataPath+f"/shift/{exp}/"
+outdir=config.dataPath+f"/shift/try_{exp}/"
 os.system(f'mkdir -p {outdir}')
 
 ## read center data
@@ -78,10 +105,48 @@ def process_main(it, prefix):
         enc[v]["chunksizes"] = tuple(
             suggested_chunks[d] for d in var_dims if d in suggested_chunks
         )
-    outdir=config.dataPath+f"/shift/{exp}/"
+
+
+    # ---------------------------------------------------------------
+    # 1.  rename coordinates / dimensions to the Cartesian names
+    # ---------------------------------------------------------------
+    rename_map = {
+        "lon": "xh", "lat": "yh",       # cell centres
+        "xc":  "xf", "yc":  "yf",       # staggered u-/v-grid
+        "lev": "zh", "zc":  "zf",
+    }
+    ds_shift = ds_shift.rename({k: v for k, v in rename_map.items() if k in ds_shift})
+    
+    # ---------------------------------------------------------------
+    # 2.  convert metres → kilometres where needed + add axis tag
+    # ---------------------------------------------------------------
+    for c, ax in [("xh", "X"), ("xf", "X"),
+                  ("yh", "Y"), ("yf", "Y"),
+                  ("zh", "Z"), ("zf", "Z")]:
+        if c in ds_shift.coords:
+            if ds_shift[c].attrs.get("units", "").lower() in {"m", "metre", "meters"}:
+                ds_shift[c] = ds_shift[c] / 1_000.0
+            ds_shift[c].attrs.update(dict(
+                long_name=f"{ax.lower()}-coordinate in Cartesian system",
+                units="km",
+                axis=ax,
+            ))
+            keep_attrs(ds_shift[c])            # strip other attrs
+    
+    # ---------------------------------------------------------------
+    # 3.  keep ONLY long_name / units / axis on *all* variables
+    # ---------------------------------------------------------------
+    for v in ds_shift.variables:
+        keep_attrs(ds_shift[v])
+    
+    # ---------------------------------------------------------------
+    # 4.  build clean encoding & write file
+    # ---------------------------------------------------------------
+    encoding = build_encoding(ds_shift)
+
     fname=ncpath.split('/')[-1]
     outfile=f"{outdir}/{fname}"
-    ds_shift.to_netcdf(outfile, encoding=enc, engine="netcdf4")
+    ds_shift.to_netcdf(outfile, encoding=encoding, engine="netcdf4")
 
 # for it, prefix in itertools.product(it_list, prefix_list):
 #     print(it, prefix)
@@ -92,6 +157,7 @@ prefix_list = ['L.Thermodynamic', 'L.Dynamic', 'C.Surface']
 #prefix_list = ['wp']
 it_list     = np.arange(72*0, nt, 3*6)
 #it_list     = [2160]
+it_list = [216]
 
 cores = 10
 with multiprocessing.Pool(processes=cores) as pool:

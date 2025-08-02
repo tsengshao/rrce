@@ -11,4 +11,5 @@ source ~/.bashrc
 conda activate py311
 
 py='shift_data.py'
+py='shift_vapor.py'
 python -u ${py}
