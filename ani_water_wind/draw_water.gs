@@ -136,7 +136,7 @@ endif
 
 ***** draw olr *****
 'color 100 220 10 -kind (255,255,255)-(0)->(255,255,255,0) -gxout shaded'
-'d olr.2(z=1)'
+*'d olr.2(z=1)'
 
 ***** draw center point *****
 *green
@@ -160,7 +160,9 @@ rc=drawpoint(0,cx,cy,'max_sf', 3, 40)
 
 cx=subwrd(meancx,it)
 cy=subwrd(meancy,it)
-rc=drawpoint(0,cx,cy,'mean_zeta', 9, 40)
+*rc=drawpoint(0,cx,cy,'mean_zeta', 9, 40)
+'set rgb 42 0 0 0'
+rc=drawpoint(0,cx,cy,'mean_zeta', 9, 42)
 
 style='1 1 1 1'
 name='positive_zeta_centorid zeta_max con'kernel'_zeta_max stream_func_min'
@@ -175,9 +177,9 @@ mark='9 5 12 3'
 'draw string 8.68 8.05 CWV'
 'draw string 8.68 7.7 [mm]'
 
-'set string 1 br 75 0'
-'set strsiz 0.10'
-'draw string 8.27 8 transparent white is OLR (100 to 220 W/m2)'
+*'set string 1 br 75 0'
+*'set strsiz 0.10'
+*'draw string 8.27 8 transparent white is OLR (100 to 220 W/m2)'
 
 'set string 2 br 75 0'
 'set strsiz 0.10'
@@ -247,7 +249,11 @@ function drawpoint(value, cx, cy, name, style, color)
   if (style=5 | style=3)
     size=0.15
   else
-    size=0.2
+    if (style=9)
+        size=0.3
+    else
+        size=0.2
+    endif
   endif
 
   if (style=8)

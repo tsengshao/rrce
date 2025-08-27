@@ -158,7 +158,9 @@ rc=drawpoint(0,cx,cy,'max_sf', 3, 40)
 
 cx=subwrd(meancx,it)
 cy=subwrd(meancy,it)
-rc=drawpoint(0,cx,cy,'mean_zeta', 9, 40)
+*rc=drawpoint(0,cx,cy,'mean_zeta', 9, 40)
+'set rgb 42 0 0 0'
+rc=drawpoint(0,cx,cy,'mean_zeta', 9, 42)
 
 cx=subwrd(allmeancx,it)
 cy=subwrd(allmeancy,it)
@@ -173,7 +175,7 @@ cy=subwrd(allmeancy,it)
 
 style='1 1 1 1'
 name='positive_zeta_centorid zeta_max con'kernel'_zeta_max stream_func_min'
-color='40 40 40 40'
+color='41 40 40 40'
 mark='9 5 12 3'
 'legend_marker br 4 10 1 'name' 'color' 'style' 'mark''
 
@@ -276,7 +278,11 @@ function drawpoint(value, cx, cy, name, style, color)
   if (style=5 | style=3)
     size=0.15
   else
-    size=0.2
+    if (style=9)
+        size=0.3
+    else
+        size=0.2
+    endif
   endif
 
   if (style=8)

@@ -192,6 +192,7 @@ for idy in range(idy_start, idy_end):
   varname = 'cwv'
   c = '1' if not iswhite else '0'
   varunit = nc.variables[varname].units
+  varunit = 'mm'
   data = nc.variables[varname][0,0,:]
   data_a = nc.variables[varname][0,1,:]
   C0 = udraw.draw_lower(plt.gca(), ax_top, radius_1d, \
