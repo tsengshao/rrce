@@ -135,7 +135,6 @@ def calculate_results(it,kernel_radius, method, iheit,dodraw=False):
 
     return it, results
 
-
 #####
 # prepare center filter
 ######
@@ -152,21 +151,28 @@ units  = 'kg/m/s'
 # scale  = 1
 # units  = 'kg/m/s'
 
-## method = 'convergence'
-## scale  = 1e-5
-## units  = r'$10^{-5}$ $m^{2}s^{-2}$'
+method = 'convergence'
+scale  = 1e-5
+units  = r'$10^{-5}$ $m^{2}s^{-2}$'
 
 figPath = f'./fig_upward_proxy/'
 os.system(f'mkdir -p {figPath}')
+fname = f'{config.dataPath}/find_center/center_{method}/{exp}.pkl'
 
-cores = 10
-records = pd.DataFrame(columns=center_flag_dict.keys())
-# Use multiprocessing to fetch variable data in parallel
-with multiprocessing.Pool(processes=cores) as pool:
-    dum = pool.starmap(calculate_results, [(it,kernel_radius,method,iheit,False) for it in range(nt)])
-for i in range(len(dum)):
-    records.loc[dum[i][0]] = dum[i][1]
-records = records.sort_index()
+if not os.path.isfile(fname):
+    cores = 10
+    records = pd.DataFrame(columns=center_flag_dict.keys())
+    # Use multiprocessing to fetch variable data in parallel
+    with multiprocessing.Pool(processes=cores) as pool:
+        dum = pool.starmap(calculate_results, [(it,kernel_radius,method,iheit,False) for it in range(nt)])
+    for i in range(len(dum)):
+        records.loc[dum[i][0]] = dum[i][1]
+    records = records.sort_index()
+    fdir=os.path.dirname(fname)
+    os.system(f'mkdir -p {fdir}')
+    records.to_pickle(fname)
+else:
+    records = pd.read_pickle(fname)
 
 ######
 ## draw all timeseries
