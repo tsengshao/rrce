@@ -1,0 +1,3 @@
+[submodule "paper"]
+	path = paper
+	url = git@github.com:tsengshao/Convection-Driven_Secondary_Circulation_Leading_to_Vortex_Intensification.git
