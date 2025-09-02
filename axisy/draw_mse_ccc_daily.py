@@ -227,8 +227,10 @@ for idy in range(idy_start, idy_end):
   x = (radius_1d[:-1]+radius_1d[1:])/2
   area = np.pi*(radius_1d[1:]**2-radius_1d[:-1]**2)
   plt.bar(x, hist_all/area*1000, width=radius_1d[1]-radius_1d[0], color=co)
-  plt.ylim(0, 8.125)
-  plt.yticks([0, 2.5, 5, 7.5], fontsize=13)
+  # plt.ylim(0, 8.125)
+  # plt.yticks([0, 2.5, 5, 7.5], fontsize=13)
+  plt.ylim(0, 6.5)
+  plt.yticks([0, 2, 4, 6], fontsize=13)
   #plt.ylim(0, 0.325)
   #plt.yticks([0,0.1,0.2,0.3])
   # plt.ylim(0,32.5)
