@@ -37,14 +37,15 @@ def build_encoding(ds):
 nexp = len(config.expList)
 #iexp = int(sys.argv[1])
 #iexp = 0
-iexp = 18
+#iexp = 18
 #iexp = 8
+iexp=0
 
 #nt = config.totalT[iexp] if iexp!=0 else 2161
 nt = 217 if iexp!=0 else 2161
 exp = config.expList[iexp]
 dtime = config.getExpDeltaT(exp)    #minutes
-outdir=config.dataPath+f"/shift/try_{exp}/"
+outdir=config.dataPath+f"/shift/allz_{exp}/"
 os.system(f'mkdir -p {outdir}')
 
 ## read center data
@@ -68,7 +69,7 @@ def process_main(it, prefix):
         yname='lat'
     ds = xr.open_dataset(ncpath, decode_cf=True)
     if 'lev' in ds.coords:
-        ds = ds.sel({'lev':slice(None,20)})
+        #ds = ds.sel({'lev':slice(None,20)})
         ds['lev'].attrs.update({
             "units": "km",
             "long_name": "vertical level (kilometres)",
@@ -158,6 +159,7 @@ prefix_list = ['L.Thermodynamic', 'L.Dynamic', 'C.Surface']
 it_list     = np.arange(72*0, nt, 3*6)
 #it_list     = [2160]
 it_list = [216]
+it_list = np.arange(72*0, nt+1, 72*5)
 
 cores = 10
 with multiprocessing.Pool(processes=cores) as pool:
