@@ -127,7 +127,8 @@ endif
 
 ***** draw rain *****
 'set clab off'
-'set lwid 50 3'
+*'set lwid 50 3'
+'set lwid 50 7'
 'set cthick 50'
 'set gxout contour'
 'set clevs 1'

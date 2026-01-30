@@ -9,8 +9,8 @@
 
 source ~/.bashrc
 mode="SAVEFIG"
-gs="draw_wind.gs"
-#gs="draw_water.gs"
+#gs="draw_wind.gs"
+gs="draw_water.gs"
 
 for iexp in $(seq 2 19);do
   for ts in 1 217;do
