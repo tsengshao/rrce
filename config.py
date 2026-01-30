@@ -3,27 +3,45 @@ vvmPath  = '/data/C.shaoyu/rrce/vvm/'
 dataPath = '/data/C.shaoyu/rrce/data/'
 
 expList  = [
-            'RRCE_3km_f00',    \
+            'RRCE_3km_f00',    \  # 0
             'RRCE_3km_f10',    \
             'RRCE_3km_f00_10', \
             'RRCE_3km_f00_15', \
             'RRCE_3km_f00_16', \
-            'RRCE_3km_f00_17', \
+            'RRCE_3km_f00_17', \  # 5
             'RRCE_3km_f00_18', \
             'RRCE_3km_f00_19', \
             'RRCE_3km_f00_20', \
             'RRCE_3km_f00_21', \
-            'RRCE_3km_f00_22', \
+            'RRCE_3km_f00_22', \ # 10
             'RRCE_3km_f00_23', \
             'RRCE_3km_f00_24', \
             'RRCE_3km_f00_25', \
             'RRCE_3km_f00_26', \
-            'RRCE_3km_f00_27', \
-            'RRCE_3km_f00_28', \
+            'RRCE_3km_f00_27', \ #15
+            'RRCE_3km_f00_28', \ 
             'RRCE_3km_f00_29', \
-            'RRCE_3km_f00_30', \
+            'RRCE_3km_f00_30', \ #18
             'RRCE_3km_f00_30p27', \
-            'RRCE_3km_f00_25p07', \
+
+            'RRCE_3km_f00_14p972',\ #20
+            'RRCE_3km_f00_14p986',\
+            'RRCE_3km_f00_15p014',\
+            'RRCE_3km_f00_15p028',\
+            'RRCE_3km_f00_19p972',\
+            'RRCE_3km_f00_19p986',\ #25
+            'RRCE_3km_f00_20p014',\
+            'RRCE_3km_f00_20p028',\
+            'RRCE_3km_f00_24p972',\
+            'RRCE_3km_f00_24p986',\
+            'RRCE_3km_f00_25p014',\ #30
+            'RRCE_3km_f00_25p028',\
+            'RRCE_3km_f00_29p972',\
+            'RRCE_3km_f00_29p986',\
+            'RRCE_3km_f00_30p014',\
+            'RRCE_3km_f00_30p028',\ #35
+            'RRCE_3km_f00_halfwind_30',\ #36
+#            'RRCE_3km_f00_25p07', \
            ]
 totalT   = [
             2881, \
@@ -46,7 +64,26 @@ totalT   = [
             217,  \
             1441, \
             217,  \
+
             217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+            217,  \
+
+            217,  \
+#            217,  \
+
            ]
 expdict  = {
             'RRCE_3km_f00':'CTRL',    \
@@ -69,6 +106,25 @@ expdict  = {
             'RRCE_3km_f00_29':'D29_on', \
             'RRCE_3km_f00_30':'D30_on', \
             'RRCE_3km_f00_30p27':'D30p27_on', \
+
+            'RRCE_3km_f00_14p972':'D14p972_on',\
+            'RRCE_3km_f00_14p986':'D14p189_on',\
+            'RRCE_3km_f00_15p014':'D15p014_on',\
+            'RRCE_3km_f00_15p028':'D15p028_on',\
+            'RRCE_3km_f00_19p972':'D19p972_on',\
+            'RRCE_3km_f00_19p986':'D19p986_on',\
+            'RRCE_3km_f00_20p014':'D20p014_on',\
+            'RRCE_3km_f00_20p028':'D20p028_on',\
+            'RRCE_3km_f00_24p972':'D24p972_on',\
+            'RRCE_3km_f00_24p986':'D24p986_on',\
+            'RRCE_3km_f00_25p014':'D25p014_on',\
+            'RRCE_3km_f00_25p028':'D25p028_on',\
+            'RRCE_3km_f00_29p972':'D29p972_on',\
+            'RRCE_3km_f00_29p986':'D29p986_on',\
+            'RRCE_3km_f00_30p014':'D30p014_on',\
+            'RRCE_3km_f00_30p028':'D30p028_on',\
+
+            'RRCE_3km_f00_halfwind_30':'D30half_on',\
             'RRCE_3km_f00_25p07':'D25p07_on', \
            }
 
