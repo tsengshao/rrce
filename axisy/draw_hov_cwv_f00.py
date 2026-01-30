@@ -59,12 +59,25 @@ print(time_hr_1d[0], time_hr_1d[-1], time_hr_1d[-1]-time_hr_1d[0])
 
 dims = (ens_1d.size, nt, radius_1d.size)
 cwv = np.zeros(dims)
+lwp = np.zeros(dims)
+iwp = np.zeros(dims)
+olr = np.zeros(dims)
+rain = np.zeros(dims)
+rwind_lower = np.zeros(dims)
 
 for it0 in range(nt):
   it = re_start_it + it0
   fname = f'{datdir}/axmean-{it:06d}.nc'
   nc    = Dataset(fname, 'r')
   cwv[:,it0,:] = nc.variables['cwv'][0, :]
+  lwp[:,it0,:] = nc.variables['lwp'][0, :]
+  iwp[:,it0,:] = nc.variables['iwp'][0, :]
+  olr[:,it0,:] = nc.variables['olr'][0, :]
+  rain[:,it0,:] = nc.variables['rain'][0, :]
+
+  fname = f'{datdir}/axmean_process-{it:06d}.nc'
+  nc    = Dataset(fname, 'r')
+  rwind_lower[:,it0,:] = nc.variables['radi_wind_lower'][0, :]
 
 time_1d = time_hr_1d/24.
 time_units = 'days'
@@ -91,6 +104,35 @@ P  = plt.pcolormesh(radius_1d, time_1d, var, cmap=cmap, norm=norm)
 CB = plt.colorbar(P, orientation='vertical')
 ctickslevels = levels[::5]
 CB.ax.set_yticks(ctickslevels, list(map(str, ctickslevels)))
+
+# draw radial wind for reference
+CO = plt.contour(radius_1d, time_1d, rwind_lower[0], levels=[-3., -1.5], colors=['0.75'], linewidths=[2], negative_linestyles='solid')
+
+# draw rainfall
+CO_rain = plt.contour(radius_1d, time_1d, rain[0], levels=[1.], colors=['tab:red'], linewidths=[2])
+cs = plt.contourf(radius_1d, time_1d, rain[0], \
+                  levels  = [5, 10000], \
+                  hatches = ['/'], \
+                  colors = 'none', \
+                 )
+for c in cs.collections:
+    c.set_edgecolor("tab:red")   # hatch color
+    c.set_linewidth(2.0)
+#CO_lwp = plt.contour(radius_1d, time_1d, lwp[0], levels=[5], colors=['0.5'], linewidths=[2])
+#CO_olr = plt.contour(radius_1d, time_1d, olr[0], levels=[100, 150, 200], colors=['0.5'], linewidths=[2])
+
+text = \
+       f'red contour   : rain [ 1 and 5 mm/hr]\n'+\
+       f'gray contour : radial wind [-3 and -1.5 m/s]'
+plt.text(0.99, 0.99, text, \
+                     fontsize = 8, \
+                     va='top', ha='right', \
+                     transform = ax.transAxes,\
+                     color='k',\
+                     bbox=dict(boxstyle="square",\
+                               ec='0',\
+                               fc=(1,1,1,0.3)),\
+        )
 
 plt.yticks(np.arange(0, time_1d.max()+0.0001, time_int))
 plt.xticks(np.arange(0, radius_1d.max()+1, 100))
