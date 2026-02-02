@@ -1,6 +1,8 @@
 import sys
 import numpy as np
-from scipy.signal import correlate2d, correlate, gaussian
+from scipy.signal import correlate2d, correlate#, gaussian
+from scipy.signal.windows import gaussian
+
 from scipy.ndimage import laplace
 from multiprocessing import Pool
 

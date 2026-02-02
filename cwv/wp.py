@@ -39,9 +39,9 @@ for it in range(idxTS, idxTE):
   qc = thData['qc'][0] #3d, kg/kg
   qr = thData['qr'][0] #3d, kg/kg
   qi = thData['qi'][0] #3d, kg/kg
-  cwv = np.trapz((qv)*rho[:,np.newaxis,np.newaxis], x=zc, axis=0)
-  lwp = np.trapz((qc+qr)*rho[:,np.newaxis,np.newaxis], x=zc, axis=0)
-  iwp = np.trapz((qi)*rho[:,np.newaxis,np.newaxis], x=zc, axis=0)
+  cwv = np.trapezoid((qv)*rho[:,np.newaxis,np.newaxis], x=zc, axis=0)
+  lwp = np.trapezoid((qc+qr)*rho[:,np.newaxis,np.newaxis], x=zc, axis=0)
+  iwp = np.trapezoid((qi)*rho[:,np.newaxis,np.newaxis], x=zc, axis=0)
 
   if (cpuid==0):
     print('it=',it, ', cwv_range=(%.2f, %.2f)'%(cwv.min(), cwv.max()))

@@ -69,7 +69,7 @@ for it in range(it_start, it_end):
     data_mean = np.mean(data, axis=axis_theta, keepdims=True)
     data_prim = data - data_mean
     mean_square = np.squeeze(data_mean**2, axis=axis_theta)
-    prim_square_integrate = np.trapz(data_prim**2, dx=dtheta, axis=axis_theta)/(np.pi*2)
+    prim_square_integrate = np.trapezoid(data_prim**2, dx=dtheta, axis=axis_theta)/(np.pi*2)
     gamma     = mean_square / ( mean_square + prim_square_integrate )
     data_mean = np.squeeze(data_mean, axis=axis_theta)
     # get output variables data

@@ -241,7 +241,7 @@ for it in range(nt):
 
   hori_size = np.sum(czeta>0)/nx/ny*100
 
-  if False:
+  if True:
     plt.close('all')
     set_black_background()
     levels = [-100,-50,-20,-10,-5,-0.1,0.1,5,10,20,50,100]
