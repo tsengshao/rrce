@@ -183,7 +183,7 @@ def main():
     fig2, ax2 = plt.subplots(figsize=(14, 10))
     ax2.set_title("Dry fraction (CWV<30mm)", loc="left", fontweight="bold")
     ax2.set_xlabel("Time [days]")
-    ax2.set_ylabel("Dry fraction (0-1)")
+    ax2.set_ylabel("Dry fraction")
 
     # Figure 3: CWV std series
     fig3, ax3 = plt.subplots(figsize=(14, 10))
