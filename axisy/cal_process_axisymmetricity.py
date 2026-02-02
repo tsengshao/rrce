@@ -172,7 +172,13 @@ for it in range(it_start, it_end):
 
         if varname == 'conv_lower':
             data     = nc_out.variables['radi_wind_lower'][:, 0, :]
-            data     = -1*np.gradient(data, radius_1d, axis=1)
+            #data     = -1*np.gradient(data, radius_1d, axis=1)
+            data[:,0] = 0. # r(0) = 0
+            data[:,1:-1] = 1/radius_1d[1:-1] * \
+                (radius_1d[2:]*data[:,2:] - radius_1d[:-2]*data[:,:-2]) /\
+                (radius_1d[2:] - radius_1d[:-2])
+            data[:,-1] = 0. # r(last) = 0
+            data *= -1 # let positive is convergence
             dimtype      = '2d'
             attrs = {'units'       : '1/s',\
                      'lower_range' : f'0 - {target_lev_str}',\
