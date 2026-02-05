@@ -96,7 +96,7 @@ def calculate_results(it,kernel_radius, method, iheit,dodraw=False):
     nc = vvmLoader.loadDynamic(it)
     u  = nc.variables['u'][0,:iheit,:,:].mean(axis=0)
     v  = nc.variables['v'][0,:iheit,:,:].mean(axis=0)
-    if method=='convective_mass_flux':
+    if method=='convective_mass_flux': 
         wrho  = nc.variables['w'][0,:iheit,:,:]*\
                     rhoz[:iheit,np.newaxis,np.newaxis]
         wrho  = np.where(wrho>0,wrho,0)
@@ -115,8 +115,10 @@ def calculate_results(it,kernel_radius, method, iheit,dodraw=False):
         dvdy = np.gradient(v, dy, axis=-2)
         dvdy[...,0, :] =  (u[...,1,:] - u[...,-1,:])/2/dy
         dudx[...,-1,:] =  (u[...,0,:] - u[...,-2,:])/2/dy
-        con = -1*dudx-1*dvdy
-        data = con.copy()
+        rhoz3d = rhoz[:iheight,np.newaxis,np.newaxis]
+        con = -1*dudx*rhoz3d-1*dvdy*rhoz3d
+        wrho  = np.trapz(con,x=zz[:iheit],axis=0)
+        data = wrho.copy()
     else:
         sys.exit('ERROR!!: please input correct method')
 
@@ -145,7 +147,9 @@ iheit = np.argmin(np.abs(zz-target_lev))
 
 method = 'convective_mass_flux'
 scale  = 1
-units  = 'kg/m/s'
+units  = r'$kg$ $m^{-2}$ $s^{-1}$' #ave(w*rho), m/s*kg/m3
+ylim   = [4, 14]
+#ylim   = [None, None]
 
 # method = 'total_mass_flux'
 # scale  = 1
@@ -153,7 +157,9 @@ units  = 'kg/m/s'
 
 method = 'convergence'
 scale  = 1e-5
-units  = r'$10^{-5}$ $m^{2}s^{-2}$'
+units  = r'$10^{-5}$ $s^{-1}$'
+ylim   = [-1, 2]
+ylim   = [None, None]
 
 figPath = f'./fig_upward_proxy/'
 os.system(f'mkdir -p {figPath}')
@@ -182,11 +188,12 @@ plt.rcParams.update({ 'lines.linewidth':2})
 x = np.arange(nt)/72
 fig, ax = plt.subplots(figsize=(16,7))
 plt.plot(x, records/scale)
-plt.legend(records.columns)
+plt.legend(records.columns, fontsize=18)
 plt.title(f'{config.expdict[exp]} / {method}', loc='left', fontweight='bold')
 plt.title(f'region radius: {kernel_str}\nlowlevel 0-{target_lev:.0f}m', loc='right', fontweight='bold')
 plt.xlabel('days')
 plt.ylabel(f'{units}')
+plt.ylim(ylim)
 plt.tight_layout()
 plt.savefig(f'{figPath}/{exp}_{method}_{target_lev:.0f}m_all.png',dpi=250)
 
@@ -207,13 +214,44 @@ x = np.arange(nt_penta)
 x_str = [f'{i*5:.0f}~{(i+1)*5:.0f}\ndays' for i in range(nt_penta)]
 fig, ax = plt.subplots(figsize=(16,7))
 plt.plot(x, penta_df/scale)
-plt.legend(records.columns)
+plt.legend(records.columns, fontsize=18)
 plt.title(f'{config.expdict[exp]} / {method}', loc='left', fontweight='bold')
 plt.title(f'region radius: {kernel_str}\nlowlevel 0-{target_lev:.0f}m', loc='right', fontweight='bold')
+plt.ylim(ylim)
 plt.xticks(x, x_str,fontsize=15)
 plt.ylabel(f'{units}')
 plt.tight_layout()
 plt.savefig(f'{figPath}/{exp}_{method}_{target_lev:.0f}m_penta.png',dpi=250)
+#plt.show()
+plt.close('all')
+    
+######
+## draw daily version
+######
+plt.rcParams.update({ 'lines.linewidth':5})
+daily2dy   = 72*1
+nt_daily   = nt//daily2dy
+daily_df = pd.DataFrame(index=np.arange(nt_daily),\
+                        columns=center_flag_dict.keys())
+for i in range(nt_daily):
+    i0 = int(daily2dy*(i))+1
+    i1 = int(daily2dy*(i+1))+1
+    daily_df.iloc[i] = np.mean(records.iloc[i0:i1,:], axis=0)
+
+x = np.arange(nt_daily)+1
+#x_str = [f'{i*5:.0f}~{(i+1)*5:.0f}\ndays' for i in range(nt_daily)]
+fig, ax = plt.subplots(figsize=(16,7))
+plt.plot(x, daily_df/scale)
+plt.legend(records.columns, fontsize=18)
+plt.title(f'{config.expdict[exp]} / {method}', loc='left', fontweight='bold')
+plt.title(f'region radius: {kernel_str}\nlowlevel 0-{target_lev:.0f}m', loc='right', fontweight='bold')
+plt.ylim(ylim)
+#plt.xticks(x, x_str,fontsize=15)
+plt.ylabel(f'{units}')
+plt.xlabel(f'Day')
+plt.xlim(0,nt_daily+1)
+plt.tight_layout()
+plt.savefig(f'{figPath}/{exp}_{method}_{target_lev:.0f}m_daily.png',dpi=250)
 plt.show()
 plt.close('all')
     
