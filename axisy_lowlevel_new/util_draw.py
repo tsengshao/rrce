@@ -36,8 +36,8 @@ def get_cmap(name='colorful'):
     newcmp = mpl.colors.LinearSegmentedColormap.from_list("cmap", list(zip(nodes, colors)))
   return newcmp
 
-def draw_twoline(ax, x, y2, c, method='max'):
-  lc  = plt.plot(x, y2[0], c=c, alpha=1, ls='-', lw=10)
+def draw_twoline(ax, x, y2, c, method='max', unit='m/s'):
+  lc  = ax.plot(x, y2[0], c=c, alpha=1, ls='-', lw=10)
   # _  = plt.plot(x, y2[0], c=c, alpha=1, ls=':', lw=10)
   # lc = plt.plot(x, np.where(y2[1]>0.5, y2[0], np.nan),\
   #                c=c, alpha=1, lw=10)
@@ -69,7 +69,7 @@ def draw_twoline(ax, x, y2, c, method='max'):
       loc = np.argmin(y2[0])
       inc = -1*inc/2.
   plt.text(x[loc], y2[0][loc]+inc,\
-           f'{y2[0][loc]:.2f} m/s'+
+           f'{y2[0][loc]:.2f} {unit}'+
            f'\n{x[loc]} km'+
            #f'\n{y2[1][loc]:.2f}'+
             '',\
@@ -107,3 +107,83 @@ def draw_pannel(ax, x, twind, rwind):
   #plt.ylim(-1, 9)
   return 
 
+def draw_pannel_3vars(ax, x, twind, rwind, cwv):
+    """
+    Left axis 1: rwind (purple)  on ax
+    Left axis 2: twind (orange)  on axL2 (twinx moved to left)
+    Right axis : cwv   (gray)    on axR  (twinx on right)
+    No y-labels; ticks + ticklabels colored.
+    """
+    xlim = (0, float(np.max(x)))
+
+
+    co_r = '#7262AC'  # left 1
+    co_t = '#E25508'  # left 2
+    co_c = '#808080'  # right (gray)
+
+    # -----------------------
+    # Left axis 1 (base): rwind
+    # -----------------------
+    ax.set_xlim(xlim)
+    draw_twoline(ax, x, rwind, co_r, method='min', unit='m/s')
+
+    ax.set_yticks(np.arange(-10, 0.11, 1))
+    ax.set_ylim(0.5, -5)
+    ax.set_ylabel("")  # no label
+    ax.tick_params(axis='y', colors=co_r)
+    ax.spines['left'].set_color(co_r)
+    ax.spines['right'].set_visible(False)  # avoid confusion
+
+    # -----------------------
+    # Left axis 2: twind (twinx, but moved to left)
+    # -----------------------
+    axL2 = ax.twinx()
+    axL2.set_xlim(xlim)
+    draw_twoline(axL2, x, twind, co_t, method='max', unit='m/s')
+
+    # move its active spine from right -> left and offset outward
+    axL2.spines['right'].set_visible(False)
+    axL2.spines['left'].set_position(("axes", -0.08))  # <-- adjust spacing
+    axL2.spines['left'].set_visible(True)
+
+    axL2.yaxis.set_ticks_position('left')
+    axL2.yaxis.set_label_position('left')
+
+    axL2.set_yticks(np.arange(0, 10.1, 2))
+    axL2.set_ylim(-1, 10)
+    axL2.set_ylabel("")  # no label
+    axL2.tick_params(axis='y', colors=co_t)
+    axL2.spines['left'].set_color(co_t)
+
+    # -----------------------
+    # Right axis: cwv (normal twinx on right, gray)
+    # -----------------------
+    axR = ax.twinx()
+    axR.set_xlim(xlim)
+    #draw_twoline(axR, x, cwv, co_c, method='max', unit='mm')
+    axR.plot(x, cwv[0], c=co_c, alpha=1, ls='-', lw=7)
+
+    axR.set_ylabel("")  # no label
+    axR.tick_params(axis='y', colors=co_c)
+    axR.spines['right'].set_color(co_c)
+    axR.set_yticks(np.arange(15, 65.01, 10))
+    axR.set_ylim(10,65)
+    #axR.spines['right'].set_position(("axes", 1.08))  # <-- optional, avoid overlap
+
+    ax.grid(True)
+   
+    ax.patch.set_visible(False)
+    axL2.patch.set_visible(False)
+    axR.patch.set_visible(False)
+    ax.set_zorder(3)
+    axL2.set_zorder(2)
+    axR.set_zorder(1)
+
+    # -----------------------
+    # Make spines thick (your style)
+    # -----------------------
+    for a in (ax, axL2, axR):
+        for sp in a.spines.values():
+            sp.set_linewidth(4)
+
+    return ax, axL2, axR

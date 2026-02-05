@@ -43,7 +43,7 @@ def create_cmap_segmented():
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N, clip=False)
     return tick_vals, bounds, cmap, norm
 
-def radius_km_to_size(r_km, r0, r1, s_min=150.0, s_max=700.0):
+def radius_km_to_size(r_km, r0, r1, s_min=100.0, s_max=1000.0):
     r_km = np.asarray(r_km, dtype=float)
     if not np.isfinite(r0) or not np.isfinite(r1) or r1 <= r0:
         return np.full_like(r_km, 300.0, dtype=float)
@@ -122,7 +122,7 @@ def main(
 
     r0 = np.nanmin(r_at_max)
     r1 = np.nanmax(r_at_max)
-    s_data = radius_km_to_size(r_at_max, r0, r1, s_min=150.0, s_max=700.0)
+    s_data = radius_km_to_size(r_at_max, r0, r1, s_min=100.0, s_max=1000.0)
 
     # Color: restart_day (keep same)
     c_data = ds["restart_day"].values.astype(float)
@@ -189,7 +189,8 @@ def main(
     cbar.ax.yaxis.set_major_formatter(FixedFormatter(labels))
     cbar.ax.minorticks_off()
     cbar.ax.tick_params(width=2.2, length=7, direction="out")
-    cbar.ax.set_title("D" + r"$xx$" + "_on", loc="left", fontsize=20, pad=13)
+    #cbar.ax.set_title("D" + r"$xx$" + "_on", loc="left", fontsize=20, pad=13)
+    cbar.ax.set_title("Restart\nDay", loc="left", fontsize=20, pad=13, ha='left')
 
     # ---- size legend (upper-left) ----
     # Pick a few representative radii (km) to show in legend.
@@ -202,7 +203,7 @@ def main(
     if legend_r_km.size == 0:
         legend_r_km = np.array([r0, 0.5 * (r0 + r1), r1], dtype=float)
     
-    legend_sizes = radius_km_to_size(legend_r_km, r0, r1, s_min=150.0, s_max=700.0)
+    legend_sizes = radius_km_to_size(legend_r_km, r0, r1, s_min=100.0, s_max=1000.0)
     
     handles = []
     labels = []
