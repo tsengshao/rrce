@@ -225,7 +225,8 @@ def main():
             zorder = 1
         else:
             lc = cmap(norm(rday))
-            lw = 4
+            #lw = 4
+            lw = 3
             zorder = 5
         
         # Dashed line if restart day has decimals
