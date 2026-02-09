@@ -7,17 +7,18 @@
 ##SBATCH -w node01  # nodelist
 ##SBATCH -w mogamd  # nodelist
 #SBATCH -o out2.%j.out  # output file
-#SBATCH --dependency=afterok:42
+#SBATCH --dependency=afterok:54
 
 source ~/.bashrc
 conda activate py311
 
 py='cal_axisymmetricity.py'
 #py='cal_axisymmetricity_ano.py'
-#py='cal_process_axisymmetricity.py'
+py='cal_process_axisymmetricity.py'
 
 #for i in $(seq 19 -1 1);do
-for i in $(seq 36 -1 19);do
+#for i in $(seq 36 -1 19);do
+for i in $(seq 37 1 40);do
   echo ${i}
   mpirun -np 10 python -u ${py} ${i}
 done

@@ -161,7 +161,7 @@ def draw_pannel_3vars(ax, x, twind, rwind, cwv):
     axR = ax.twinx()
     axR.set_xlim(xlim)
     #draw_twoline(axR, x, cwv, co_c, method='max', unit='mm')
-    axR.plot(x, cwv[0], c=co_c, alpha=1, ls='-', lw=7)
+    axR.plot(x, cwv[0], c=co_c, alpha=1, ls='-', lw=3)
 
     axR.set_ylabel("")  # no label
     axR.tick_params(axis='y', colors=co_c)

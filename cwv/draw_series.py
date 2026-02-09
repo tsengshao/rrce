@@ -45,7 +45,7 @@ def choose_pool_params(nt, max_workers=10):
 def create_cmap_segmented():
     # Do NOT include 31 in ticks
     tick_vals = np.array(
-        "0 10 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30".split(),
+        "0 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30".split(),
         dtype=float,
     )
 
@@ -54,8 +54,9 @@ def create_cmap_segmented():
     bounds = np.r_[tick_vals - 0.5, 30.5]
 
     newcolors = np.vstack((
-        [[0.8, 0.8, 0.8, 1.0]],
-        [[0.5, 0.5, 0.5, 1.0]],
+        [[0.9, 0.9, 0.9, 1.0]],
+        #[[0.5, 0.5, 0.5, 1.0]],
+        plt.cm.binary(np.linspace(0.3, 0.7, 5)),
         plt.cm.Greens(np.linspace(0.2, 0.9, 5)),
         plt.cm.Oranges(np.linspace(0.2, 0.9, 5)),
         plt.cm.Blues(np.linspace(0.2, 0.9, 5)),
@@ -119,8 +120,8 @@ def add_colorbar(fig, ax, cmap, norm, bounds, tick_vals, title="Dxx_on", loc='le
     # Inset colorbar at bottom-left of the axes
     # height is a fraction of the parent axes height
     width_frac = 0.035
-    height_frac = 3/5
-    margin = 0.06
+    height_frac = 0.7
+    margin = 0.08
     if loc=='right':
         x0 = 1.0 - width_frac - margin
     else:

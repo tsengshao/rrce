@@ -14,7 +14,7 @@ conda activate py311
 py='cal_axisy.py'
 
 #for i in $(seq 18 -1 1);do
-for i in $(seq 20 1 36);do
+for i in $(seq 37 1 40);do
   echo ${i}
   mpirun -np 73 python -u ${py} ${i}
 done

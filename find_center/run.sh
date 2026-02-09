@@ -22,7 +22,8 @@ str_kernel='0km'
 
 #exit
 #for i in $(seq 1 19);do
-for i in $(seq 20 36);do
+#for i in $(seq 20 36);do
+for i in $(seq 37 40);do
   pids=()
   a=$(echo "mod(${i},${ncpu})"|bc -l ~/.bcrc)
   echo ${i}...${a}

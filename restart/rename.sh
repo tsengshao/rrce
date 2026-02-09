@@ -2,7 +2,7 @@
 
 vvmPath="/data/mog/VVM/DATA/"
 #/data/mog/VVM/DATA/RRCE_3km_f10_1
-vvmPath="/data3/C.shaoyu/VVM/DATA/"
+vvmPath="/data/C.shaoyu/VVM/DATA/"
 
 outVvmPath="/data/C.shaoyu/rrce/vvm/"
 
@@ -10,24 +10,11 @@ typeList="C.Surface L.Dynamic L.Radiation L.Thermodynamic"
 expList="RRCE_3km_f00_10 RRCE_3km_f00_20 RRCE_3km_f00_30"
 expList="RRCE_3km_f00_25p07"
 expList="
-RRCE_3km_f00_14p972
-RRCE_3km_f00_14p986
-RRCE_3km_f00_15p014
-RRCE_3km_f00_15p028
-RRCE_3km_f00_19p972
-RRCE_3km_f00_19p986
-RRCE_3km_f00_20p014
-RRCE_3km_f00_20p028
-RRCE_3km_f00_24p972
-RRCE_3km_f00_24p986
-RRCE_3km_f00_25p014
-RRCE_3km_f00_25p028
-RRCE_3km_f00_29p972
-RRCE_3km_f00_29p986
-RRCE_3km_f00_30p014
-RRCE_3km_f00_30p028
-RRCE_3km_f00_halfwind_30
+RRCE_3km_f00_13 
+RRCE_3km_f00_14
 "
+# RRCE_3km_f00_13 
+# RRCE_3km_f00_14 
 
 for exp in ${expList};do
   echo "----- ${exp} -----"

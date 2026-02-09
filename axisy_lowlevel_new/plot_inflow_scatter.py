@@ -41,7 +41,7 @@ def create_cmap_segmented():
     """
     # Do NOT include 31 in ticks
     tick_vals = np.array(
-        "0 10 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30".split(),
+        "0 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30".split(),
         dtype=float,
     )
 
@@ -51,8 +51,9 @@ def create_cmap_segmented():
     # Keep your original segmented palette logic
     newcolors = np.vstack(
         (
-            [[0.8, 0.8, 0.8, 1.0]],
-            [[0.5, 0.5, 0.5, 1.0]],
+            [[0.9, 0.9, 0.9, 1.0]],
+            #[[0.5, 0.5, 0.5, 1.0]],
+            plt.cm.binary(np.linspace(0.3, 0.7, 5)),
             plt.cm.Greens(np.linspace(0.2, 0.9, 5)),
             plt.cm.Oranges(np.linspace(0.2, 0.9, 5)),
             plt.cm.Blues(np.linspace(0.2, 0.9, 5)),

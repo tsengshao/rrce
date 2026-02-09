@@ -48,6 +48,12 @@ expList  = [
             #35
             'RRCE_3km_f00_30p028',
             'RRCE_3km_f00_halfwind_30',
+
+            'RRCE_3km_f00_11', 
+            'RRCE_3km_f00_12', 
+            'RRCE_3km_f00_13', 
+            #40
+            'RRCE_3km_f00_14', 
 #            'RRCE_3km_f00_25p07', 
            ]
 totalT   = [
@@ -98,6 +104,12 @@ totalT   = [
             # 35
             217,  \
             217,  \
+
+            217,  \
+            217,  \
+            217,  \
+            # 40
+            217,  \
 #            217,  \
 
            ]
@@ -141,6 +153,12 @@ expdict  = {
             'RRCE_3km_f00_30p028':'D30p028_on',\
 
             'RRCE_3km_f00_halfwind_30':'D30half_on',\
+
+            'RRCE_3km_f00_11':'D11_on', 
+            'RRCE_3km_f00_12':'D12_on', 
+            'RRCE_3km_f00_13':'D13_on', 
+            'RRCE_3km_f00_14':'D14_on', 
+
             'RRCE_3km_f00_25p07':'D25p07_on', \
            }
 
