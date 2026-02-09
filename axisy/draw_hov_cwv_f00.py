@@ -109,15 +109,15 @@ CB.ax.set_yticks(ctickslevels, list(map(str, ctickslevels)))
 CO = plt.contour(radius_1d, time_1d, rwind_lower[0], levels=[-3., -1.5], colors=['0.75'], linewidths=[2], negative_linestyles='solid')
 
 # draw rainfall
-CO_rain = plt.contour(radius_1d, time_1d, rain[0], levels=[1.], colors=['tab:red'], linewidths=[2])
-cs = plt.contourf(radius_1d, time_1d, rain[0], \
-                  levels  = [5, 10000], \
-                  hatches = ['/'], \
-                  colors = 'none', \
-                 )
-for c in cs.collections:
-    c.set_edgecolor("tab:red")   # hatch color
-    c.set_linewidth(2.0)
+CO_rain = plt.contour(radius_1d, time_1d, rain[0], levels=[1., 5.], colors=['tab:red'], linewidths=[2, 4])
+## cs = plt.contourf(radius_1d, time_1d, rain[0], \
+##                   levels  = [5, 10000], \
+##                   hatches = ['/'], \
+##                   colors = 'none', \
+##                  )
+## for c in cs.collections:
+##     c.set_edgecolor("tab:red")   # hatch color
+##     c.set_linewidth(2.0)
 #CO_lwp = plt.contour(radius_1d, time_1d, lwp[0], levels=[5], colors=['0.5'], linewidths=[2])
 #CO_olr = plt.contour(radius_1d, time_1d, olr[0], levels=[100, 150, 200], colors=['0.5'], linewidths=[2])
 
