@@ -88,10 +88,10 @@ rho_1d = rho_raw[:zc_1d.size]
 
 idy_start, idy_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 
-for idy in range(idy_start, idy_end):
+#for idy in range(idy_start, idy_end):
 #for idy in [0, 2, 9, 19, 24, 29]:
 #for idy in range(0,30):
-#for idy in [29]:
+for idy in [2]:
   print(idy)
   if idy > nt: continue
   fname = f'{datdir}/axmean_daily-{idy:06d}.nc'
@@ -209,11 +209,13 @@ for idy in range(idy_start, idy_end):
   ### read ccc center files
   # read file, units [km / km3]
   hist_all = np.zeros(radius_1d.size-1)
+  ccc_total_number = 0.
   for itt in np.arange(idy*day2num, min([(idy+1)*day2num,nt*day2num])):
     fname = f'{config.dataPath}/cloud/{exp}/ccc_{itt:06d}.txt'
     objz, objy, objx, size = \
         np.loadtxt(fname, skiprows=8, usecols=[0,1,2,4], unpack=True)
     nobj = np.sum(size>0)
+    ccc_total_number += nobj
     sdis_ccc, _ = r_theta_series(objx, \
                                  objy, \
                                  xc.size*dx, \
@@ -222,6 +224,7 @@ for idy in range(idy_start, idy_end):
                                 )
     hist = np.histogram(sdis_ccc, bins=radius_1d)
     hist_all += hist[0]/day2num
+  print(exp, f'idy:{idy}', 'total_ccc:', ccc_total_number)
   co = '#FEB06F'
   #plt.hist(sdis_ccc, bins=radius_1d, color=co)
   x = (radius_1d[:-1]+radius_1d[1:])/2
