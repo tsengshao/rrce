@@ -1,5 +1,6 @@
 import numpy as np
 import sys, os
+import hashlib
 sys.path.insert(1, "../")
 
 import config
@@ -77,6 +78,19 @@ def parse_restart_day(exp):
     return float(exp.split("_")[-1].replace("p", "."))
 
 
+def get_series_cache_path(exp):
+    return os.path.join(config.dataPath, "wp", "series", f"series_{exp}.nc")
+
+
+def build_source_signature(datdir, nt):
+    digest = hashlib.sha256()
+    for it in range(nt):
+        fn = os.path.join(datdir, f"wp-{it:06d}.nc")
+        stat = os.stat(fn)
+        digest.update(f"{it}:{stat.st_size}:{stat.st_mtime_ns}\n".encode("ascii"))
+    return digest.hexdigest()
+
+
 def get_cwv_stats(datdir, it, dry_thresh=30.0):
     # Read CWV field once, compute mean, std, and dry fraction
     fn = os.path.join(datdir, f"wp-{it:06d}.nc")
@@ -111,6 +125,82 @@ def load_cwv_and_dryfrac_parallel(datdir, nt, n_workers=4, chunksize=20, dry_thr
     cwv_std  = np.array([s for _, _, s, _ in results], dtype=float)
     dry_frac = np.array([d for _, _, _, d in results], dtype=float)
     return cwv_mean, cwv_std, dry_frac
+
+
+def load_cached_series(cache_path, exp, nt, source_signature=None):
+    if not os.path.exists(cache_path):
+        return None
+
+    with Dataset(cache_path, "r") as nc:
+        cached_exp = getattr(nc, "exp_name", "")
+        if cached_exp != exp:
+            return None
+
+        cached_signature = getattr(nc, "source_signature", "")
+        cached_nt = getattr(nc, "nt", None)
+        if cached_nt != nt:
+            return None
+        if source_signature is not None and cached_signature != source_signature:
+            return None
+
+        cwv_mean = np.asarray(np.ma.filled(nc.variables["cwv_mean"][:], np.nan), dtype=float)
+        cwv_std = np.asarray(np.ma.filled(nc.variables["cwv_std"][:], np.nan), dtype=float)
+        dry_frac = np.asarray(np.ma.filled(nc.variables["dry_frac"][:], np.nan), dtype=float)
+        return cwv_mean, cwv_std, dry_frac
+
+
+def save_cached_series(cache_path, exp, source_signature, cwv_mean, cwv_std, dry_frac):
+    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+
+    with Dataset(cache_path, "w") as nc:
+        nc.createDimension("time", len(cwv_mean))
+        nc.exp_name = exp
+        nc.source_signature = source_signature
+        nc.nt = len(cwv_mean)
+
+        var_mean = nc.createVariable("cwv_mean", "f8", ("time",))
+        var_std = nc.createVariable("cwv_std", "f8", ("time",))
+        var_dry = nc.createVariable("dry_frac", "f8", ("time",))
+
+        var_mean[:] = cwv_mean
+        var_std[:] = cwv_std
+        var_dry[:] = dry_frac
+
+
+def load_or_compute_series(datdir, exp, nt, dry_thresh=30.0):
+    cache_path = get_series_cache_path(exp)
+    if os.path.exists(cache_path):
+        try:
+            source_signature = build_source_signature(datdir, nt)
+        except FileNotFoundError:
+            cached = load_cached_series(cache_path, exp, nt)
+            if cached is not None:
+                print(f"  source missing, use cached series for {exp}: {cache_path}")
+                return cached
+            raise
+
+        cached = load_cached_series(cache_path, exp, nt, source_signature=source_signature)
+        if cached is not None:
+            print(f"  use cached series for {exp}: {cache_path}")
+            return cached
+
+        print(f"  cache file for {exp} exists but source changed")
+    else:
+        print(f"  no cached file for {exp}")
+
+    print("  recompute series")
+    n_workers, chunksize = choose_pool_params(nt, max_workers=10)
+    series = load_cwv_and_dryfrac_parallel(
+        datdir=datdir,
+        nt=nt,
+        n_workers=n_workers,
+        chunksize=chunksize,
+        dry_thresh=dry_thresh,
+    )
+    source_signature = build_source_signature(datdir, nt)
+    save_cached_series(cache_path, exp, source_signature, *series)
+    print(f"  saved cache for {exp}: {cache_path}")
+    return series
 
 
 def add_colorbar(fig, ax, cmap, norm, bounds, tick_vals, title="Dxx_on", loc='left'):
@@ -206,14 +296,10 @@ def main():
 
         rday = parse_restart_day(exp)
         datdir = os.path.join(config.dataPath, "wp", exp)
-
-        n_workers, chunksize = choose_pool_params(nt, max_workers=10)
-
-        cwv_series, cwv_std_series, dryfrac_series = load_cwv_and_dryfrac_parallel(
+        cwv_series, cwv_std_series, dryfrac_series = load_or_compute_series(
             datdir=datdir,
+            exp=exp,
             nt=nt,
-            n_workers=n_workers,
-            chunksize=chunksize,
             dry_thresh=30.0,
         )
         
