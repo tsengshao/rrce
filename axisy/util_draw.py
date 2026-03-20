@@ -77,18 +77,52 @@ def draw_upper_pcolor(ax, cax, radius_1d, zc_1d, \
     plt.title(f'{title_right}', loc='right', fontweight='bold')
     return  P, CB
 
+
 def get_contour_levels(C):
-    ncols  = len(C.collections)
-    levels = C.get_array()
-    minval = np.max(levels)
-    maxval = np.min(levels)
-    for i in range(ncols):
-        col = C.collections[i]
-        if len(col.get_paths())>0:
-          maxval = max([maxval, levels[i]])
-          minval = min([minval, levels[i]])
-        #print(minval, maxval)
-    return minval, maxval, levels[1]-levels[0]
+    """
+    Return (min_level_drawn, max_level_drawn, level_interval)
+
+    Compatible with newer Matplotlib where QuadContourSet may not expose
+    `collections`. Prefer `C.levels` as the source of contour levels.
+    """
+    # 1) Get contour levels robustly
+    levels = np.asarray(getattr(C, "levels", []), dtype=float)
+
+    if levels.size == 0:
+        # fallback (should rarely happen)
+        arr = C.get_array()
+        if arr is None or len(arr) == 0:
+            return np.nan, np.nan, np.nan
+        levels = np.asarray(arr, dtype=float)
+
+    # interval (best effort)
+    if levels.size >= 2:
+        diffs = np.diff(levels)
+        nz = diffs[np.abs(diffs) > 0]
+        intlev = float(nz[0]) if nz.size > 0 else float(diffs[0])
+    else:
+        intlev = np.nan
+
+    # 2) Determine which levels are actually drawn
+    # If collections exist, mimic your original logic (check get_paths()).
+    if hasattr(C, "collections"):
+        ncols = min(len(C.collections), levels.size)
+        drawn_levels = []
+        for i in range(ncols):
+            col = C.collections[i]
+            # original check: any paths => that level appears on plot
+            if len(col.get_paths()) > 0:
+                drawn_levels.append(levels[i])
+
+        if len(drawn_levels) == 0:
+            # Nothing drawn (e.g., all levels outside data range)
+            return np.nan, np.nan, intlev
+
+        drawn_levels = np.asarray(drawn_levels, dtype=float)
+        return float(np.nanmin(drawn_levels)), float(np.nanmax(drawn_levels)), intlev
+
+    # 3) Fallback when collections is unavailable: use full level range
+    return float(np.nanmin(levels)), float(np.nanmax(levels)), intlev
 
 
 def draw_upper_contour(ax, radius_1d, zc_1d, \
@@ -137,19 +171,20 @@ def draw_upper_hatch(ax, radius_1d, zc_1d, \
                      annotation_y=0, annotation='',\
                     ):
     plt.sca(ax)
-    plt.rcParams['hatch.linewidth'] = 1
+    plt.rcParams['hatch.linewidth'] = 0.3
     edge_co = edgecolor or 'k'
     C=plt.contourf(radius_1d, zc_1d, data, \
                   levels=levels, colors='none',\
                   hatches=hat)
     # For each level, we set the color of its hatch 
-    for i, collection in enumerate(C.collections):
-        collection.set_edgecolor(edge_co)
-        collection.set_edgecolor("face")
-        collection.set_linewidth(0.000000000001)
+    targets = C.collections if hasattr(C, "collections") else [C]
+    for coll in targets:
+        coll.set_facecolor('none')
+        coll.set_edgecolor(edge_co)
+        coll.set_linewidth(0.0)
     plt.text(0.985,0.98+annotation_y,\
-             f'hatch: '+\
              f'{annotation}'+\
+             f'hatch: '+\
              f'axisymmetric > {levels[0]:.1f} \n',\
              # f'max:{data.max():.2f}; '+\
              # f'min:{data.min():.2f}\n',\
@@ -176,3 +211,139 @@ def draw_lower(ax, ax_top, radius_1d, \
     plt.grid(True)
     return C
 
+
+def _cumtrapz_1d(y, x, axis=-1):
+    """
+    Cumulative trapezoidal integral of y(x) along `axis`.
+    Returns array with same shape as y, with integral starting at 0.
+    """
+    y = np.asarray(y)
+    x = np.asarray(x)
+
+    # dx along axis
+    dx = np.diff(x)  # shape (n-1,)
+    # bring axis to last for easier broadcasting
+    y_mv = np.moveaxis(y, axis, -1)  # (..., n)
+    out = np.zeros_like(y_mv)
+
+    # trapezoid increments: 0.5*(y[k]+y[k+1])*dx[k]
+    inc = 0.5 * (y_mv[..., :-1] + y_mv[..., 1:]) * dx  # (..., n-1)
+    out[..., 1:] = np.cumsum(inc, axis=-1)
+
+    return np.moveaxis(out, -1, axis)
+
+
+def psi_from_w(radius_1d, w, rhoz_1d=None, r_axis=-1, z_axis=-2):
+    """
+    Compute axisymmetric mass streamfunction psi(r,z) from w(r,z) via:
+      dpsi/dr = r * w                (Boussinesq)
+      dpsi/dr = r * rho0(z) * w      (anelastic; if rhoz_1d given)
+
+    Assumes w has r dimension at r_axis and z dimension at z_axis.
+    Returns psi with same shape as w.
+    """
+    r = np.asarray(radius_1d)
+    ww = np.asarray(w)
+
+    # Build weight: r (and optionally rho0(z))
+    # Create r broadcast shape
+    r_shape = [1] * ww.ndim
+    r_shape[r_axis] = r.size
+    r_b = r.reshape(r_shape)
+
+    F = r_b * ww
+
+    if rhoz_1d is not None:
+        rho = np.asarray(rhoz_1d)
+        z_shape = [1] * ww.ndim
+        z_shape[z_axis] = rho.size
+        rho_b = rho.reshape(z_shape)
+        F = rho_b * F
+
+    # Integrate along r, psi(0,z)=0
+    psi = _cumtrapz_1d(F, r, axis=r_axis)
+    return psi
+
+
+def psi_from_ur(radius_1d, zz_1d, rwind, rhoz_1d=None, z0_index=0, r_axis=-1, z_axis=-2):
+    """
+    Compute axisymmetric mass streamfunction psi(r,z) from u_r(r,z)=rwind via:
+      dpsi/dz = - r * u_r                  (Boussinesq)
+      dpsi/dz = - r * rho0(z) * u_r        (anelastic; if rhoz_1d given)
+
+    Need a reference boundary condition at z=z0: psi(r,z0)=0 (default).
+    Assumes rwind has r dimension at r_axis and z dimension at z_axis.
+    Returns psi with same shape as rwind.
+    """
+    r = np.asarray(radius_1d)
+    z = np.asarray(zz_1d)
+    ur = np.asarray(rwind)
+
+    # r broadcast
+    r_shape = [1] * ur.ndim
+    r_shape[r_axis] = r.size
+    r_b = r.reshape(r_shape)
+
+    G = -r_b * ur
+
+    if rhoz_1d is not None:
+        rho = np.asarray(rhoz_1d)
+        z_shape = [1] * ur.ndim
+        z_shape[z_axis] = rho.size
+        rho_b = rho.reshape(z_shape)
+        G = rho_b * G
+
+    # Integrate along z with psi(..., z0)=0
+    # We will integrate from z0_index upward and downward separately to reduce drift.
+    # First compute cumulative from bottom to top, then shift to enforce psi(z0)=0.
+    psi = _cumtrapz_1d(G, z, axis=z_axis)
+
+    # Enforce psi at z0_index = 0 by subtracting psi(z0) for each r (and other dims)
+    # Take slice at z0_index along z_axis
+    slicer = [slice(None)] * psi.ndim
+    slicer[z_axis] = z0_index
+    psi_z0 = psi[tuple(slicer)]
+
+    # Expand psi_z0 back to psi shape for broadcasting subtraction
+    expand_shape = list(psi.shape)
+    expand_shape[z_axis] = 1
+    psi_z0_expanded = np.expand_dims(psi_z0, axis=z_axis)
+
+    psi = psi - psi_z0_expanded
+    return psi
+
+
+def compute_and_check_streamfunction(radius_1d, zz_1d, rhoz_1d, w, rwind,
+                                     use_density=True, z0_index=0, r_axis=-1, z_axis=-2):
+    """
+    Call two methods to compute psi:
+      - from w (integrate in r)
+      - from u_r (integrate in z)
+    Then compute difference for consistency check.
+
+    Returns (psi_w, psi_ur, dpsi).
+    """
+    rho = rhoz_1d if use_density else None
+
+    psi_w  = psi_from_w(radius_1d, w,     rhoz_1d=rho, r_axis=r_axis, z_axis=z_axis)
+    psi_ur = psi_from_ur(radius_1d, zz_1d, rwind, rhoz_1d=rho,
+                         z0_index=z0_index, r_axis=r_axis, z_axis=z_axis)
+
+    dpsi = psi_w - psi_ur
+    return psi_w, psi_ur, dpsi
+
+
+# ----------------------
+# Example usage (assume arrays are already loaded):
+# psi_w, psi_ur, dpsi = compute_and_check_streamfunction(
+#     radius_1d, zz_1d, rhoz_1d, w, rwind,
+#     use_density=True,      # anelastic mass streamfunction
+#     z0_index=0,            # enforce psi(r, z0)=0 at the lowest level
+#     r_axis=-1, z_axis=-2   # common shape: (..., z, r)
+# )
+#
+# # Quick diagnostics
+# print("psi_w range:",  np.nanmin(psi_w),  np.nanmax(psi_w))
+# print("psi_ur range:", np.nanmin(psi_ur), np.nanmax(psi_ur))
+# print("dpsi range:",   np.nanmin(dpsi),   np.nanmax(dpsi))
+# print("dpsi RMS:",     np.sqrt(np.nanmean(dpsi**2)))

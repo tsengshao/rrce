@@ -41,6 +41,7 @@ os.system(f'mkdir -p {figdir}')
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 zz_raw = vvmLoader.loadZZ()[:]
+rhoz_raw = vvmLoader.loadRHOZ()[:]
 
 udraw.set_figure_defalut() 
 if not iswhite:
@@ -59,6 +60,7 @@ for idy in range(idy_start, idy_end):
   radius_1d = nc.variables['radius'][:]/1000 #[km]
   zc_1d  = nc.variables['zc'][:]/1000. #[km]
   zz_1d  = zz_raw[:zc_1d.size]/1000.
+  rhoz_1d  = rhoz_raw[:zc_1d.size]
  
   plt.close('all') 
   fig, ax_top, ax_cbar, ax_lower, ax_lower_right = \
@@ -99,11 +101,28 @@ for idy in range(idy_start, idy_end):
                          data   = data_a, \
                          levels = [0.9,100],\
                          hat    = ['/'],\
+                         annotation='SF. (grey): FROM -100 BY 100 '+r'$[10^{6}kg/s]$'+'\n',
                         )
   #plt.plot(radius_1d[[0,-1]], [hei, hei], '-', c='0.4', lw=2, zorder=100)
   plt.xticks(np.arange(0,551,100),np.arange(0,551,100))
   plt.xlabel('radius [km]')
 
+  psi_w, psi_ur, dpsi = udraw.compute_and_check_streamfunction(
+      radius_1d*1000., zz_1d*1000., rhoz_1d,
+      nc.variables['w'][0,0,:], nc.variables['radi_wind'][0,0,:],
+      use_density=True,      # anelastic mass streamfunction
+      z0_index=0,            # enforce psi(r, z0)=0 at the lowest level
+      r_axis=-1, z_axis=-2   # common shape: (..., z, r)
+  )
+  plt.contour(radius_1d, zz_1d, psi_w/1e6,
+              linewidths=[1], colors=['0.5'],
+              levels=np.arange(-100,10001,100),
+             )
+  # Quick diagnostics
+  print("psi_w range:",  np.nanmin(psi_w),  np.nanmax(psi_w))
+  print("psi_ur range:", np.nanmin(psi_ur), np.nanmax(psi_ur))
+  print("dpsi range:",   np.nanmin(dpsi),   np.nanmax(dpsi))
+  print("dpsi RMS:",     np.sqrt(np.nanmean(dpsi**2)))
 
   varname = 'w'
   varunit = nc.variables[varname].units
@@ -122,7 +141,7 @@ for idy in range(idy_start, idy_end):
   plt.quiver(radius_1d[sx], zz_1d[sy], \
              np.zeros(data.shape)[slic], data_v[slic],\
              units = 'xy', scale = 1, scale_units='xy',\
-             color='k', alpha=0.8, width=2, \
+             color='k', alpha=0.8, width=2., \
              headwidth=3, headlength=3,headaxislength=2.5,\
             )
 
