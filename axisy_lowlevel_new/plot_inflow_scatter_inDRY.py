@@ -63,11 +63,36 @@ def create_cmap_segmented():
 
     cmap = mpl.colors.ListedColormap(newcolors, name="SegmentedCmap")
     cmap.set_under((0.7, 0.7, 0.7))
-    cmap.set_over(plt.cm.Purples(0.7))
+    cmap.set_over(lt.cm.Purples(0.7))
 
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N, clip=False)
     return tick_vals, bounds, cmap, norm
 
+def create_cmap_segmented_dryfrac():
+    bounds = np.arange(0.0, 0.61, 0.1)
+    tick_vals = bounds.copy()
+
+    colors = ['#FDB164', '#FEEBA1', '#7DBF78', '#4464A6']
+    nodes = np.linspace(0, 1, len(colors))
+    cmap_raw = mpl.colors.LinearSegmentedColormap.from_list("mycmap", list(zip(nodes, colors)))
+    cmap = cmap_raw
+
+
+    # # Keep your original segmented palette logic
+    # newcolors = np.vstack(
+    #     (   
+    #         [[0.9, 0.9, 0.9, 1.0]],
+    #         plt.cm.binary(np.linspace(0.3, 0.7, 2)),
+    #         plt.cm.Greens(np.linspace(0.2, 0.9, 2)),
+    #         plt.cm.Oranges(np.linspace(0.2, 0.9, 2)),
+    #     )
+    # )
+    # cmap = mpl.colors.ListedColormap(newcolors, name="SegmentedCmap")
+    # cmap.set_under((0.2, 0.2, 0.2))
+    cmap.set_over('#A84D8F')
+
+    norm = mpl.colors.BoundaryNorm(bounds, cmap.N, clip=False)
+    return tick_vals, bounds, cmap, norm
 
 def main(
     center_flag: str = "czeta0km_positivemean",
@@ -122,7 +147,10 @@ def main(
         udraw.set_black_background()
 
     # Segmented cmap/norm (your requested behavior)
-    tick_vals, bounds, cmap, norm = create_cmap_segmented()
+    # -- for Dxx_on colormap
+    #tick_vals, bounds, cmap, norm = create_cmap_segmented()
+    # -- for DRYFAC colormap
+    tick_vals, bounds, cmap, norm = create_cmap_segmented_dryfrac()
 
     # --- data vectors (keep original definitions) ---
     # Use dict-style indexing to avoid xarray .sel(method=...) conflict
@@ -135,6 +163,14 @@ def main(
 
     # Color: restart_day
     c_data = ds["restart_day"].values.astype(float)
+    # Color: dry_fraction
+    c_data = ds["dry_fraction"].sel({"period": "init", "method": method}).values  # (exp, radius)
+    face_colors = cmap(norm(c_data))
+    edge_colors = [
+        (r * 0.7, g * 0.7, b * 0.7, 1.0) 
+        for r, g, b, a in face_colors
+    ]
+    edge_colors = np.array(edge_colors)
 
     # --- figure layout (keep original) ---
     fig = plt.figure(figsize=(10*1.2, 8*1.2))
@@ -142,7 +178,7 @@ def main(
     cax = fig.add_axes([0.89, 0.15, 0.03, 0.7])
 
     # Regression (keep original: fit only <= 25)
-    idx_fit = c_data <= 25
+    idx_fit = ds["restart_day"].values.astype(float) <= 25
     if np.count_nonzero(idx_fit) >= 2:
         res = stats.linregress(x_data[idx_fit], y_data[idx_fit])
         x = np.arange(-10, 10)
@@ -155,9 +191,11 @@ def main(
             x_data[is_normal],
             y_data[is_normal],
             s=500,
-            c=c_data[is_normal],
-            norm=norm,
-            cmap=cmap,
+            c=face_colors[is_normal],
+            edgecolors=edge_colors[is_normal], 
+            # c=c_data[is_normal],
+            # norm=norm,
+            # cmap=cmap,
             zorder=10,
         )
 
@@ -167,9 +205,11 @@ def main(
             x_data[is_x],
             y_data[is_x],
             s=500,
-            c=c_data[is_x],
-            norm=norm,
-            cmap=cmap,
+            c=face_colors[is_x],
+            edgecolors=edge_colors[is_x], 
+            # c=c_data[is_x],
+            # norm=norm,
+            # cmap=cmap,
             zorder=11,
             marker="X",
         )
@@ -197,22 +237,26 @@ def main(
         sm,
         cax=cax,
         orientation="vertical",
-        extend="neither",
+        extend="max",
         boundaries=bounds,
     )
 
-    # Put tick marks at bin centers, show labels only for selected ticks
-    centers = 0.5 * (bounds[:-1] + bounds[1:])
-    label_set = {0, 10, 15, 20, 25, 30}
-    labels = [str(int(t)) if int(t) in label_set else "" for t in tick_vals]
+    # -- for Dxx_on colormap
+    ##  # Put tick marks at bin centers, show labels only for selected ticks
+    ##  centers = 0.5 * (bounds[:-1] + bounds[1:])
+    ##  label_set = {0, 10, 15, 20, 25, 30}
+    ##  labels = [str(int(t)) if int(t) in label_set else "" for t in tick_vals]
 
-    cbar.ax.yaxis.set_major_locator(FixedLocator(centers))
-    cbar.ax.yaxis.set_major_formatter(FixedFormatter(labels))
-    cbar.ax.minorticks_off()
-    cbar.ax.tick_params(width=2.2, length=7, direction="out")
+    ##  cbar.ax.yaxis.set_major_locator(FixedLocator(centers))
+    ##  cbar.ax.yaxis.set_major_formatter(FixedFormatter(labels))
+    ##  cbar.ax.minorticks_off()
+    ##  cbar.ax.tick_params(width=2.2, length=7, direction="out")
+    ## 
+    ##  # Keep original title style
+    ##  cbar.ax.set_title("D" + r"$xx$" + "_on", loc="left", fontsize=20, pad=13)
 
-    # Keep original title style
-    cbar.ax.set_title("D" + r"$xx$" + "_on", loc="left", fontsize=20, pad=13)
+    # -- for Dxx_on colormap
+    cbar.ax.set_title('dry\nfraction\nin CTRL', loc="left", fontsize=20, pad=13)
 
     # --- axes settings (keep original) ---
     ax.set_yticks(np.arange(0, 9.01, 1.5))
@@ -220,13 +264,21 @@ def main(
     ax.set_ylim(-0.3, 9)
     ax.set_xlim(0.1, -3)
     ax.grid(True)
-    ax.set_xlabel(f"minimum radial wind\n{mdict['scatter_x_label']} [m/s]")
-    ax.set_ylabel("maximum tangential wind\nlast day average [m/s]")
+    # ax.set_xlabel(f"minimum radial wind\n{mdict['scatter_x_label']} [m/s]")
+    # ax.set_ylabel("maximum tangential wind\nlast day average [m/s]")
+    ## ax.set_xlabel(f"minimum daily-mean radial wind of the convective cluster\ninitial day in CTRL [m/s]")
+    ## ax.set_ylabel("maximum daily-mean tangential wind\nlast day in EXP [m/s]")
+    ax.set_xlabel(r"$\mathbf{daily}\mathit{-}\mathbf{mean\ inflow\ intensity}$" + " [m/s]\nfrom CTRL to initiate vortex")
+    ax.set_ylabel(r"$\mathbf{vortex\ intensity}$"+" [m/s]\nin Dxx_on after 3 days")
 
-    outpng = f"{figdir}/scatter_max_radi.png"
+    # -- for Dxx_on colormap
+    outpng = f"{figdir}/scatter_max_radi_inDXX.png"
+    # -- for DRYFAC colormap
+    outpng = f"{figdir}/scatter_max_radi_inDRY.png"
     plt.savefig(outpng, dpi=200)
-    plt.close(fig)
     print("[saved]", outpng)
+    #plt.show()
+    plt.close(fig)
 
 
 if __name__ == "__main__":
@@ -237,6 +289,7 @@ if __name__ == "__main__":
         ],
         special_x_exps=[
             'RRCE_3km_f00_30p27',
+            #'RRCE_3km_f00_halfwind_30',
         ],
         special_o_exps=[
             #20
