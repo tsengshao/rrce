@@ -49,7 +49,7 @@ os.system(f'mkdir -p {figdir}')
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 zz_raw = vvmLoader.loadZZ()[:-1]
 
-fname = f'{datdir}/axmean-{0:06d}.nc'
+fname = f'{datdir}/axmean_process-{0:06d}.nc'
 nc = Dataset(fname, 'r')
 radius_1d = nc.variables['radius'][:]/1.e3
 zc_1d     = nc.variables['zc'][:]/1.e3
@@ -67,16 +67,10 @@ rwind_lower = np.zeros(dims)
 
 for it0 in range(nt):
   it = re_start_it + it0
-  fname = f'{datdir}/axmean-{it:06d}.nc'
-  nc    = Dataset(fname, 'r')
-  cwv[:,it0,:] = nc.variables['cwv'][0, :]
-  lwp[:,it0,:] = nc.variables['lwp'][0, :]
-  iwp[:,it0,:] = nc.variables['iwp'][0, :]
-  olr[:,it0,:] = nc.variables['olr'][0, :]
-  rain[:,it0,:] = nc.variables['rain'][0, :]
-
   fname = f'{datdir}/axmean_process-{it:06d}.nc'
   nc    = Dataset(fname, 'r')
+  cwv[:,it0,:] = nc.variables['cwv'][0, :]
+  rain[:,it0,:] = nc.variables['rain'][0, :]
   rwind_lower[:,it0,:] = nc.variables['radi_wind_lower'][0, :]
 
 time_1d = time_hr_1d/24.

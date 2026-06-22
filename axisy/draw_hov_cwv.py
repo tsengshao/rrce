@@ -39,7 +39,7 @@ os.system(f'mkdir -p {figdir}')
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 zz_raw = vvmLoader.loadZZ()[:-1]
 
-fname = f'{datdir}/axmean-{0:06d}.nc'
+fname = f'{datdir}/axmean_process-{0:06d}.nc'
 nc = Dataset(fname, 'r')
 radius_1d = nc.variables['radius'][:]/1.e3
 zc_1d     = nc.variables['zc'][:]/1.e3
@@ -48,11 +48,15 @@ time_hr_1d  = np.arange(nt)*dtime/60 #hours
 
 dims = (ens_1d.size, nt, radius_1d.size)
 cwv  = np.zeros(dims)
+rain  = np.zeros(dims)
+rwind_lower  = np.zeros(dims)
 
 for it in range(nt):
-  fname = f'{datdir}/axmean-{it:06d}.nc'
+  fname = f'{datdir}/axmean_process-{it:06d}.nc'
   nc    = Dataset(fname, 'r')
   cwv[:,it,:] = nc.variables['cwv'][0, :]
+  rain[:,it,:] = nc.variables['rain'][0, :]
+  rwind_lower[:,it,:] = nc.variables['radi_wind_lower'][0, :]
 
 if exp == 'RRCE_3km_f00':
   time_1d = time_hr_1d/24.
@@ -89,6 +93,14 @@ if exp!='RRCE_3km_f00':
   ctickslevels = levels[::5]
   CB.ax.set_yticks(ctickslevels, list(map(str, ctickslevels)))
 
+# draw radial wind for reference
+CO = plt.contour(radius_1d, time_1d, rwind_lower[0], levels=[-3., -1.5], colors=['0.75'], linewidths=[2], negative_linestyles='solid')
+
+# draw rainfall
+CO_rain = plt.contour(radius_1d, time_1d, rain[0], levels=[1., 5.], colors=['tab:red'], linewidths=[2, 4])
+
+## cs = plt.contourf(radius_1d, time_1d, rain[0], \
+##                   levels  = [5, 10000], \
 # text = f'{varname} [{varunits}]'
 # plt.text(0.99, 0.99, text, \
 #                      fontsize = 8, \

@@ -30,11 +30,13 @@ def write_amean_ctl(fname,exp,x,y,z,e,nt,dt):
  ZDEF {z.size} levels {str_z}
  EDEF {e.size} names {' '.join(e)}
  TDEF {nt} LINEAR 01JAN1998 {dt}mn
- VARS 4
+ VARS 6
    radi_wind_lower=>rwindlower   0  t,e,x radi_wind
    tang_wind_lower=>twindlower   0  t,e,x tang_wind
    conv_lower=>convlower         0  t,e,x convergence
    w_lower=>wlower         0  t,e,x convergence
+   rain=>rain         0  t,e,x convergence
+   cwv=>cwv         0  t,e,x convergence
  ENDVARS
 """
     fout = open(fname,'w')
@@ -123,10 +125,28 @@ for it in range(it_start, it_end):
     _       = axisy.add_dims_into_nc(nc_out, 'vtype', vtype, ('vtype'), {'num0':'mean', 'num1':'axisymmetricity'})
     nc_out.history  = "Created " + datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    for varname in ['radi_wind_lower', 'tang_wind_lower', 'conv_lower', 'w_lower']:
+    for varname in ['radi_wind_lower', 'tang_wind_lower', 'conv_lower', 'w_lower', 'rain', 'cwv']:
         #if varname in nc_axsy.dimensions.keys(): continue
         #dimtype    = in_ncvar.dim_type
         #axis_theta = 2 if dimtype=='3d' else 1  #2d:1, 3d:2
+
+        if varname == 'rain':
+            in_ncvar     = nc_axsy.variables['rain']
+            data = in_ncvar[:]
+            dimtype      = '2d'
+            attrs = {'units'       : 'mm/hr',\
+                     'calculate_by_axisy': 'True',\
+                    }
+
+        if varname == 'cwv':
+            #float cwv(time, theta, radius)
+            in_ncvar     = nc_axsy.variables['cwv']
+            data = in_ncvar[:]
+            dimtype      = '2d'
+            attrs = {'units'       : 'mm',\
+                     'calculate_by_axisy': 'True',\
+                    }
+
 
         if varname == 'radi_wind_lower':
             in_ncvar     = nc_axsy.variables['radi_wind']
