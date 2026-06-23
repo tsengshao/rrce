@@ -19,11 +19,34 @@ def parse_restart_day(exp: str) -> float:
     Rules (matching your current project):
     - exp == 'RRCE_3km_f00' or 'RRCE_3km_f10' -> rday = 0
     - otherwise, the last token like '14p986' becomes 14.986
+    - cluster_*_d20 uses the final token d20 -> 20
     """
     if exp in ("RRCE_3km_f00", "RRCE_3km_f10"):
         return 0.0
     token = exp.split("_")[-1]
+    if token.startswith("d"):
+        token = token[1:]
     return float(token.replace("p", "."))
+
+
+def ctrl_day_from_case_day(case_day: float, force_exact: bool = False, tolerance_hours: float = 3.0) -> float:
+    """
+    Map original case_day to the CTRL day used for plotting.
+
+    - If force_exact is True, keep the original case_day.
+    - Otherwise, case_day within +/- tolerance_hours of an integer day is rounded
+      to that integer day.
+    - Other fractional days are kept as-is.
+    """
+    case_day = float(round(float(case_day), 10))
+    if force_exact:
+        return case_day
+
+    tolerance_day = tolerance_hours / 24.0
+    nearest_integer = round(case_day)
+    if abs(case_day - nearest_integer) <= tolerance_day:
+        return float(nearest_integer)
+    return case_day
 
 
 def init_window_from_restart_day(rday: float, nperday: int = 72) -> tuple[int, int]:

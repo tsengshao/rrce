@@ -12,7 +12,9 @@ but:
    - X markers for special_x_exps
    - hollow circle markers for special_o_exps
 
-Data source: axisy_daily_profiles.nc (produced by cal_axisy_daily.py)
+Data sources:
+- x axis: axisy_ctrl_daily_profiles.nc (produced by cal_axisy_ctrl_daily.py)
+- y axis/color: one or more case-aligned NetCDF files, default axisy_exp_daily_profiles.nc
 """
 
 from __future__ import annotations
@@ -25,12 +27,24 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FixedLocator, FixedFormatter
 from scipy import stats
+import xarray as xr
 
 sys.path.insert(1, "../")
 import config  # noqa: E402
 
 import util_draw as udraw  # noqa: E402
-from plot_io import load_axisy_daily_profiles, select_experiments  # noqa: E402
+from plot_io import (  # noqa: E402
+    as_path_list,
+    ctrl_data_for_exps,
+    select_existing_exps,
+    source_markers,
+    source_names,
+    y_tang_wind_profile_for_source,
+)
+
+
+CTRL_DAILY_FILENAME = "axisy_ctrl_daily_profiles.nc"
+EXP_DAILY_FILENAME = "axisy_exp_daily_profiles.nc"
 
 
 def create_cmap_segmented():
@@ -97,6 +111,12 @@ def create_cmap_segmented_dryfrac():
 def main(
     center_flag: str = "czeta0km_positivemean",
     tag: str = "inflow_daily",  # inflow_daily | inflow_snapshot
+    ctrl_nc_path: str | None = None,
+    y_nc_path: str | None = None,
+    y_nc_paths=None,
+    y_source_names=None,
+    y_markers=None,
+    y_day: int = 3,
     iswhite: bool = True,
     include=None,
     exclude=None,
@@ -105,9 +125,21 @@ def main(
     special_o_exps=None,  # list[str]: hollow marker "o"
 ):
     datdir = os.path.join(config.dataPath, "axisy_lowlevel", center_flag)
-    nc_path = os.path.join(datdir, "axisy_daily_profiles.nc")
-    ds = load_axisy_daily_profiles(nc_path)
-    ds = select_experiments(ds, include=include, exclude=exclude, regex=regex)
+    default_ctrl_nc_path = os.path.join(datdir, CTRL_DAILY_FILENAME)
+    default_y_nc_path = os.path.join(datdir, EXP_DAILY_FILENAME)
+
+    if ctrl_nc_path is None:
+        ctrl_nc_path = default_ctrl_nc_path
+    if y_nc_paths is None:
+        y_nc_paths = [default_y_nc_path if y_nc_path is None else y_nc_path]
+    else:
+        y_nc_paths = as_path_list(y_nc_paths)
+        if y_nc_path is not None:
+            y_nc_paths = [y_nc_path] + y_nc_paths
+    y_source_names = source_names(y_nc_paths, y_source_names)
+    y_markers = source_markers(len(y_nc_paths), y_markers)
+
+    ctrl_ds = xr.open_dataset(ctrl_nc_path)
 
     # Match your original "tag -> method" design
     method_dict = {
@@ -117,23 +149,9 @@ def main(
     mdict = method_dict[tag]
     method = mdict["method"]
 
-    # Match old behavior: ignore exp[0] (CTRL) for scatter
-    exp_vals = ds["exp"].values.tolist()
-    if len(exp_vals) >= 2:
-        exp_vals = exp_vals[1:]
-        ds = ds.sel(exp=exp_vals)
-
     # Special marker sets
     special_x_exps = set(special_x_exps or [])
     special_o_exps = set(special_o_exps or [])
-
-    exp_arr = ds["exp"].values.astype("U")
-    is_x = np.array([e in special_x_exps for e in exp_arr], dtype=bool)
-    is_o = np.array([e in special_o_exps for e in exp_arr], dtype=bool)
-
-    # If overlap, let hollow circle win (can change if you want)
-    is_x = is_x & (~is_o)
-    is_normal = ~(is_x | is_o)
 
     # Output directory (keep original style)
     if iswhite:
@@ -152,25 +170,46 @@ def main(
     # -- for DRYFAC colormap
     # tick_vals, bounds, cmap, norm = create_cmap_segmented_dryfrac()
 
-    # --- data vectors (keep original definitions) ---
-    # Use dict-style indexing to avoid xarray .sel(method=...) conflict
-    rw_init = ds["radi_wind_lower"].sel({"period": "init", "method": method, "vtype": "mean"}).values  # (exp, radius)
-    tw_last = ds["tang_wind_lower"].sel({"period": "last", "method": method, "vtype": "mean"}).values  # (exp, radius)
+    plot_groups = []
+    for y_path, source_name, source_marker in zip(y_nc_paths, y_source_names, y_markers):
+        ds = xr.open_dataset(y_path)
+        ds = select_existing_exps(ds, include=include, exclude=exclude, regex=regex)
+        exp_vals = [str(exp) for exp in ds["exp"].values.tolist()]
+        if not exp_vals:
+            print(f"[skip source] {source_name}: no experiments after filtering")
+            continue
+        if "ctrl_day" not in ds.coords:
+            raise ValueError(f"{source_name}: y nc must contain ctrl_day coordinate for exp -> CTRL day matching")
+        if "case_day" not in ds.coords:
+            raise ValueError(f"{source_name}: y nc must contain case_day coordinate for Dxx_on coloring")
 
-    # Keep original: x = min(rw_init), y = max(tw_last)
-    x_data = np.nanmin(rw_init, axis=1)
-    y_data = np.nanmax(tw_last, axis=1)
+        ctrl_days = ds["ctrl_day"].sel(exp=exp_vals).values.astype(np.float64)
+        case_day = ds["case_day"].sel(exp=exp_vals).values.astype(float)
+        x_profile = ctrl_data_for_exps(ctrl_ds, exp_vals, ctrl_days, "radi_wind_lower", method, vtype="mean")
+        tw_y = y_tang_wind_profile_for_source(ds, source_name, y_day, method).transpose("exp", "radius_km").values
 
-    # Color: restart_day, Dxx_on colormap
-    c_data = ds["restart_day"].values.astype(float)
-    # Color: dry_fraction
-    # c_data = ds["dry_fraction"].sel({"period": "init", "method": method}).values  # (exp, radius)
-    face_colors = cmap(norm(c_data))
-    edge_colors = [
-        (r * 0.7, g * 0.7, b * 0.7, 1.0) 
-        for r, g, b, a in face_colors
-    ]
-    edge_colors = np.array(edge_colors)
+        x_data = np.nanmin(x_profile.transpose("exp", "radius_km").values, axis=1)
+        y_data = np.nanmax(tw_y, axis=1)
+        c_data = case_day
+        face_colors = cmap(norm(c_data))
+        edge_colors = np.array([(r * 0.7, g * 0.7, b * 0.7, 1.0) for r, g, b, a in face_colors])
+
+        plot_groups.append(
+            {
+                "source": source_name,
+                "marker": source_marker,
+                "exp": np.asarray(exp_vals, dtype="U"),
+                "x": x_data,
+                "y": y_data,
+                "c": c_data,
+                "face_colors": face_colors,
+                "edge_colors": edge_colors,
+                "case_day": case_day,
+            }
+        )
+
+    if not plot_groups:
+        raise ValueError("No y-axis data remained to plot after filtering.")
 
     # --- figure layout (keep original) ---
     fig = plt.figure(figsize=(10*1.2, 8*1.2))
@@ -178,51 +217,54 @@ def main(
     cax = fig.add_axes([0.89, 0.15, 0.03, 0.7])
 
     # Regression (keep original: fit only <= 25)
-    idx_fit = ds["restart_day"].values.astype(float) <= 25
+    first = plot_groups[0]
+    idx_fit = first["case_day"] <= 25
     if np.count_nonzero(idx_fit) >= 2:
-        res = stats.linregress(x_data[idx_fit], y_data[idx_fit])
+        res = stats.linregress(first["x"][idx_fit], first["y"][idx_fit])
         x = np.arange(-10, 10)
         ax.plot(x, res.intercept + res.slope * x, "k", lw=1)
 
-    # --- scatter points (keep style, add two special markers) ---
-    # Normal filled points
-    if np.any(is_normal):
-        ax.scatter(
-            x_data[is_normal],
-            y_data[is_normal],
-            s=500,
-            c=c_data[is_normal],
-            norm=norm,
-            cmap=cmap,
-            zorder=10,
-        )
+    # Source marker is the default. special_o_exps is drawn first so it stays underneath.
+    for igroup, group in enumerate(plot_groups):
+        exp_arr = group["exp"]
+        is_o = np.array([exp in special_o_exps for exp in exp_arr], dtype=bool)
+        is_x = np.array([exp in special_x_exps for exp in exp_arr], dtype=bool) & (~is_o)
+        is_source = ~(is_o | is_x)
 
-    # X markers (filled)
-    if np.any(is_x):
-        ax.scatter(
-            x_data[is_x],
-            y_data[is_x],
-            s=500,
-            c=c_data[is_x],
-            norm=norm,
-            cmap=cmap,
-            zorder=11,
-            marker="X",
-        )
+        if np.any(is_o):
+            ax.scatter(
+                group["x"][is_o],
+                group["y"][is_o],
+                s=550,
+                facecolors="none",
+                edgecolors=["k"],
+                linewidths=1,
+                zorder=5 + igroup,
+                marker="o",
+            )
 
-    # Hollow circle markers (edge colored by cmap)
-    if np.any(is_o):
-        edge_rgba = cmap(norm(c_data[is_o]))
-        ax.scatter(
-            x_data[is_o],
-            y_data[is_o],
-            s=550,
-            facecolors="none",
-            edgecolors=['k'],
-            linewidths=1,
-            zorder=9,
-            marker="o",
-        )
+        if np.any(is_source):
+            ax.scatter(
+                group["x"][is_source],
+                group["y"][is_source],
+                s=500,
+                c=group["face_colors"][is_source],
+                edgecolors=group["edge_colors"][is_source],
+                zorder=10 + igroup,
+                marker=group["marker"],
+                label=group["source"] if len(plot_groups) > 1 else None,
+            )
+
+        if np.any(is_x):
+            ax.scatter(
+                group["x"][is_x],
+                group["y"][is_x],
+                s=500,
+                c=group["face_colors"][is_x],
+                edgecolors=group["edge_colors"][is_x],
+                zorder=20 + igroup,
+                marker="X",
+            )
 
     # --- colorbar (keep placement/title/ticks style, only change mapping) ---
     sm = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -263,8 +305,10 @@ def main(
     # ax.set_ylabel("maximum tangential wind\nlast day average [m/s]")
     ## ax.set_xlabel(f"minimum daily-mean radial wind of the convective cluster\ninitial day in CTRL [m/s]")
     ## ax.set_ylabel("maximum daily-mean tangential wind\nlast day in EXP [m/s]")
-    ax.set_xlabel(r"$\mathbf{daily}\mathit{-}\mathbf{mean\ inflow\ intensity}$" + " [m/s]\nfrom CTRL to initiate vortex")
-    ax.set_ylabel(r"$\mathbf{vortex\ intensity}$"+" [m/s]\nin Dxx_on after 3 days")
+    ax.set_xlabel(r"$\mathbf{daily}\mathit{-}\mathbf{mean\ inflow\ intensity}$" + " [m/s]\nfrom shared CTRL day")
+    ax.set_ylabel(r"$\mathbf{vortex\ intensity}$"+f" [m/s]\nin EXP day {y_day}")
+    if len(plot_groups) > 1:
+        ax.legend(loc="best", fontsize=14, frameon=False)
 
     # -- for Dxx_on colormap
     outpng = f"{figdir}/scatter_max_radi_inDXX.png"
@@ -277,7 +321,19 @@ def main(
 
 
 if __name__ == "__main__":
-    # Example usage; add experiment names as needed
+    # Default usage:
+    # - x reads axisy_ctrl_daily_profiles.nc
+    # - y/color reads axisy_exp_daily_profiles.nc
+    #
+    # Multiple y nc files:
+    # main(
+    #     y_nc_paths=[
+    #         "/path/to/axisy_exp_daily_profiles.nc",
+    #         "/path/to/axisy_exp_daily_profiles_newrun.nc",
+    #     ],
+    #     y_source_names=["base", "newrun"],
+    #     y_markers=["o", "^"],  # source markers: circle, triangle; "x" also works
+    # )
     main(
         exclude=[
             'RRCE_3km_f00_halfwind_30',
