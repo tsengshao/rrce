@@ -1,22 +1,22 @@
 #!/usr/bin/bash
 #SBATCH -J draw     # Job name
-#SBATCH -p all     # job partition
-#SBATCH -N 1       # Run all processes on a single node 
+#SBATCH -p ct112     # job partition
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 4      # Run a single task
-#SBATCH -w mogamd  # nodelist
+#SBATCH -n 15      # Run a single task
+#SBATCH -A MST114418
 #SBATCH -o draw.%j.out  # output file
 
 source ~/.bashrc
 mode="SAVEFIG"
 gs="draw_wind.gs"
+export PERL5LIB=/pkg/compiler/intel/2024/2024.0/opt/oclfpga/host/linux64/bin/perl/lib/5.30.3:/usr/lib64/perl5
 
-for iexp in 3 9 19;do
+for iexp in $(seq 1 3);do
   #ts=145
   #te=217
   ts=1
-  te=144
-  grads -blcx "run ${gs} ${iexp} -mode ${mode} -ts ${ts} -te ${te}" &
+  te=217
+  ~/.local/bin/opengrads -blcx "run ${gs} ${iexp} -mode ${mode} -ts ${ts} -te ${te}" &
 done
 wait
 

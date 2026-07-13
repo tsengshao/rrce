@@ -146,7 +146,7 @@ if str_kernel=='0km':
   nc = vvmLoader.loadDynamic(4)
   zz = vvmLoader.loadZZ()[:-1]
 else:
-  path=f"{config.dataPath}/convolve/RRCE_3km_f00_15/{str_kernel}/conv-000004.nc"
+  path=f"{config.dataPath}/convolve/{exp}/{str_kernel}/conv-000004.nc"
   nc = Dataset(path, 'r')
   zz = nc.variables['zz'][:]; nz=zz.size
 xc = nc.variables['xc'][:]; nx=xc.size

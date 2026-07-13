@@ -1,11 +1,9 @@
 #!/usr/bin/bash
 #SBATCH -J axis     # Job name
-##SBATCH -p all     # job partition
-#SBATCH -p compute     # job partition
-#SBATCH -N 1       # Run all processes on a single node 
-#SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 73       # Run a single task
-##SBATCH -w node01  # nodelist
+#SBATCH -p cf448     # job partition
+#SBATCH -A MST114418
+#SBATCH -c 1              # cores per MPI rank
+#SBATCH -n 224    # Run a single task
 #SBATCH -o out.%j.out  # output file
 
 source ~/.bashrc
@@ -14,9 +12,9 @@ conda activate py311
 py='cal_axisy.py'
 
 #for i in $(seq 18 -1 1);do
-for i in $(seq 37 1 40);do
+for i in $(seq 0 14);do
   echo ${i}
-  mpirun -np 73 python -u ${py} ${i}
+  mpirun -np 217 python -u ${py} ${i}
 done
 # mpirun -np 73 python -u ${py} 0
 # mpirun -np 73 python -u ${py} 20

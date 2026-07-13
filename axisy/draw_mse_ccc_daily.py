@@ -91,7 +91,8 @@ idy_start, idy_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
 #for idy in range(idy_start, idy_end):
 #for idy in [0, 2, 9, 19, 24, 29]:
 #for idy in range(0,30):
-for idy in [2]:
+#for idy in [2]:
+for idy in [0,1,2]:
   print(idy)
   if idy > nt: continue
   fname = f'{datdir}/axmean_daily-{idy:06d}.nc'

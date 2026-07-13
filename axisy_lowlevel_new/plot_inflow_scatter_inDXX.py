@@ -123,6 +123,7 @@ def main(
     regex=None,
     special_x_exps=None,  # list[str]: marker "X"
     special_o_exps=None,  # list[str]: hollow marker "o"
+    figname='scatter_max_radi_inDXX.png',
 ):
     datdir = os.path.join(config.dataPath, "axisy_lowlevel", center_flag)
     default_ctrl_nc_path = os.path.join(datdir, CTRL_DAILY_FILENAME)
@@ -311,7 +312,7 @@ def main(
         ax.legend(loc="best", fontsize=14, frameon=False)
 
     # -- for Dxx_on colormap
-    outpng = f"{figdir}/scatter_max_radi_inDXX.png"
+    outpng = f"{figdir}/{figname}"
     # -- for DRYFAC colormap
     # outpng = f"{figdir}/scatter_max_radi_inDRY.png"
     plt.savefig(outpng, dpi=200)
@@ -334,9 +335,27 @@ if __name__ == "__main__":
     #     y_source_names=["base", "newrun"],
     #     y_markers=["o", "^"],  # source markers: circle, triangle; "x" also works
     # )
+    center_flag = "czeta0km_positivemean"
+    datdir = os.path.join(config.dataPath, "axisy_lowlevel", center_flag)
+    dpath1 = os.path.join(datdir, "axisy_exp_daily_profiles_origin.nc")
+    dpath2 = os.path.join(datdir, "axisy_exp_daily_profiles.nc")
+
     main(
+        # figname='scatter_max_radi_inDXX_all.png',
+        # y_nc_paths=[dpath1, dpath2],
+        # y_source_names=["paper", "newrun"],
+        # y_markers=["o", "^"],  # source markers: circle, triangle; "x" also works
+        figname='scatter_max_radi_inDXX_newrun.png',
+        y_nc_paths=[dpath2],
+        y_source_names=["newrun"],
+        y_markers=["^"],  # source markers: circle, triangle; "x" also works
+
+        center_flag = center_flag,
         exclude=[
             'RRCE_3km_f00_halfwind_30',
+            'cluster_f10_d20',
+            'cluster_f10_d25',
+            'cluster_f10_d30',
         ],
         special_x_exps=[
             'RRCE_3km_f00_30p27',

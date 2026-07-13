@@ -1,11 +1,10 @@
 #!/usr/bin/bash
 #SBATCH -J wp     # Job name
-##SBATCH -p all     # job partition
-#SBATCH -p compute    # job partition
+#SBATCH -p ct112    # job partition
+#SBATCH -A MST114418
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 15       # Run a single task
-##SBATCH -w mogamd  # nodelist
+#SBATCH -n 72       # Run a single task
 #SBATCH -o wp.%j.out  # output file
 
 
@@ -15,8 +14,8 @@ echo $(which mpirun)
 echo $(which python)
 
 #for i in $(seq 0 4);do
-for i in $(seq 37 40);do
-  mpirun -np 15 python -u wp.py ${i}
+for i in $(seq 0 14);do
+  mpirun -np 72 python -u wp.py ${i}
 done
 
 wait

@@ -1,118 +1,25 @@
 
-vvmPath  = '/data/C.shaoyu/rrce/vvm/'
-dataPath = '/data/C.shaoyu/rrce/data/'
+vvmPath  = '/work1/umbrella0c/VVM/DATA/'
+dataPath = '/work1/umbrella0c/rrce2/data/'
 
 expList  = [  
-            # 0
-            'RRCE_3km_f00',    
-            'RRCE_3km_f10',    
-            'RRCE_3km_f00_10', 
-            'RRCE_3km_f00_15', 
-            'RRCE_3km_f00_16', 
-            # 5
-            'RRCE_3km_f00_17',
-            'RRCE_3km_f00_18',
-            'RRCE_3km_f00_19',
-            'RRCE_3km_f00_20',
-            'RRCE_3km_f00_21',
-            # 10
-            'RRCE_3km_f00_22',
-            'RRCE_3km_f00_23',
-            'RRCE_3km_f00_24',
-            'RRCE_3km_f00_25',
-            'RRCE_3km_f00_26',
-            #15
-            'RRCE_3km_f00_27', 
-            'RRCE_3km_f00_28', 
-            'RRCE_3km_f00_29',
-            'RRCE_3km_f00_30',
-            'RRCE_3km_f00_30p27',
-            #20
-            'RRCE_3km_f00_14p972',
-            'RRCE_3km_f00_14p986',
-            'RRCE_3km_f00_15p014',
-            'RRCE_3km_f00_15p028',
-            'RRCE_3km_f00_19p972',
-            #25
-            'RRCE_3km_f00_19p986',
-            'RRCE_3km_f00_20p014',
-            'RRCE_3km_f00_20p028',
-            'RRCE_3km_f00_24p972',
-            'RRCE_3km_f00_24p986',
-            #30
-            'RRCE_3km_f00_25p014',
-            'RRCE_3km_f00_25p028',
-            'RRCE_3km_f00_29p972',
-            'RRCE_3km_f00_29p986',
-            'RRCE_3km_f00_30p014',
-            #35
-            'RRCE_3km_f00_30p028',
-            'RRCE_3km_f00_halfwind_30',
-
-            'RRCE_3km_f00_11', 
-            'RRCE_3km_f00_12', 
-            'RRCE_3km_f00_13', 
-            #40
-            'RRCE_3km_f00_14', 
-#            'RRCE_3km_f00_25p07', 
+            'cluster_f10_d20',
+            'cluster_f10_d25',
+            'cluster_f10_d30',
+            'cluster_f20_d15',
+            'cluster_f20_d20',
+            'cluster_f20_d21',
+            'cluster_f20_d22',
+            'cluster_f20_d23',
+            'cluster_f20_d24',
+            'cluster_f20_d25',
+            'cluster_f20_d26',
+            'cluster_f20_d27',
+            'cluster_f20_d28',
+            'cluster_f20_d29',
+            'cluster_f20_d30',
            ]
-totalT   = [
-            # 0
-            2881,
-            2161,
-            1441,
-            1081,
-            217, 
-            # 5
-            217, 
-            217, 
-            325, 
-            2880,
-            361, 
-            # 10
-            361, 
-            361, 
-            361, 
-            1441,
-            217, 
-            # 15
-            217, 
-            217, 
-            217, 
-            1441,
-            217, 
-
-            # 20
-            217,
-            217,
-            217,
-            217,
-            217,
-            # 25
-            217,
-            217,
-            217,
-            217,
-            217,
-            # 30
-            217,
-            217,
-            217,
-            217,
-            217,
-
-            # 35
-            217,  \
-            217,  \
-
-            217,  \
-            217,  \
-            217,  \
-            # 40
-            217,  \
-#            217,  \
-
-           ]
+totalT   = [ 217 ] * len(expList)
 expdict  = {
             'RRCE_3km_f00':'CTRL',    \
             'RRCE_3km_f10':'D00_on',    \
@@ -159,7 +66,23 @@ expdict  = {
             'RRCE_3km_f00_13':'D13_on', 
             'RRCE_3km_f00_14':'D14_on', 
 
-            'RRCE_3km_f00_25p07':'D25p07_on', \
+            'RRCE_3km_f00_25p07':'D25p07_on', 
+
+            'cluster_f10_d20':'D10_f10',
+            'cluster_f10_d25':'D10_f10',
+            'cluster_f10_d30':'D10_f10',
+            'cluster_f20_d15':'D15_f20',
+            'cluster_f20_d20':'D20_f20',
+            'cluster_f20_d21':'D21_f20',
+            'cluster_f20_d22':'D22_f20',
+            'cluster_f20_d23':'D23_f20',
+            'cluster_f20_d24':'D24_f20',
+            'cluster_f20_d25':'D25_f20',
+            'cluster_f20_d26':'D26_f20',
+            'cluster_f20_d27':'D27_f20',
+            'cluster_f20_d28':'D28_f20',
+            'cluster_f20_d29':'D29_f20',
+            'cluster_f20_d30':'D30_f20',
            }
 
 def getExpDeltaT(exp):
@@ -167,4 +90,6 @@ def getExpDeltaT(exp):
   if expheader == 'RCE':
     return 60 #mins
   elif expheader == 'RRCE':
+    return 20 #mins
+  elif expheader == 'cluster':
     return 20 #mins

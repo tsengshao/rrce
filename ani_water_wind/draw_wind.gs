@@ -28,15 +28,20 @@ while( 1 )
   endwhile
 endwhile
 
-vvmPath="/data/C.shaoyu/rrce/vvm/"
-datPath="/data/C.shaoyu/rrce/data/"
+vvmPath="/work1/umbrella0c/VVM/DATA/"
+datPath="/work1/umbrella0c/rrce2/data/"
+
+dt  = 20
 
 expList='f00 f10 f00_10 f00_15 f00_16 f00_17 f00_18 f00_19 f00_20 f00_21 f00_22 f00_23 f00_24 f00_25 f00_26 f00_27 f00_28 f00_29 f00_30'
 *tlastList='2881 2161 1441 1081 2880 361 361 361 1441 1441'
-dt  = 20
 expNameList='CTRL D00_on D10_on D15_on D16_on D17_on D18_on D19_on D20_on D21_on D22_on D23_on D24_on D25_on D26_on D27_on D28_on D29_on D30_on'
-
 exp = 'RRCE_3km_'subwrd(expList, iexp)
+
+expList='f10_d20 f10_d25 f10_d30 f20_d20 f20_d21 f20_d22 f20_d23 f20_d24 f20_d25 f20_d26 f20_d27 f20_d28 f20_d29 f20_d30'
+expNameList='f10_d20 f10_d25 f10_d30 f20_d20 f20_d21 f20_d22 f20_d23 f20_d24 f20_d25 f20_d26 f20_d27 f20_d28 f20_d29 f20_d30'
+exp = 'cluster_'subwrd(expList, iexp)
+
 explabel = subwrd(expNameList, iexp)
 if ( exp = 'RRCE_3km_f00' )
     tlast = subwrd(tlastList, iexp)
@@ -74,9 +79,9 @@ meancy = readfile(file, 'mean_y')
 maxcx = readfile(file, 'max_x')
 maxcy = readfile(file, 'max_y')
 
-file = datPath'/find_center/czeta0km_allmean/'exp'.txt'
-allmeancx = readfile(file, 'mean_x')
-allmeancy = readfile(file, 'mean_y')
+** file = datPath'/find_center/czeta0km_allmean/'exp'.txt'
+** allmeancx = readfile(file, 'mean_x')
+** allmeancy = readfile(file, 'mean_y')
 
 file = datPath'/find_center/czeta'kernel'_positivemean/'exp'.txt'
 conmaxcx = readfile(file, 'max_x')
@@ -90,7 +95,7 @@ sfmaxcy = readfile(file, 'max_y')
 'reinit'
 *'set background 1'
 'c'
-'open 'vvmPath'/'exp'/gs_ctl_files/Dynamic.ctl'
+'open 'vvmPath'/'exp'/gs_ctl_files/dynamic.ctl'
 'open 'datPath'/wp/'exp'.ctl'
 
 it = ts
