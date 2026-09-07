@@ -5,7 +5,7 @@
 #SBATCH -p ct112     # job partition
 #SBATCH -N 1       # Run all processes on a single node 
 #SBATCH -c 1        # cores per MPI rank
-#SBATCH -n 15       # Run a single task
+#SBATCH -n 6      # Run a single task
 #SBATCH -o center.%j.out  # output file
 
 
@@ -23,7 +23,7 @@ str_kernel='150km'
 #exit
 #for i in $(seq 1 19);do
 #for i in $(seq 20 36);do
-for i in $(seq 0 14);do
+for i in $(seq 0 5);do
   pids=()
   a=$(echo "mod(${i},${ncpu})"|bc -l ~/.bcrc)
   echo ${i}...${a}

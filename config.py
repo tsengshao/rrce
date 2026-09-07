@@ -3,6 +3,14 @@ vvmPath  = '/work1/umbrella0c/VVM/DATA/'
 dataPath = '/work1/umbrella0c/rrce2/data/'
 
 expList  = [  
+            # 0
+            'cluster_f20_d10',
+            'cluster_f20_d16',
+            'cluster_f20_d17',
+            'cluster_f20_d18',
+            'cluster_f20_d19',
+
+            # 5
             'cluster_f10_d20',
             'cluster_f10_d25',
             'cluster_f10_d30',
@@ -83,6 +91,13 @@ expdict  = {
             'cluster_f20_d28':'D28_f20',
             'cluster_f20_d29':'D29_f20',
             'cluster_f20_d30':'D30_f20',
+
+            'cluster_f20_d10':'D10_f20',
+            'cluster_f20_d15':'D15_f20',
+            'cluster_f20_d16':'D16_f20',
+            'cluster_f20_d17':'D17_f20',
+            'cluster_f20_d18':'D18_f20',
+            'cluster_f20_d19':'D19_f20',
            }
 
 def getExpDeltaT(exp):
