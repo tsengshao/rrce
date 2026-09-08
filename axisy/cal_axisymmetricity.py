@@ -19,10 +19,6 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
-if exp=='RRCE_3km_f00':
-  nt=2521
-else:
-  nt=217
 if (cpuid==0): print(exp, nt)
 
 center_flag='czeta0km_positivemean'
@@ -117,4 +113,3 @@ elif dimtype=='2d':
   plt.ylim(0,1)
   plt.legend()
 plt.show()
-

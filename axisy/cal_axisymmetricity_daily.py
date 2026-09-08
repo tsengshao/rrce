@@ -17,15 +17,14 @@ cpuid = comm.Get_rank()
 nexp = len(config.expList)
 iexp = int(sys.argv[1])
 
-nt = config.totalT[iexp]
 exp = config.expList[iexp]
-if exp=='RRCE_3km_f00':
-  nt=2521
-  nt=35 #days
-else:
-  nt=217
-  nt=3 #days
-if (cpuid==0): print(exp, nt)
+total_t = config.totalT[iexp]
+dtime = config.getExpDeltaT(exp)
+day2num = int(24*60/dtime)
+if (total_t-1) % day2num != 0:
+  raise ValueError(f'totalT={total_t} does not contain complete daily windows for dt={dtime}')
+nday = (total_t-1)//day2num
+if (cpuid==0): print(exp, total_t, nday)
 
 center_flag='czeta0km_positivemean'
 outdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
@@ -35,9 +34,6 @@ radius_1d = nc.variables['radius'][:]
 theta_1d  = nc.variables['theta'][:]
 zc        = nc.variables['zc'][:]
 dtheta    = theta_1d[1]-theta_1d[0]
-dtime     = 20 #min
-day2num   = int(24*60/dtime)
-
 vtype     = np.array([0,1])  #0: mean, 1:gamma
 def remove_theta_add_vtype_dims(in_ncvar):
   vardims = list(in_ncvar.dimensions)
@@ -49,7 +45,7 @@ def remove_theta_add_vtype_dims(in_ncvar):
   return vardims, chunks
 
 
-idy_start, idy_end =  tools.get_mpi_time_span(0, nt, cpuid, nproc)
+idy_start, idy_end =  tools.get_mpi_time_span(0, nday, cpuid, nproc)
 print(cpuid, idy_start, idy_end, idy_end-idy_start)
 comm.Barrier()
 
@@ -126,4 +122,3 @@ elif dimtype=='2d':
   plt.ylim(0,1)
   plt.legend()
 plt.show()
-

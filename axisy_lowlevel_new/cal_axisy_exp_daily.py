@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import os
 import sys
+import tempfile
 from typing import Dict, Optional, Sequence
 
 import numpy as np
@@ -124,11 +125,18 @@ def main(
     day1: int = 3,
     exp_list: Optional[Sequence[str]] = None,
     exact_case_exps: Optional[Sequence[str]] = None,
+    output_nc: Optional[str] = None,
+    require_all: bool = True,
 ) -> None:
     datdir = os.path.join(config.dataPath, "axisy", center_flag)
     wpdir = os.path.join(config.dataPath, "wp")
-    outdir = os.path.join(config.dataPath, "axisy_lowlevel", center_flag)
+    if output_nc is None:
+        raise ValueError("output_nc is required")
+    output_nc = os.path.abspath(output_nc)
+    outdir = os.path.dirname(output_nc)
     os.makedirs(outdir, exist_ok=True)
+    if os.path.exists(output_nc):
+        raise FileExistsError(output_nc)
 
     exps = _default_exp_list() if exp_list is None else list(exp_list)
     exact_case_exps = set([] if exact_case_exps is None else exact_case_exps)
@@ -195,6 +203,11 @@ def main(
 
     if not valid_exps:
         raise RuntimeError("No valid experiments remained after skipping missing-variable cases.")
+    if require_all and skipped:
+        details = "; ".join(str(item) for item in skipped)
+        raise RuntimeError(f"required experiment set was incomplete: {details}")
+    if require_all and set(valid_exps) != set(exps):
+        raise RuntimeError("required experiment set did not match the written experiment set")
 
     labels = [config.expdict.get(exp, exp) for exp in valid_exps]
     case_day = np.asarray([parse_restart_day(exp) for exp in valid_exps], dtype=np.float64)
@@ -245,9 +258,16 @@ def main(
         },
     )
 
-    out_nc = os.path.join(outdir, OUT_FILENAME)
-    ds.to_netcdf(out_nc)
-    print("[write]", out_nc)
+    fd, temporary = tempfile.mkstemp(prefix=".axisy-exp-", suffix=".nc", dir=outdir)
+    os.close(fd)
+    os.unlink(temporary)
+    try:
+        ds.to_netcdf(temporary)
+        os.replace(temporary, output_nc)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+    print("[write]", output_nc)
     print(f"[summary] wrote {len(valid_exps)} cases; skipped {len(skipped)} cases")
     if skipped:
         print("[skipped cases]")
@@ -256,4 +276,16 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-nc", required=True)
+    parser.add_argument("--center-flag", default=CENTER_FLAG)
+    parser.add_argument("--day0", type=int, default=0)
+    parser.add_argument("--day1", type=int, default=3)
+    parser.add_argument("--exp", action="append", dest="exp_list", required=True)
+    parser.add_argument("--allow-partial", action="store_true")
+    args = parser.parse_args()
+    main(center_flag=args.center_flag, day0=args.day0, day1=args.day1,
+         exp_list=args.exp_list, output_nc=args.output_nc,
+         require_all=not args.allow_partial)

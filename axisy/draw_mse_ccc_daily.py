@@ -31,12 +31,8 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
-if exp=='RRCE_3km_f00':
-  nt=2521
-else:
-  nt=217
 if (cpuid==0): print(exp, nt)
-dtime = 20
+dtime = config.getExpDeltaT(exp)
 day2num = int(24*60/dtime)
 nt=(nt-1)//day2num
 
@@ -50,6 +46,8 @@ if iswhite:
 else:
   figdir=f'./{center_flag}/{fig_flag}/{exp}/'
 os.system(f'mkdir -p {figdir}')
+figdir = os.environ.get('RRCE_OUTPUT_DIR', figdir)
+os.makedirs(figdir, exist_ok=True)
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 zz_raw  = vvmLoader.loadZZ()[:]

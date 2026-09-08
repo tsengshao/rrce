@@ -14,7 +14,6 @@ import util.tools as tools
 def write_amean_ctl(fname,exp,x,y,z,e,nt,dt):
     dset = f'^./{exp}/axmean_process-%tm6.nc'
     str_z = ' '.join(z.astype(str))
-    dt = 20 #min
     x  = np.arange(x.size)*2
     #y  = np.linspace(0,1,y.size)*360
     y  = np.array([0])
@@ -55,11 +54,8 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
-if exp=='RRCE_3km_f00':
-  nt=2521
-else:
-  nt=217
 if (cpuid==0): print(exp, nt)
+dtime = config.getExpDeltaT(exp)
 
 center_flag='czeta0km_positivemean'
 outdir=config.dataPath+f"/axisy/{center_flag}/{exp}/"
@@ -112,7 +108,7 @@ if cpuid == 0:
                         z     = zc,\
                         e     = np.array(['mean', 'axisy']),\
                         nt    = nt,\
-                        dt    = 20,\
+                        dt    = dtime,\
                        )
 
 
@@ -120,7 +116,6 @@ for it in range(it_start, it_end):
 #for it in [216]:
     nc_axsy   = Dataset(f'{outdir}/axisy-{it:06d}.nc', 'r')
     fname_out = f'{outdir}/axmean_process-{it:06d}.nc'
-    os.system(f'rm -rf {fname_out}')
     nc_out  = axisy.create_nc_copy_dims(fname=fname_out, src=nc_axsy, kick_out_members=['theta'])
     _       = axisy.add_dims_into_nc(nc_out, 'vtype', vtype, ('vtype'), {'num0':'mean', 'num1':'axisymmetricity'})
     nc_out.history  = "Created " + datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -265,4 +260,3 @@ elif dimtype=='2d':
   plt.ylim(0,1)
   plt.legend()
 plt.show()
-

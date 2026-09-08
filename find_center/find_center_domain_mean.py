@@ -241,7 +241,7 @@ for it in range(nt):
 
   hori_size = np.sum(czeta>0)/nx/ny*100
 
-  if True:
+  if os.environ.get("RRCE_CENTER_DEBUG_FIGURES") == "1":
     plt.close('all')
     set_black_background()
     levels = [-100,-50,-20,-10,-5,-0.1,0.1,5,10,20,50,100]
@@ -277,4 +277,3 @@ for it in range(nt):
 
   fout.write(f"{it:{width}d} {mean_value:{width}.4e} {max_value:{width}.4e} {hori_size:{width}.4f} {mean_ix:{width}.4e} {mean_iy:{width}.4e} {max_ix:{width}d} {max_iy:{width}d} {posi_mean_value:{width}.4e}\n")
 fout.close()
-

@@ -18,10 +18,6 @@ iexp = int(sys.argv[1])
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
-if exp!='RRCE_3km_f00':
-  nt=217
-else:
-  nt=2521
 if (cpuid==0): print(exp, nt)
 
 center_flag='czeta0km_positivemean'
@@ -34,7 +30,7 @@ thData = vvmLoader.loadThermoDynamic(0)
 nz, ny, nx = thData['qv'][0].shape
 xc, yc, zc = thData['xc'][:], thData['yc'][:], thData['zc'][:]
 dx, dy = np.diff(xc)[0], np.diff(yc)[0]
-dtime  = 20  #minutes
+dtime  = config.getExpDeltaT(exp)  # minutes
 rho = vvmLoader.loadRHO()[:-1]
 pibar = vvmLoader.loadPIBAR()[:-1]
 pbar = vvmLoader.loadPBAR()[:-1]
@@ -75,7 +71,6 @@ for it in np.arange(it_start, it_end):
     sdis, stheta = axisy.compute_shortest_distances_vectorized(xc, yc, cx, cy)
     
     fname  = f'{outdir}/axisy-{it:06d}.nc'
-    os.system(f'rm -rf {fname}')
     axisyWriter = axisy.ncWriter(fname)
     axisyWriter.create_coordinate(t_min = it*dtime,\
                                 z_zc_m = zc,\
@@ -157,4 +152,3 @@ for it in np.arange(it_start, it_end):
                                   nt = nt,\
                                   dt = dtime\
                              )
-

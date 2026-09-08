@@ -16,16 +16,17 @@ cpuid = comm.Get_rank()
 
 nexp = len(config.expList)
 iexp = int(sys.argv[1])
+if '--component' not in sys.argv:
+  raise ValueError("--component radial|tangential is required")
+component = sys.argv[sys.argv.index('--component')+1]
+if component not in ('radial', 'tangential'):
+  raise ValueError("--component must be radial or tangential")
 iswhite = True
 
 nt = config.totalT[iexp]
 exp = config.expList[iexp]
-if exp=='RRCE_3km_f00':
-  nt=2521
-else:
-  nt=217
 if (cpuid==0): print(exp, nt)
-dtime = 20
+dtime = config.getExpDeltaT(exp)
 
 center_flag='czeta0km_positivemean'
 fig_flag   ='hov_inflow'
@@ -35,6 +36,8 @@ if iswhite:
 else:
   figdir=f'./{center_flag}/{fig_flag}/'
 os.system(f'mkdir -p {figdir}')
+figdir = os.environ.get('RRCE_OUTPUT_DIR', figdir)
+os.makedirs(figdir, exist_ok=True)
 
 vvmLoader = VVMLoader(f"{config.vvmPath}/{exp}/", subName=exp)
 zz_raw = vvmLoader.loadZZ()[:-1]
@@ -77,23 +80,15 @@ udraw.set_figure_defalut()
 if not iswhite:
   udraw.set_black_background()
 
-varname = 'radi_wind'
+varname = 'radi_wind' if component == 'radial' else 'tang_wind'
 varunits = 'm/s'
-var     = rwind_lower[0]
-var_ax  = rwind_lower[1]
+source = rwind_lower if component == 'radial' else twind_lower
+var     = source[0]
+var_ax  = source[1]
 levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
 inner_length = 10 #km
 indxinner = np.argmin(np.abs(radius_1d-inner_length))
 loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
-
-## varname = 'tang_wind'
-## varunits = 'm/s'
-## var     = twind_lower[0]
-## var_ax  = twind_lower[1]
-## levels  = [-10, -5, -3, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5,  2, 3, 5, 10]
-## inner_length = 10 #km
-## indxinner = np.argmin(np.abs(radius_1d-inner_length))
-## loc_maxconv = radius_1d[np.argmax(conv_lower[0,:,indxinner:], axis=1)+indxinner]
 
 fig, ax = plt.subplots(figsize=figsize)
 cmap = udraw.get_cmap('pwo')
@@ -147,5 +142,4 @@ plt.tight_layout()
 plt.savefig(f'{figdir}/series_{varname}_{exp}.png', dpi=200, transparent=True)
 
 plt.close('all')
-
 

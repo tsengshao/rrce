@@ -12,6 +12,8 @@ So you don't have to duplicate fragile string-parsing logic across scripts.
 
 from __future__ import annotations
 
+import re
+
 def parse_restart_day(exp: str) -> float:
     """
     Parse restart_day from experiment name.
@@ -23,10 +25,13 @@ def parse_restart_day(exp: str) -> float:
     """
     if exp in ("RRCE_3km_f00", "RRCE_3km_f10"):
         return 0.0
-    token = exp.split("_")[-1]
-    if token.startswith("d"):
-        token = token[1:]
-    return float(token.replace("p", "."))
+    candidates = re.findall(r"(?:^|_)d(\d+(?:p\d+|\.\d+)?)(?=_|$)", exp)
+    if len(candidates) != 1:
+        raise ValueError(
+            f"cannot determine one restart day from {exp!r}; "
+            "provide an explicit case_day mapping"
+        )
+    return float(candidates[0].replace("p", "."))
 
 
 def ctrl_day_from_case_day(case_day: float, force_exact: bool = False, tolerance_hours: float = 3.0) -> float:
