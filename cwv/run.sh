@@ -14,7 +14,7 @@ echo $(which mpirun)
 echo $(which python)
 
 #for i in $(seq 0 4);do
-for i in $(seq 0 5);do
+for i in $(seq 1 16);do
   mpirun -np 72 python -u wp.py ${i}
 done
 

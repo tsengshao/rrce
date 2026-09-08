@@ -12,7 +12,7 @@ conda activate py311
 #for i in $(seq 7 9);do
 #for i in 0 1 2 3 4;do
 #for i in $(seq 0 14);do
-for i in $(seq 0 5);do
+for i in $(seq 1 16);do
 #for c in 150 100 50 25;do
 for c in 150;do
 echo ${i}

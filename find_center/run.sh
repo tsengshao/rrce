@@ -15,7 +15,7 @@ py="find_center_domain_mean.py"
 #py="find_center_domain_mean_sf.py"
 cpum=$(echo "${ncpu}-1"|bc)
 str_kernel='0km'
-str_kernel='150km'
+#str_kernel='150km'
 
 #python -u ${py} 0 ${str_kernel} &
 #echo $!
@@ -23,7 +23,7 @@ str_kernel='150km'
 #exit
 #for i in $(seq 1 19);do
 #for i in $(seq 20 36);do
-for i in $(seq 0 5);do
+for i in $(seq 1 16);do
   pids=()
   a=$(echo "mod(${i},${ncpu})"|bc -l ~/.bcrc)
   echo ${i}...${a}
