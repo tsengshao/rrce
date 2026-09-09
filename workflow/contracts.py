@@ -210,7 +210,7 @@ def outputs_for(stage_id: str, cfg: ConfigSnapshot, product_settings: dict[str, 
             for day in settings.get("lowlevel_days", (0, 3)):
                 products.append(Product(
                     figure_root / f"{CENTER_FLAG}_sap_white" / "inflow_daily" / "exp" /
-                    f"{case.experiment}_day{day}_daily.png", "figure", case.index
+                    f"{case.experiment}_day{day:02d}_daily.png", "figure", case.index
                 ))
     elif stage_id == "scatter_dry":
         products.append(Product(figure_root / f"{CENTER_FLAG}_white" / "inflow_daily" / "scatter_DRY.png", "figure"))

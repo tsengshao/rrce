@@ -18,6 +18,7 @@ from workflow.planner import build_plan, direct_request, request_from_manifest
 from workflow.render import RenderError, render, render_grads_case, verify_run
 from workflow.runner import run_stage
 from workflow.stages import STAGES, topological_order
+from workflow.status import collect_status, format_status
 from workflow.submit import SubmitError, parse_job_id, submission_preview, submit
 
 
@@ -178,6 +179,26 @@ class RenderAndSubmitTests(unittest.TestCase):
                 Product(path, "data", 0), validation_for("axisy_convert"), 1
             )
             self.assertIn("radi_wind", error)
+
+    def test_lowlevel_profile_contract_uses_plotter_day_tokens(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = root / "config_tiny.py"
+            config.write_text(
+                "vvmPath='/vvm'\ndataPath=" + repr(str(root / "data")) + "\n"
+                "expList=['cluster_f10_d20_HomogRad']\ntotalT=[1]\n"
+                "expdict={expList[0]:'D20'}\ndef getExpDeltaT(exp): return 20\n"
+            )
+            request = direct_request(str(config), [0], "tiny", "lowlevel-day-token")
+            plan, _ = build_plan(request)
+            stage = next(
+                stage for stage in plan["stages"] if stage["id"] == "lowlevel_profiles"
+            )
+            names = [Path(output["path"]).name for output in stage["outputs"]]
+            self.assertEqual(names, [
+                "cluster_f10_d20_HomogRad_day00_daily.png",
+                "cluster_f10_d20_HomogRad_day03_daily.png",
+            ])
 
     def test_series_validation_counts_all_files_and_opens_only_last(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -422,6 +443,87 @@ class RenderAndSubmitTests(unittest.TestCase):
                 state = submit(run_dir, runner=fake_runner)
             self.assertEqual(state["jobs"]["a"]["job_id"], "41")
             self.assertEqual(json.loads((run_dir / "state" / "overwrite.json").read_text()), [str(collision)])
+
+
+class StatusTests(unittest.TestCase):
+    def test_rendered_run_is_reported_as_not_submitted(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run_dir = Path(temporary)
+            (run_dir / "state").mkdir()
+            plan = {
+                "run_id": "rendered-1",
+                "unresolved": [],
+                "stages": [
+                    {"id": "ready", "action": "run", "parents": []},
+                    {"id": "old", "action": "reuse", "parents": []},
+                    {
+                        "id": "blocked", "action": "blocked", "parents": [],
+                        "blocked_by": ["missing_input"], "missing_products": ["x"],
+                    },
+                ],
+            }
+
+            summary = collect_status(run_dir, plan)
+
+            self.assertEqual(summary["overall"], "RENDERED_NOT_SUBMITTED")
+            self.assertFalse(summary["finished"])
+            self.assertEqual(summary["submission"]["unsubmitted_jobs"], ["ready"])
+            self.assertIn("Submission: 0/1 jobs submitted", format_status(summary))
+
+    def test_status_summarizes_failure_reason_and_failed_dependency(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run_dir = Path(temporary)
+            (run_dir / "state").mkdir()
+            (run_dir / "logs").mkdir()
+            (run_dir / "state" / "jobs.json").write_text(json.dumps({
+                "jobs": {
+                    "prepare": {"job_id": "41"},
+                    "calculate": {"job_id": "42"},
+                    "plot": {"job_id": "43"},
+                },
+                "intents": {},
+                "failures": {},
+            }))
+            (run_dir / "logs" / "calculate.42.out").write_text(
+                "Traceback (most recent call last):\n"
+                "ValueError: duplicate experiment coordinate\n"
+                "StageFailure: command exited 1\n"
+            )
+            plan = {
+                "run_id": "failed-1",
+                "unresolved": [],
+                "stages": [
+                    {"id": "prepare", "action": "run", "parents": []},
+                    {"id": "calculate", "action": "run", "parents": ["prepare"]},
+                    {"id": "plot", "action": "run", "parents": ["calculate"]},
+                ],
+            }
+
+            def fake_runner(argv, **kwargs):
+                if argv[0] == "squeue":
+                    return subprocess.CompletedProcess(
+                        argv, 0, stdout="43|PENDING|DependencyNeverSatisfied\n", stderr=""
+                    )
+                return subprocess.CompletedProcess(
+                    argv, 0,
+                    stdout=(
+                        "41|COMPLETED|0:0|00:00:05\n"
+                        "42|FAILED|1:0|00:00:02\n"
+                        "43|PENDING|0:0|00:00:00\n"
+                    ),
+                    stderr="",
+                )
+
+            summary = collect_status(run_dir, plan, runner=fake_runner)
+            output = format_status(summary)
+
+            self.assertEqual(summary["overall"], "FAILED")
+            self.assertTrue(summary["finished"])
+            self.assertEqual(summary["jobs"]["succeeded"], 1)
+            self.assertEqual(summary["jobs"]["failed"], 1)
+            self.assertEqual(summary["jobs"]["dependency_failed"], 1)
+            self.assertIn("ValueError: duplicate experiment coordinate", output)
+            self.assertIn("plot (43): DEPENDENCY_FAILED", output)
 
 
 if __name__ == "__main__":

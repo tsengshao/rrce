@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 
 from .planner import PlanError, build_plan, direct_request, plan_text, request_from_manifest
 from .render import RenderError, render, verify_run
+from .status import collect_status, format_status
 from .submit import SubmitError, submission_preview, submit
 
 
@@ -53,6 +53,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     status_parser = sub.add_parser("status")
     status_parser.add_argument("--run-dir", type=Path, required=True)
+    status_output = status_parser.add_mutually_exclusive_group()
+    status_output.add_argument("--json", action="store_true", help="print the concise summary as JSON")
+    status_output.add_argument("--raw-json", action="store_true", help="print full legacy submission and scheduler data")
     args = parser.parse_args(argv)
     try:
         if args.command in {"plan", "render"}:
@@ -78,14 +81,14 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         run_dir = args.run_dir.resolve()
         plan = verify_run(run_dir)
-        state_path = run_dir / "state" / "jobs.json"
-        state = json.loads(state_path.read_text()) if state_path.exists() else {"jobs": {}, "intents": {}}
-        job_ids = [item["job_id"] for item in state["jobs"].values()]
-        slurm = ""
-        if job_ids:
-            completed = subprocess.run(["squeue", "-h", "-j", ",".join(job_ids), "-o", "%i|%T"], text=True, capture_output=True, check=False)
-            slurm = completed.stdout.strip()
-        print(json.dumps({"run_id": plan["run_id"], "state": state, "squeue": slurm}, indent=2, sort_keys=True))
+        summary = collect_status(run_dir, plan)
+        if args.raw_json:
+            print(json.dumps({"run_id": plan["run_id"], **summary["_raw"]}, indent=2, sort_keys=True))
+        elif args.json:
+            concise = {key: value for key, value in summary.items() if key != "_raw"}
+            print(json.dumps(concise, indent=2, sort_keys=True))
+        else:
+            print(format_status(summary), end="")
         return 0
     except (PlanError, RenderError, SubmitError, OSError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)

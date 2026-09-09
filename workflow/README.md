@@ -18,6 +18,13 @@ python -m workflow.cli submit --run-dir workflow/runs/RUN_ID
 python -m workflow.cli status --run-dir workflow/runs/RUN_ID
 ```
 
+status 預設輸出精簡的人類可讀摘要，包括整體狀態、是否已結束、submit
+進度、成功/失敗/執行中/等待中的 job 數量，以及失敗 stage 的 Slurm exit
+code 與 log 中可辨識的例外原因。只有 render、尚未 submit 時會明確顯示
+RENDERED_NOT_SUBMITTED；完成與部分失敗則分別顯示 COMPLETED、FAILED。
+需要程式讀取時使用 --json 取得摘要 JSON；需要完整 submission state 與原始
+scheduler 結果時使用 --raw-json。
+
 `plan` 永遠唯讀。`render` 以 exclusive create 建立 run directory，保存 config/source snapshot、SHA-256 lock、展開後的 jobs 和 artifact links，但不提交。`submit` 只接受未被修改的 run directory，依拓樸順序取得真實 job ID，再組合 `afterok`。`run.allow_overwrite = true` 只授權 render 時已存在且列於 plan 的精確 collision；render 後才出現的新檔案仍會拒絕。沒有設定時預設不覆寫。
 
 每個 stage 的 `action` 可設為 `run`、`reuse` 或 `auto`：
