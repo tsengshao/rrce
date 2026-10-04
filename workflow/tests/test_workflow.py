@@ -93,6 +93,9 @@ class DagAndCtlTests(unittest.TestCase):
 
     def test_split_axisy_stages_use_qos_compatible_partitions(self):
         stages = {stage.id: stage for stage in STAGES}
+        self.assertEqual(stages["axisy_convert"].resources.tasks, 224)
+        self.assertEqual(stages["axisy_convert"].resources.ranks, 217)
+        self.assertTrue(stages["axisy_convert"].parallel_cases)
         self.assertEqual(stages["axisy_mean"].resources.partition, "ct112,cf112")
         self.assertEqual(stages["axisy_daily"].resources.partition, "ct112,cf112")
         self.assertEqual(stages["axisy_process"].resources.partition, "ct448,cf448")
@@ -309,6 +312,45 @@ class RenderAndSubmitTests(unittest.TestCase):
                 run_stage(run_dir, "cwv")
             self.assertEqual(len(calls), 1)
             self.assertTrue((run_dir / "state" / "receipt-cwv.json").is_file())
+
+    def test_axisy_convert_runs_two_cases_per_slurm_step_batch(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run_dir = Path(temporary)
+            (run_dir / "state").mkdir()
+            outputs = [run_dir / f"axisy-case-{index}.nc" for index in range(3)]
+            plan = {
+                "dataset_tag": "tiny",
+                "data_path": str(run_dir / "data"),
+                "cases": [
+                    {"index": index, "experiment": f"case-{index}"}
+                    for index in range(3)
+                ],
+                "stages": [{
+                    "id": "axisy_convert", "action": "run", "requested_action": "run",
+                    "skipped_cases": [], "resources": {"tasks": 434, "ranks": 217},
+                    "validation": {"kind": "nonempty"},
+                    "outputs": [
+                        {"path": str(path), "case_index": index}
+                        for index, path in enumerate(outputs)
+                    ],
+                }],
+            }
+            (run_dir / "plan.json").write_text(json.dumps(plan))
+            batches = []
+
+            def fake_parallel(commands, cwd=None):
+                batches.append(commands)
+                for command in commands:
+                    outputs[int(command[-1])].write_bytes(b"produced")
+
+            with patch("workflow.runner._run_parallel", side_effect=fake_parallel):
+                run_stage(run_dir, "axisy_convert")
+
+            self.assertEqual([len(batch) for batch in batches], [2, 1])
+            for command in [item for batch in batches for item in batch]:
+                self.assertEqual(command[0], "srun")
+                self.assertIn("--exclusive", command)
+                self.assertEqual(command[command.index("-n") + 1], "217")
 
     def test_full_render_is_locked_and_reviewable(self):
         with tempfile.TemporaryDirectory() as temporary:

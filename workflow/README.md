@@ -43,6 +43,8 @@ scheduler 結果時使用 --raw-json。
 
 耗時的 axisy postprocess 已拆成 `axisy_mean`、`axisy_process`、`axisy_daily` 三個 stage，可各自按 case 判斷並列出跳過項目。舊 manifest 的 `[stages.axisy_postprocess]` 仍可使用，會自動展開到這三個 stage。
 
+`axisy_convert` 保留原本的 224 tasks、217 ranks 與逐 case 執行作為預設。需要跨 case 並行時，可在 manifest 的 `[resources.axisy_convert]` 將 `tasks` 設為 `ranks` 的兩倍以上；runner 會把不同 cases 分成 exclusive Slurm steps，同時執行數為 `tasks // ranks`。例如 `tasks = 434`、`ranks = 217` 會一次處理兩個 cases，case 數為奇數時最後一批只啟動一個 step。`cal_axisy.py` 不需更動。
+
 Slurm job 會執行 `source ~/.bashrc` 與 `conda activate py311` 後才啟動 Python。
 
 直接使用 config 也可以：

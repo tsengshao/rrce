@@ -28,7 +28,7 @@ def _run(argv: list[str], cwd: Path | None = None, env: dict[str, str] | None = 
         raise StageFailure(f"command exited {completed.returncode}: {argv}")
 
 
-def _run_parallel(commands: list[list[str]], cwd: Path) -> None:
+def _run_parallel(commands: list[list[str]], cwd: Path | None = None) -> None:
     processes = []
     for argv in commands:
         print("+", " ".join(argv), flush=True)
@@ -55,14 +55,27 @@ def _locks(paths: list[str], stage_id: str) -> ExitStack:
     return stack
 
 
-def _python_command(run_dir: Path, relative_and_args: str, ranks: int | None) -> list[str]:
+def _python_command(
+    run_dir: Path,
+    relative_and_args: str,
+    ranks: int | None,
+    *,
+    slurm_step: bool = False,
+) -> list[str]:
     parts = relative_and_args.split()
     adapter = [
         sys.executable, "-m", "workflow.run_with_config",
         "--config", str(run_dir / "config.snapshot.py"),
         "--script", str(run_dir / "sources" / parts[0]), "--", *parts[1:],
     ]
-    return ["mpirun", "-np", str(ranks), *adapter] if ranks else adapter
+    if not ranks:
+        return adapter
+    if slurm_step:
+        return [
+            "srun", "--mpi=pmi2", "--exclusive", "--kill-on-bad-exit=1",
+            "-n", str(ranks), "-c", "1", *adapter,
+        ]
+    return ["mpirun", "-np", str(ranks), *adapter]
 
 
 def _ctl_command(kind: str, case: dict[str, Any], plan: dict[str, Any], allow: bool) -> list[str]:
@@ -106,6 +119,27 @@ def run_stage(run_dir: Path, stage_id: str) -> None:
             for command_spec in stage.commands:
                 spec, separator, rank_text = command_spec.partition("|")
                 ranks = int(rank_text) if separator else stage_data["resources"]["ranks"]
+                parallel_width = (
+                    stage_data["resources"]["tasks"] // ranks
+                    if stage.parallel_cases and ranks
+                    else 1
+                )
+                if parallel_width > 1:
+                    if not ranks:
+                        raise StageFailure(f"{stage_id}: parallel cases require MPI ranks")
+                    commands = [
+                        _python_command(
+                            run_dir,
+                            spec.format(case=case["index"]),
+                            ranks,
+                            slurm_step=True,
+                        )
+                        for case in plan["cases"]
+                        if case["index"] not in skipped_cases
+                    ]
+                    for start in range(0, len(commands), parallel_width):
+                        _run_parallel(commands[start:start + parallel_width])
+                    continue
                 for case in plan["cases"]:
                     if case["index"] in skipped_cases:
                         print(f"skip {stage_id} case {case['index']}: expected filenames are complete", flush=True)

@@ -104,7 +104,7 @@ Stage records 全部寫在 stages.py，不能把 DAG 分散於 CLI 或 shell tem
 cwv ct112/72 ranks；convolve ct448/217 ranks；horisf ct112/72 ranks；
 center ct112/單程序（可申請原 6 tasks，但依序執行不需 6 ranks）；
 cloud ct112/7 MPI ranks、112 allocation tasks、內部 15 workers；
-axisy_convert ct448/224 allocation tasks、217 ranks；
+axisy_convert ct448,cf448/224 allocation tasks、217 ranks；manifest 可覆寫為 434 tasks，同時執行兩個 217-rank cases；
 postprocess ct448/217 tasks，reduce 72、process 217、daily 3 ranks；
 GrADS ct112,cf112/112 個單核心 slots；
 無既有 SBATCH 的 serial Python/CTL 使用 ct112,cf112/1 task。

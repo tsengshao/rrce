@@ -25,9 +25,10 @@ class Stage:
     kind: str
     commands: tuple[str, ...]
     case_mode: str = "per_case_loop"
+    parallel_cases: bool = False
 
 
-SERIAL = Resources("ct112,cf112", 1)
+SERIAL = Resources("development,ct112,cf112", 1)
 GRADS = Resources("ct112,cf112", 112)
 
 STAGES: tuple[Stage, ...] = (
@@ -37,7 +38,7 @@ STAGES: tuple[Stage, ...] = (
     Stage("center_0", (), SERIAL, "python", ("find_center/find_center_domain_mean.py {case} 0km",)),
     Stage("center_150", ("convolve",), SERIAL, "python", ("find_center/find_center_domain_mean.py {case} 150km",)),
     Stage("center_sf", ("horisf",), SERIAL, "python", ("find_center/find_center_domain_mean_sf.py {case}",)),
-    Stage("cloud", (), Resources("ct448", 448, 29), "python", ("cloud/find_cloud.py {case}",)),
+    Stage("cloud", (), Resources("cf448", 448, 29), "python", ("cloud/find_cloud.py {case}",)),
     Stage("wp_ctl", ("cwv",), SERIAL, "ctl", ("wp",)),
     Stage("convolve_ctl", ("convolve",), SERIAL, "ctl", ("convolve",)),
     Stage("sf_ctl", ("horisf",), SERIAL, "ctl", ("sf",)),
@@ -45,7 +46,14 @@ STAGES: tuple[Stage, ...] = (
     Stage("wind", ("wp_ctl", "center_0", "center_150", "center_sf"), GRADS, "grads", ("ani_water_wind/draw_wind.gs",)),
     Stage("center_zeta", ("center_0", "center_150", "center_sf", "convolve_ctl", "sf_ctl"), GRADS, "grads", ("ani_center/draw_zeta.gs",)),
     Stage("center_conzeta", ("center_0", "center_150", "center_sf", "convolve_ctl", "sf_ctl"), GRADS, "grads", ("ani_center/draw_conzeta.gs",)),
-    Stage("axisy_convert", ("cwv", "center_0"), Resources("ct448,cf448", 224, 217), "python", ("axisy/cal_axisy.py {case}",)),
+    Stage(
+        "axisy_convert",
+        ("cwv", "center_0"),
+        Resources("ct448,cf448", 224, 217),
+        "python",
+        ("axisy/cal_axisy.py {case}",),
+        parallel_cases=True,
+    ),
     Stage("axisy_mean", ("axisy_convert",), Resources("ct112,cf112", 72, 72), "python", ("axisy/cal_axisymmetricity.py {case}",)),
     Stage("axisy_process", ("axisy_convert",), Resources("ct448,cf448", 217, 217), "python", ("axisy/cal_process_axisymmetricity.py {case}",)),
     Stage("axisy_daily", ("axisy_convert",), Resources("ct112,cf112", 3, 3), "python", ("axisy/cal_axisymmetricity_daily.py {case}",)),

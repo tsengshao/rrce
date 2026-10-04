@@ -149,7 +149,7 @@ for case_index in <rendered-case-indexes>; do
 done
 ```
 
-目前採用的 runtime 是 `mamba activate py311`，GrADS executable 是 `/work1/umbrella0c/opengrads-hpc-1.0.8-linux-x86_64/opengrads`。計算 stage 的 partition/tasks 由相對應的現有 run script 帶入：CWV 使用 ct112/72、convolve 使用 ct448/217、horisf 使用 ct112/72、三種 center 使用 ct112、cloud 使用 ct112/112、axisy convert 使用 448-core partition/217 ranks。`axisy/run2.sh` 宣告 45 tasks 卻執行 72/217-rank 的 MPI 命令，不能原樣使用；`axisy_postprocess` 應配置至少 217 tasks 的 448-core partition，或之後拆成不同資源的 jobs。GrADS stage 使用 `ct112,cf112`、112 tasks，並以最多 112 個背景程序分批執行，`wait` 後才啟動下一批。account 沿用現有 run scripts 的 `MST114418`。
+目前採用的 runtime 是 `conda activate py311`，GrADS executable 是 `/work1/umbrella0c/opengrads-hpc-1.0.8-linux-x86_64/opengrads`。計算 stage 的 partition/tasks 由相對應的現有 run script 帶入：CWV 使用 ct112/72、convolve 使用 ct448/217、horisf 使用 ct112/72、三種 center 使用 ct112、cloud 使用 ct448/448 tasks 與 29 ranks。axisy convert 預設使用 ct448,cf448/224 tasks 與 217 ranks，並逐 case 執行；manifest 若將 tasks 設為 434，runner 才會每批啟動兩個 exclusive 217-rank Slurm steps。`axisy/run2.sh` 宣告 45 tasks 卻執行 72/217-rank 的 MPI 命令，不能原樣使用。GrADS stage 使用 `ct112,cf112`、112 tasks，並以最多 112 個背景程序分批執行，`wait` 後才啟動下一批。account 沿用現有 run scripts 的 `MST114418`。
 
 ### Python config adapter
 

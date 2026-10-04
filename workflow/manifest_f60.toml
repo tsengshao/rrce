@@ -1,8 +1,8 @@
 [run]
-config = "../config_HomogRad.py"
-dataset_tag = "f10_HomogRad"
-run_id = "homograd_all"
-cases = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+config = "../config_f60.py"
+dataset_tag = "f60"
+run_id = "f60_all"
+cases = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 # Permit overwriting only partial outputs listed as collisions at render time.
 # Complete cases skipped by action="auto" are never overwritten.
 allow_overwrite = true
@@ -19,6 +19,12 @@ scatter_y_day = 3
 # partition = "ct112"
 # tasks = 72
 # ranks = 72
+
+# parallel execute, 5 cases 112 > 217 * 5
+[resources.axisy_convert]
+partition = "cf1k,ct1k"
+tasks = 1120
+ranks = 217
 
 # "auto" skips each case whose complete expected filename set already exists.
 # A partially complete case remains runnable and is reported as a collision.
@@ -70,13 +76,13 @@ action = "auto"
 [stages.mse_ccc_daily]
 action = "auto"
 [stages.lowlevel_exp]
-action = "run"
+action = "auto"
 [stages.lowlevel_profiles]
-action = "run"
+action = "auto"
 [stages.scatter_dry]
-action = "run"
+action = "auto"
 [stages.scatter_dxx]
-action = "run"
+action = "auto"
 
 # For names that contain zero or multiple d<number> tokens:
 # [case_days]

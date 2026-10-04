@@ -32,6 +32,8 @@ cloud/find_cloud.py 每個 MPI rank 的 CloudRetriever 又使用 cores=15。預�
 
 axisy 的 reduce 與 daily 都寫同一 axmean CTL；第一版 combined postprocess 依序完成三種程式，避免同時寫入。postprocess 的 MPI ranks 不得超出申請 tasks。
 
+axisy_convert 的單一 case 只有 217 個 timestep，因此每個 case 維持 217 MPI ranks。stage 預設保留 224 tasks 並逐 case 執行；manifest 明確將 tasks 覆寫為 434 時，才以兩個 `srun --exclusive -n 217` steps 同時處理不同 cases。runner 必須逐一檢查兩個 step 的退出碼，任一失敗即使 stage 失敗。不同 cases 的 NetCDF 與 CTL 路徑互不重疊，`cal_axisy.py` 不需更動。
+
 ## 輸出保護、重用與 links
 
 資料保留在目前 config.dataPath 的 experiment 子路徑；圖片保留相應分析目錄下的 experiment/dataset 子路徑。原始 scripts 不覆蓋，必要變更採可 review 副本或新增入口。
