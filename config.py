@@ -1,6 +1,8 @@
 
 vvmPath  = '/data/C.shaoyu/rrce/vvm/'
 dataPath = '/data/C.shaoyu/rrce/data/'
+vvmPath  = '/work1/umbrella0c/VVM/DATA/'
+dataPath = '/work1/umbrella0c/rrce2/data/'
 
 expList  = [  
             # 0

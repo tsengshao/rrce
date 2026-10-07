@@ -4,10 +4,11 @@
 """
 Compare experimental groups against the shared paper/origin reference.
 
-Examples (run separately to produce the two figures):
+Examples (run separately to produce individual figures):
     python plot_inflow_scatter_allexp.py --group radiation
     python plot_inflow_scatter_allexp.py --group coriolis
-With no arguments, both figures are produced.
+    python plot_inflow_scatter_allexp.py --group evolution
+With no arguments, all configured groups are produced.
 
 Origin uses gray circles and gray X markers; each overlay uses a single color.
 Scatter opacity is configurable per source. Hollow circles retain their black
@@ -58,6 +59,7 @@ CORIOLIS_HOLLOW = True  # f20/f60 共用開關：True=空心，False=實心。
 # 每張圖會自動加入 origin；圓點和 X 都用此 color，回歸線也只使用這組資料。
 ORIGIN_SOURCE = {
     "filename": "axisy_exp_daily_profiles_origin.nc",
+    "day_flag": 3,
     "label": "f@10 (origin)",
     #"color": "#808080",
     "color": "0.7",
@@ -69,6 +71,7 @@ ORIGIN_SOURCE = {
 }
 
 # 每筆實驗設定：filename=nc 檔名，label=圖例，color=單色，marker=符號。
+# day_flag=從 nc 取 EXP 第幾天；None 跟隨 --y-day（預設 3）。
 # alpha=透明度（0～1），套用於該來源的所有散點與圖例；回歸線維持不透明。
 # 修改 DEFAULT_SCATTER_ALPHA 可調整預設值；某筆改成 "alpha": 0.5 可個別調整。
 # edgecolor=None 使用原本深色邊框；可改成 "black"、"#555555" 或 "none"（無邊框）。
@@ -85,6 +88,7 @@ EXPERIMENT_GROUPS = {
         "sources": [
             {
                 "filename": "axisy_exp_daily_profiles_f10_FixRad.nc",
+                "day_flag": 3,
                 "label": "f@10 Fix-Rad",
                 "color": "#6988C9",
                 "marker": "o",
@@ -95,6 +99,7 @@ EXPERIMENT_GROUPS = {
             },
             {
                 "filename": "axisy_exp_daily_profiles_f10_HomogRadCTRL.nc",
+                "day_flag": 3,
                 "label": "f@10 Homog-Rad",
                 "color": "#26478C",
                 "marker": "o",
@@ -105,6 +110,7 @@ EXPERIMENT_GROUPS = {
             },
             # {
             #     "filename": "axisy_exp_daily_profiles_f10_HomogRad.nc",
+            #     "day_flag": 3,
             #     "label": "f10 HomogRad",
             #     "color": "#313CA8",
             #     "marker": "o",
@@ -120,6 +126,7 @@ EXPERIMENT_GROUPS = {
         "sources": [
             {
                 "filename": "axisy_exp_daily_profiles_f20.nc",
+                "day_flag": 3,
                 "label": "f@20",
                 "color": "#FCB97E",
                 "marker": "^",
@@ -131,6 +138,7 @@ EXPERIMENT_GROUPS = {
             },
             {
                 "filename": "axisy_exp_daily_profiles_f60.nc",
+                "day_flag": 3,
                 "label": "f@60",
                 "color": "#EB4400",
                 "marker": "D",
@@ -139,6 +147,44 @@ EXPERIMENT_GROUPS = {
                 "edgecolor": None,
                 "linewidth": DEFAULT_EDGE_LINEWIDTH,
                 "hollow": False,
+            },
+        ],
+    },
+    "evolution": {
+        "references": False,
+        "sources": [
+            {
+                "filename": "axisy_exp_daily_profiles_origin.nc",
+                "label": "day-2",
+                "day_flag": 2,
+                "color": "#480058",
+                "marker": "o",
+                "size": DEFAULT_MARKER_SIZE*0.5,
+                "alpha": DEFAULT_SCATTER_ALPHA,
+                "edgecolor": None,
+                "linewidth": DEFAULT_EDGE_LINEWIDTH,
+            },
+            {
+                "filename": "axisy_exp_daily_profiles_origin.nc",
+                "label": "day-1",
+                "day_flag": 1,
+                "color": "#275291",
+                "marker": "o",
+                "size": DEFAULT_MARKER_SIZE*0.5,
+                "alpha": DEFAULT_SCATTER_ALPHA,
+                "edgecolor": None,
+                "linewidth": DEFAULT_EDGE_LINEWIDTH,
+            },
+            {
+                "filename": "axisy_exp_daily_profiles_origin.nc",
+                "label": "day-0",
+                "day_flag": 0,
+                "color": "#ADEEC5",
+                "marker": "o",
+                "size": DEFAULT_MARKER_SIZE*0.5,
+                "alpha": DEFAULT_SCATTER_ALPHA,
+                "edgecolor": None,
+                "linewidth": DEFAULT_EDGE_LINEWIDTH,
             },
         ],
     },
@@ -155,11 +201,13 @@ REFERENCE_DATA_DIR = os.path.join(config.dataPath, "twb")
 # kind="ctrl": 各 CTRL day 的最大風速；kind="exp": EXP 指定 day 的最大風速。
 # x 軸皆取相同初始 CTRL day 的最小 radi_wind_lower（daily mean）。
 # integer_only 依 CTRL day / EXP case_day 篩選，排除小數天 ensemble。
-# days=None 畫所有整數天；例如改成 list(range(10, 31)) 可只畫 day 10～30。
+# CTRL day_flag=要取資料的 CTRL 天數清單；None 畫所有整數天。
+# EXP day_flag=要取資料的 EXP 天數；None 跟隨 --y-day。
+# EXP case_days=要畫哪些重啟案例（case_day）；None 畫所有整數天案例。
 # enabled=False 關閉該組；REFERENCE_GROUPS={} 關閉全部參考點。
 # color / marker / size / alpha / edgecolor / linewidth / hollow / zorder 可調整畫法。
-# EXP day=None 跟隨 --y-day；也可填數字指定參考天數。label 的 {day} 自動更新。
-# 若 nc 只有單一天數，更改 day 時需將 filename 換成含該天資料的檔案。
+# label 的 {day} 自動依 EXP day_flag 更新。
+# 若 nc 只有單一天數，更改 day_flag 時需將 filename 換成含該天資料的檔案。
 REFERENCE_GROUPS = {
     "ctrl": {
         "kind": "ctrl",
@@ -168,7 +216,7 @@ REFERENCE_GROUPS = {
         "label": "initial thermoal wind",
         "enabled": True,
         "integer_only": True,
-        "days": list(range(10, 31)),
+        "day_flag": list(range(10, 31)),
         "color": "black",
         "marker": "o",
         "size": 70,
@@ -183,10 +231,10 @@ REFERENCE_GROUPS = {
         "filename": "twb_exp_lowlevel_day3.nc",
         "variable": "twindd_lower",
         "label": "vortex day{day}",
-        "day": None,
+        "day_flag": None,
         "enabled": True,
         "integer_only": True,
-        "days": None,
+        "case_days": None,
         "color": "r",
         "marker": "o",
         "size": 70,
@@ -207,8 +255,6 @@ def load_reference_groups(ctrl_ds, reference_groups, reference_data_dir, y_day):
         if not source.get("enabled", True):
             continue
         source = dict(source)
-        day = y_day if source.get("day") is None else source["day"]
-        source["label"] = source["label"].format(day=day)
         path = os.path.join(reference_data_dir, source["filename"])
         # Keep coordinates with units="days" numeric, rather than timedeltas.
         with xr.open_dataset(path, decode_timedelta=False) as ds:
@@ -217,7 +263,10 @@ def load_reference_groups(ctrl_ds, reference_groups, reference_data_dir, y_day):
                 sample_dim = "day"
                 case_days = np.asarray(ds["day"].values, dtype=float)
                 ctrl_days = case_days
+                selected_case_days = source.get("day_flag")
             elif kind == "exp":
+                day = y_day if source.get("day_flag") is None else source["day_flag"]
+                source["label"] = source["label"].format(day=day)
                 ds = select_existing_exps(
                     ds, include=source.get("include"), exclude=source.get("exclude"),
                     regex=source.get("regex"),
@@ -231,14 +280,15 @@ def load_reference_groups(ctrl_ds, reference_groups, reference_data_dir, y_day):
                 sample_dim = "exp"
                 case_days = np.asarray(ds["case_day"].values, dtype=float)
                 ctrl_days = np.asarray(ds["ctrl_day"].values, dtype=float)
+                selected_case_days = source.get("case_days")
             else:
                 raise ValueError(f"{name}: reference kind must be 'ctrl' or 'exp'")
 
             keep = np.isfinite(case_days) & np.isfinite(ctrl_days)
             if source.get("integer_only", True):
                 keep &= np.isclose(case_days, np.rint(case_days), rtol=0, atol=1e-9)
-            if source.get("days") is not None:
-                keep &= np.isin(case_days, source["days"])
+            if selected_case_days is not None:
+                keep &= np.isin(case_days, selected_case_days)
             ds = ds.isel({sample_dim: np.flatnonzero(keep)})
             if ds.sizes[sample_dim] == 0:
                 print(f"[skip reference] {source['label']}: no selected days")
@@ -348,6 +398,7 @@ def main(
     y_sizes=None,  # nonnegative marker area in points squared per source
     reference_groups=None,  # None uses REFERENCE_GROUPS; {} disables references
     reference_data_dir=None,
+    y_days=None,  # EXP day per source; None entries follow y_day
 ):
     datdir = os.path.join(config.dataPath, "axisy_lowlevel", center_flag)
     default_ctrl_nc_path = os.path.join(datdir, CTRL_DAILY_FILENAME)
@@ -363,6 +414,13 @@ def main(
             y_nc_paths = [y_nc_path] + y_nc_paths
     y_source_names = source_names(y_nc_paths, y_source_names)
     y_markers = source_markers(len(y_nc_paths), y_markers)
+    y_days = [y_day] * len(y_nc_paths) if y_days is None else list(y_days)
+    if len(y_days) != len(y_nc_paths):
+        raise ValueError("y_days must have the same length as y_nc_paths")
+    y_days = [float(y_day if day is None else day) for day in y_days]
+    if any(not np.isfinite(day) or day < 0 or not day.is_integer() for day in y_days):
+        raise ValueError("y_days must contain finite nonnegative integer EXP days")
+    y_days = [int(day) for day in y_days]
     y_colors = [None] * len(y_nc_paths) if y_colors is None else list(y_colors)
     if len(y_colors) != len(y_nc_paths):
         raise ValueError("y_colors must have the same length as y_nc_paths")
@@ -433,8 +491,8 @@ def main(
     plot_groups = []
     with ExitStack() as datasets:
         ctrl_ds = datasets.enter_context(xr.open_dataset(ctrl_nc_path))
-        for y_path, source_name, source_marker, source_color, source_alpha, source_edgecolor, source_linewidth, source_hollow, source_size in zip(
-            y_nc_paths, y_source_names, y_markers, y_colors, y_alphas, y_edgecolors, y_linewidths, y_hollow, y_sizes
+        for y_path, source_name, source_marker, source_color, source_alpha, source_edgecolor, source_linewidth, source_hollow, source_size, source_day in zip(
+            y_nc_paths, y_source_names, y_markers, y_colors, y_alphas, y_edgecolors, y_linewidths, y_hollow, y_sizes, y_days
         ):
             ds = datasets.enter_context(xr.open_dataset(y_path))
             ds = select_existing_exps(ds, include=include, exclude=exclude, regex=regex)
@@ -450,7 +508,7 @@ def main(
             ctrl_days = ds["ctrl_day"].sel(exp=exp_vals).values.astype(np.float64)
             case_day = ds["case_day"].sel(exp=exp_vals).values.astype(float)
             x_profile = ctrl_data_for_exps(ctrl_ds, exp_vals, ctrl_days, "radi_wind_lower", method, vtype="mean")
-            tw_y = y_tang_wind_profile_for_source(ds, source_name, y_day, method).transpose("exp", "radius_km").values
+            tw_y = y_tang_wind_profile_for_source(ds, source_name, source_day, method).transpose("exp", "radius_km").values
 
             x_data = np.nanmin(x_profile.transpose("exp", "radius_km").values, axis=1)
             y_data = np.nanmax(tw_y, axis=1)
@@ -466,6 +524,7 @@ def main(
             plot_groups.append(
                 {
                     "source": source_name,
+                    "day": source_day,
                     "marker": source_marker,
                     "alpha": source_alpha,
                     "edgecolor": source_edgecolor,
@@ -579,7 +638,10 @@ def main(
     ## ax.set_xlabel(f"minimum daily-mean radial wind of the convective cluster\ninitial day in CTRL [m/s]")
     ## ax.set_ylabel("maximum daily-mean tangential wind\nlast day in EXP [m/s]")
     ax.set_xlabel(r"$\mathbf{daily}\mathit{-}\mathbf{mean\ inflow\ intensity}$" + " [m/s]\nfrom shared CTRL day")
-    ax.set_ylabel(r"$\mathbf{vortex\ intensity}$"+f" [m/s]\nin EXP day {y_day}")
+    plotted_days = sorted({group["day"] for group in plot_groups})
+    day_text = ", ".join(str(day) for day in plotted_days)
+    day_label = "day" if len(plotted_days) == 1 else "days"
+    ax.set_ylabel(r"$\mathbf{vortex\ intensity}$" + f" [m/s]\nin EXP {day_label} {day_text}")
     if ax.get_legend_handles_labels()[0]:
         ax.legend(
             loc="best", fontsize=20, frameon=True,
@@ -605,14 +667,15 @@ def cli():
     )
     parser.add_argument(
         "--group", choices=[*EXPERIMENT_GROUPS, "both"], default="both",
-        help="Select the experimental overlay (default: produce both figures).",
+        help="Select the experimental overlay (default: produce all configured figures).",
     )
     parser.add_argument("--center-flag", default=DEFAULT_CENTER_FLAG)
     parser.add_argument("--data-dir", help="Directory containing the CTRL and EXP NetCDF files.")
     parser.add_argument("--output-dir", help="Override the default figure directory.")
     parser.add_argument("--reference-data-dir", default=REFERENCE_DATA_DIR,
                         help="Directory containing the thermal-wind reference NetCDF files.")
-    parser.add_argument("--y-day", type=int, default=DEFAULT_Y_DAY, help="EXP day to plot (default: %(default)s).")
+    parser.add_argument("--y-day", type=int, default=DEFAULT_Y_DAY,
+                        help="EXP day used when day_flag is None or omitted (default: %(default)s).")
     args = parser.parse_args()
     datdir = args.data_dir or os.path.join(config.dataPath, "axisy_lowlevel", args.center_flag)
 
@@ -694,6 +757,7 @@ def cli():
             y_linewidths=[source.get("linewidth", DEFAULT_EDGE_LINEWIDTH) for source in sources],
             y_hollow=[source.get("hollow", False) for source in sources],
             y_sizes=[source.get("size", DEFAULT_MARKER_SIZE) for source in sources],
+            y_days=[source.get("day_flag") for source in sources],
             figname=f"scatter_max_radi_inDXX_{group_name}.png",
         )
 
