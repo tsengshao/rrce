@@ -5,15 +5,16 @@
 Compare experimental groups against the shared paper/origin reference.
 
 Examples (run separately to produce individual figures):
-    python plot_inflow_scatter_allexp.py --group radiation
-    python plot_inflow_scatter_allexp.py --group coriolis
-    python plot_inflow_scatter_allexp.py --group evolution
+    python plot_scale_scatter_allexp.py --group radiation
+    python plot_scale_scatter_allexp.py --group coriolis
+    python plot_scale_scatter_allexp.py --group evolution
 With no arguments, all configured groups are produced.
 
 Origin uses gray circles and gray X markers; each overlay uses a single color.
 Scatter opacity is configurable per source. Hollow circles retain their black
-outlines, and the black regression fits only origin cases with case_day <= 25.
-The x axis always reads the matching day from axisy_ctrl_daily_profiles.nc.
+outlines. No regression line is drawn.
+The x axis uses CSV scale_6sigma_km / 2 at the initial ctrl_day, with linear
+interpolation by default and endpoint bounds outside the valid time range.
 Thermal-wind references use small filled black dots and integer days only.
 """
 
@@ -27,7 +28,6 @@ import sys
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from scipy import stats
 import xarray as xr
 
 sys.path.insert(1, "../")
@@ -44,6 +44,12 @@ from plot_io import (  # noqa: E402
     y_tang_wind_profile_for_source,
 )
 
+from plot_scale_io import (  # noqa: E402
+    DEFAULT_SCALE_CSV_PATH,
+    load_scale_csv,
+    scale_radius_for_days,
+)
+
 
 CTRL_DAILY_FILENAME = "axisy_ctrl_daily_profiles.nc"
 EXP_DAILY_FILENAME = "axisy_exp_daily_profiles.nc"
@@ -56,7 +62,7 @@ DEFAULT_EDGE_LINEWIDTH = 0.0  # 散點邊框粗細，單位 points。
 DEFAULT_MARKER_SIZE = 500  # 散點面積（points²），數值越大符號越大。
 CORIOLIS_HOLLOW = True  # f20/f60 共用開關：True=空心，False=實心。
 
-# 每張圖會自動加入 origin；圓點和 X 都用此 color，回歸線也只使用這組資料。
+# 每張圖會自動加入 origin；圓點和 X 都用此 color。
 ORIGIN_SOURCE = {
     "filename": "axisy_exp_daily_profiles_origin.nc",
     "day_flag": 3,
@@ -75,7 +81,7 @@ ORIGIN_SOURCE = {
 # wind_source="exp"（預設）取 EXP 風速；"ctrl" 用此 nc 的 restart_day
 # （若無則用 case_day）加上 day_flag，讀取 CTRL 對應天數的切向風。
 # CTRL 天數必須精確存在，不四捨五入或插值；filename 仍提供實驗清單與日期。
-# alpha=透明度（0～1），套用於該來源的所有散點與圖例；回歸線維持不透明。
+# alpha=透明度（0～1），套用於該來源的所有散點與圖例。
 # 修改 DEFAULT_SCATTER_ALPHA 可調整預設值；某筆改成 "alpha": 0.5 可個別調整。
 # edgecolor=None 使用原本深色邊框；可改成 "black"、"#555555" 或 "none"（無邊框）。
 # linewidth=邊框粗細（points）；0 表示不畫邊框。邊框透明度也使用 alpha。
@@ -203,7 +209,7 @@ EXPERIMENT_GROUPS = {
 REFERENCE_DATA_DIR = os.path.join(config.dataPath, "twb")
 # filename 可用相對於 REFERENCE_DATA_DIR 的檔名，或完整路徑。
 # kind="ctrl": 各 CTRL day 的最大風速；kind="exp": EXP 指定 day 的最大風速。
-# x 軸皆取相同初始 CTRL day 的最小 radi_wind_lower（daily mean）。
+# x 軸皆取相同初始 CTRL day 對應 CSV scale_6sigma_km / 2（3sigma 半徑）。
 # integer_only 依 CTRL day / EXP case_day 篩選，排除小數天 ensemble。
 # CTRL day_flag=要取資料的 CTRL 天數清單；None 畫所有整數天。
 # EXP day_flag=要取資料的 EXP 天數；None 跟隨 --y-day。
@@ -292,8 +298,8 @@ REFERENCE_GROUPS = {
 # ===== 常用設定結束 =====
 
 
-def load_reference_groups(ctrl_ds, reference_groups, reference_data_dir, y_day):
-    """Pair thermal-wind maxima with exact, shared daily-mean CTRL inflow."""
+def load_reference_groups(scale_times, scale_radii, reference_groups, reference_data_dir, y_day, scale_matching="linear"):
+    """Pair thermal-wind maxima with shared CSV scale radii at initial CTRL days."""
     groups = []
     for name, source in reference_groups.items():
         if not source.get("enabled", True):
@@ -338,14 +344,9 @@ def load_reference_groups(ctrl_ds, reference_groups, reference_data_dir, y_day):
                 print(f"[skip reference] {source['label']}: no selected days")
                 continue
 
-            matched_days = match_existing_days(
-                ctrl_ds["day"], ctrl_days[keep], source["label"], "CTRL day"
+            x = scale_radius_for_days(
+                ctrl_days[keep], scale_times, scale_radii, scale_matching
             )
-            x_profile = ctrl_ds["radi_wind_lower"].sel({
-                "day": xr.DataArray(matched_days, dims="reference_point"),
-                "method": "daily", "vtype": "mean",
-            })
-            x = x_profile.min(dim="radius_km", skipna=True).values
             y = ds[source.get("variable", "twindd_lower")].max(
                 dim="radius_km", skipna=True
             ).transpose(sample_dim).values
@@ -431,7 +432,7 @@ def main(
     regex=None,
     special_x_exps=None,  # list[str]: marker "X"
     special_o_exps=None,  # list[str]: hollow marker "o"
-    figname='scatter_max_radi_inDXX.png',
+    figname='scatter_max_scale_inDXX.png',
     y_colors=None,  # one color per source; None entries retain Dxx_on coloring
     special_marker_sources=None,  # source names; None applies to all sources
     output_dir=None,
@@ -444,6 +445,8 @@ def main(
     reference_data_dir=None,
     y_days=None,  # EXP day per source; None entries follow y_day
     y_wind_sources=None,  # "exp" profiles or "ctrl" at restart_day + source day
+    scale_csv_path=DEFAULT_SCALE_CSV_PATH,
+    scale_matching="linear",  # linear | nearest; outside CSV time range uses bounds
 ):
     datdir = os.path.join(config.dataPath, "axisy_lowlevel", center_flag)
     default_ctrl_nc_path = os.path.join(datdir, CTRL_DAILY_FILENAME)
@@ -459,6 +462,10 @@ def main(
             y_nc_paths = [y_nc_path] + y_nc_paths
     y_source_names = source_names(y_nc_paths, y_source_names)
     y_markers = source_markers(len(y_nc_paths), y_markers)
+
+    if scale_matching not in ("linear", "nearest"):
+        raise ValueError("scale_matching must be 'linear' or 'nearest'")
+    scale_times, scale_radii = load_scale_csv(scale_csv_path)
     y_days = [y_day] * len(y_nc_paths) if y_days is None else list(y_days)
     if len(y_days) != len(y_nc_paths):
         raise ValueError("y_days must have the same length as y_nc_paths")
@@ -540,7 +547,7 @@ def main(
 
     plot_groups = []
     with ExitStack() as datasets:
-        ctrl_ds = datasets.enter_context(xr.open_dataset(ctrl_nc_path))
+        ctrl_ds = datasets.enter_context(xr.open_dataset(ctrl_nc_path)) if "ctrl" in y_wind_sources else None
         for y_path, source_name, source_marker, source_color, source_alpha, source_edgecolor, source_linewidth, source_hollow, source_size, source_day, wind_source in zip(
             y_nc_paths, y_source_names, y_markers, y_colors, y_alphas, y_edgecolors, y_linewidths, y_hollow, y_sizes, y_days, y_wind_sources
         ):
@@ -557,7 +564,7 @@ def main(
 
             ctrl_days = ds["ctrl_day"].sel(exp=exp_vals).values.astype(np.float64)
             case_day = ds["case_day"].sel(exp=exp_vals).values.astype(float)
-            x_profile = ctrl_data_for_exps(ctrl_ds, exp_vals, ctrl_days, "radi_wind_lower", method, vtype="mean")
+
             if wind_source == "ctrl":
                 restart_coord = "restart_day" if "restart_day" in ds.coords else "case_day"
                 restart_days = ds[restart_coord].sel(exp=exp_vals).values.astype(float)
@@ -569,7 +576,7 @@ def main(
                 tw_profile = y_tang_wind_profile_for_source(ds, source_name, source_day, method)
             tw_y = tw_profile.transpose("exp", "radius_km").values
 
-            x_data = np.nanmin(x_profile.transpose("exp", "radius_km").values, axis=1)
+            x_data = scale_radius_for_days(ctrl_days, scale_times, scale_radii, scale_matching)
             y_data = np.nanmax(tw_y, axis=1)
             paper_colors = cmap(norm(case_day))
             face_colors = paper_colors if source_color is None else np.tile(
@@ -601,10 +608,10 @@ def main(
             )
 
         reference_points = load_reference_groups(
-            ctrl_ds,
+            scale_times, scale_radii,
             REFERENCE_GROUPS if reference_groups is None else reference_groups,
             REFERENCE_DATA_DIR if reference_data_dir is None else reference_data_dir,
-            y_day,
+            y_day, scale_matching,
         )
 
     if not plot_groups:
@@ -613,14 +620,6 @@ def main(
     # --- figure layout (keep original) ---
     fig = plt.figure(figsize=(10*1.2, 8*1.2))
     ax = fig.add_axes([0.15, 0.15, 0.72, 0.75])
-
-    # Regression (keep original: fit only <= 25)
-    first = plot_groups[0]
-    idx_fit = (first["case_day"] <= 25) & np.isfinite(first["x"]) & np.isfinite(first["y"])
-    if np.count_nonzero(idx_fit) >= 2 and np.ptp(first["x"][idx_fit]) > 0:
-        res = stats.linregress(first["x"][idx_fit], first["y"][idx_fit])
-        x = np.arange(-10, 10)
-        ax.plot(x, res.intercept + res.slope * x, "k", lw=1)
 
     # Source marker is the default. special_o_exps is drawn first so it stays underneath.
     for igroup, group in enumerate(plot_groups):
@@ -686,17 +685,16 @@ def main(
             label=source["label"],
         )
 
-    # --- axes settings (keep original) ---
+    # --- axes settings (original y axis; scale-radius x axis) ---
     ax.set_yticks(np.arange(0, 9.01, 1.5))
-    ax.set_xticks(np.arange(-3, 0.01, 0.5))
+    scale_xmax = max(100.0, np.ceil(np.max(scale_radii) / 100.0) * 100.0)
+    ax.set_xticks(np.arange(0, scale_xmax + 1, 100))
     ax.set_ylim(-0.3, 9)
-    ax.set_xlim(0.1, -3)
+    ax.set_xlim(0, scale_xmax)
     ax.grid(True)
-    # ax.set_xlabel(f"minimum radial wind\n{mdict['scatter_x_label']} [m/s]")
     # ax.set_ylabel("maximum tangential wind\nlast day average [m/s]")
-    ## ax.set_xlabel(f"minimum daily-mean radial wind of the convective cluster\ninitial day in CTRL [m/s]")
     ## ax.set_ylabel("maximum daily-mean tangential wind\nlast day in EXP [m/s]")
-    ax.set_xlabel(r"$\mathbf{daily}\mathit{-}\mathbf{mean\ inflow\ intensity}$" + " [m/s]\nfrom shared CTRL day")
+    ax.set_xlabel(r"scale radius ($3\sigma$, km)" + "\nfrom shared CTRL day")
     plotted_days = sorted({group["day"] for group in plot_groups})
     day_text = ", ".join(str(day) for day in plotted_days)
     day_label = "day" if len(plotted_days) == 1 else "days"
@@ -712,7 +710,7 @@ def main(
     # -- for Dxx_on colormap
     outpng = os.path.join(figdir, figname)
     # -- for DRYFAC colormap
-    # outpng = f"{figdir}/scatter_max_radi_inDRY.png"
+    # outpng = f"{figdir}/scatter_max_scale_inDRY.png"
     plt.savefig(outpng, dpi=200)
     print("[saved]", outpng)
     #plt.show()
@@ -735,11 +733,17 @@ def cli():
                         help="Directory containing the thermal-wind reference NetCDF files.")
     parser.add_argument("--y-day", type=int, default=DEFAULT_Y_DAY,
                         help="EXP day used when day_flag is None or omitted (default: %(default)s).")
+    parser.add_argument("--scale-csv", default=DEFAULT_SCALE_CSV_PATH,
+                        help="CSV containing time_days and scale_6sigma_km.")
+    parser.add_argument("--scale-matching", choices=["linear", "nearest"], default="linear",
+                        help="Scale lookup method (default: %(default)s); outside times use bounds.")
     args = parser.parse_args()
     datdir = args.data_dir or os.path.join(config.dataPath, "axisy_lowlevel", args.center_flag)
 
     common = dict(
         center_flag=args.center_flag,
+        scale_csv_path=args.scale_csv,
+        scale_matching=args.scale_matching,
         ctrl_nc_path=os.path.join(datdir, CTRL_DAILY_FILENAME),
         y_day=args.y_day,
         output_dir=args.output_dir,
@@ -818,7 +822,7 @@ def cli():
             y_sizes=[source.get("size", DEFAULT_MARKER_SIZE) for source in sources],
             y_days=[source.get("day_flag") for source in sources],
             y_wind_sources=[source.get("wind_source", "exp") for source in sources],
-            figname=f"scatter_max_radi_inDXX_{group_name}.png",
+            figname=f"scatter_max_scale_inDXX_{group_name}.png",
         )
 
 
