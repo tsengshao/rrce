@@ -28,7 +28,7 @@ class Stage:
     parallel_cases: bool = False
 
 
-SERIAL = Resources("development,ct112,cf112", 1)
+SERIAL = Resources("ct112,cf112", 1)
 GRADS = Resources("ct112,cf112", 112)
 
 STAGES: tuple[Stage, ...] = (

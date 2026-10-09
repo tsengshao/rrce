@@ -1,0 +1,89 @@
+[run]
+config = "../config_f30.py"
+dataset_tag = "f30"
+run_id = "f30_v3"
+cases = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+# Permit overwriting only partial outputs listed as collisions at render time.
+# Complete cases skipped by action="auto" are never overwritten.
+allow_overwrite = true
+
+[inputs]
+control_profile_nc = "/work1/umbrella0c/rrce2/data/axisy_lowlevel/czeta0km_positivemean/axisy_ctrl_daily_profiles.nc"
+
+[products]
+lowlevel_days = [0, 3]
+scatter_y_day = 3
+
+# Optional, reviewable resource overrides:
+# [resources.cwv]
+# partition = "ct112"
+# tasks = 72
+# ranks = 72
+
+# parallel execute, 5 cases 112 > 217 * 5
+[resources.axisy_convert]
+partition = "cf1k,ct1k"
+tasks = 1120
+ranks = 217
+
+# "auto" skips each case whose complete expected filename set already exists.
+# A partially complete case remains runnable and is reported as a collision.
+# Use "run" to force calculation or "reuse" to require all outputs to exist.
+[stages.cwv]
+action = "auto"
+[stages.convolve]
+action = "auto"
+[stages.horisf]
+action = "auto"
+[stages.center_0]
+action = "auto"
+[stages.center_150]
+action = "auto"
+[stages.center_sf]
+action = "auto"
+[stages.cloud]
+action = "reuse"
+[stages.wp_ctl]
+action = "auto"
+[stages.convolve_ctl]
+action = "auto"
+[stages.sf_ctl]
+action = "auto"
+[stages.water]
+action = "auto"
+[stages.wind]
+action = "auto"
+[stages.center_zeta]
+action = "auto"
+[stages.center_conzeta]
+action = "auto"
+[stages.axisy_convert]
+action = "auto"
+[stages.axisy_mean]
+action = "auto"
+[stages.axisy_process]
+action = "auto"
+[stages.axisy_daily]
+action = "auto"
+[stages.hov_radial]
+action = "auto"
+[stages.hov_tangential]
+action = "auto"
+[stages.tang_daily]
+action = "auto"
+[stages.radi_daily]
+action = "auto"
+[stages.mse_ccc_daily]
+action = "auto"
+[stages.lowlevel_exp]
+action = "auto"
+[stages.lowlevel_profiles]
+action = "auto"
+[stages.scatter_dry]
+action = "auto"
+[stages.scatter_dxx]
+action = "auto"
+
+# For names that contain zero or multiple d<number> tokens:
+# [case_days]
+# experiment_name = 14.986
